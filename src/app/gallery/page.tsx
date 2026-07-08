@@ -1,16 +1,33 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+// 문자열 해시 (결정적) — 시드+id 로 안정적인 정렬 키 생성
+function hash(str: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
 export default async function GalleryPage() {
   const supabase = await createClient();
-  const { data: projects } = await supabase
+  const { data } = await supabase
     .from("projects")
     .select(
       "id, title, description, view_count, teams(name), project_likes(count)"
-    )
-    .order("submitted_at", { ascending: true });
+    );
+
+  // 방문(세션)당 고정된 무작위 순서 — 시드는 쿠키, 같은 시드면 항상 같은 순서.
+  // 특정 팀이 항상 위에 오지 않게 하면서 새로고침·뒤로가기엔 순서 유지.
+  const seed = (await cookies()).get("gallery_seed")?.value ?? "default";
+  const projects = [...(data ?? [])].sort(
+    (a, b) => hash(seed + a.id) - hash(seed + b.id)
+  );
 
   return (
     <div>
