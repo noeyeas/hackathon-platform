@@ -73,7 +73,7 @@ export default async function ProjectDetailPage({
     { url: p.repo_url, label: "GitHub", icon: "💻" },
     { url: p.demo_url, label: "데모", icon: "🔗" },
     { url: p.video_url, label: "영상", icon: "🎬" },
-    { url: p.deck_url, label: "발표자료", icon: "📑" },
+    { url: p.deck_url, label: "참고자료", icon: "📑" },
   ].filter((l) => l.url);
 
   return (
