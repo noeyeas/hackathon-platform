@@ -3,7 +3,13 @@
 import { useState, useTransition } from "react";
 import { saveScores } from "./actions";
 
-type Criterion = { id: string; name: string; max_score: number };
+type Criterion = {
+  id: string;
+  name: string;
+  max_score: number;
+  weight: number;
+  description: string | null;
+};
 type Existing = { criteria_id: string; score: number; comment: string | null };
 
 export function ScoreCard({
@@ -61,22 +67,39 @@ export function ScoreCard({
         <form onSubmit={onSubmit} className="border-t border-[var(--line)] p-4">
           <div className="flex flex-col gap-3">
             {criteria.map((c) => (
-              <div key={c.id} className="flex items-center justify-between gap-3">
-                <label className="text-sm font-medium">
-                  {c.name}{" "}
-                  <span className="text-xs text-[var(--muted)]">
-                    / {c.max_score}
-                  </span>
-                </label>
-                <input
-                  name={`c_${c.id}`}
-                  type="number"
-                  min={0}
-                  max={c.max_score}
-                  defaultValue={scoreOf(c.id)}
-                  className="input w-24 text-right"
-                  required
-                />
+              <div
+                key={c.id}
+                className="rounded-lg border border-[var(--line)] p-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <label className="text-sm font-semibold">
+                      {c.name}{" "}
+                      <span className="text-xs font-bold text-vote">
+                        {c.weight}%
+                      </span>
+                    </label>
+                    {c.description && (
+                      <p className="mt-1 text-xs text-[var(--muted)]">
+                        {c.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex-none text-right">
+                    <input
+                      name={`c_${c.id}`}
+                      type="number"
+                      min={0}
+                      max={c.max_score}
+                      defaultValue={scoreOf(c.id)}
+                      className="input w-20 text-right"
+                      required
+                    />
+                    <p className="mt-0.5 text-[10px] text-[var(--muted)]">
+                      / {c.max_score}점
+                    </p>
+                  </div>
+                </div>
               </div>
             ))}
             <textarea

@@ -65,11 +65,6 @@ export default async function AdminPage() {
           desc="심사·팀·관객 비율 조정"
         />
         <AdminLink
-          href="/admin/qr"
-          title="관객 투표 QR"
-          desc="테이블별 QR 생성·인쇄"
-        />
-        <AdminLink
           href="/admin/announcements"
           title="공지사항"
           desc="공지 작성·관리"

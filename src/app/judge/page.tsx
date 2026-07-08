@@ -29,7 +29,7 @@ export default async function JudgePage() {
 
   const { data: criteria } = await supabase
     .from("criteria")
-    .select("id, name, max_score")
+    .select("id, name, max_score, weight, description")
     .order("sort");
 
   const { data: projects } = await supabase

@@ -1,18 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { PHASE_LABEL, type EventPhase, type Ranking } from "@/lib/types";
-import { PhaseControl } from "../PhaseControl";
+import { type Ranking } from "@/lib/types";
+import { VotingControls } from "./VotingControls";
 
 export const dynamic = "force-dynamic";
-
-const PHASES: EventPhase[] = [
-  "signup",
-  "team_building",
-  "building",
-  "submitted",
-  "voting",
-  "closed",
-];
 
 export default async function VotingAdminPage() {
   const supabase = await createClient();
@@ -30,9 +21,21 @@ export default async function VotingAdminPage() {
 
   const { data: settings } = await supabase
     .from("event_settings")
-    .select("phase")
+    .select("voting_open")
     .single();
-  const phase = (settings?.phase ?? "signup") as EventPhase;
+
+  const { data: projects } = await supabase
+    .from("projects")
+    .select("id, title, audience_votes_manual, teams(name)")
+    .order("submitted_at");
+
+  const rows =
+    projects?.map((p) => ({
+      id: p.id,
+      team: (p.teams as unknown as { name: string } | null)?.name ?? "",
+      title: p.title,
+      audience: p.audience_votes_manual ?? 0,
+    })) ?? [];
 
   const { data: rankings } = await supabase
     .from("rankings")
@@ -43,46 +46,48 @@ export default async function VotingAdminPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-bold">투표 관리</h1>
       <p className="mt-1 text-[var(--muted)]">
-        현재 단계 · <b>{PHASE_LABEL[phase]}</b>
+        온라인 투표를 열고 닫고, 관객 득표를 입력하면 집계가 즉시 반영됩니다.
       </p>
 
-      <div className="card mt-6">
-        <h2 className="mb-1 font-bold">대회 단계 전환</h2>
-        <p className="mb-3 text-sm text-[var(--muted)]">
-          투표는 <b className="text-vote">투표 진행</b> 단계에서만 열립니다.
-        </p>
-        <PhaseControl current={phase} phases={PHASES} />
+      <div className="mt-6">
+        <VotingControls votingOpen={settings?.voting_open ?? false} rows={rows} />
       </div>
 
       <div className="card mt-4">
-        <h2 className="mb-3 font-bold">실시간 투표 집계</h2>
+        <h2 className="mb-3 font-bold">실시간 집계</h2>
         {rankings && rankings.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[420px] text-sm">
+            <table className="w-full min-w-[520px] text-sm">
               <thead>
                 <tr className="border-b border-[var(--line)] text-left text-xs uppercase tracking-wider text-[var(--muted)]">
-                  <th className="py-2">팀 / 작품</th>
-                  <th className="py-2 text-right">팀 투표</th>
-                  <th className="py-2 text-right">관객 투표</th>
+                  <th className="py-2">순위 / 팀</th>
+                  <th className="py-2 text-right">심사</th>
+                  <th className="py-2 text-right">팀표</th>
+                  <th className="py-2 text-right">관객</th>
+                  <th className="py-2 text-right">종합</th>
                 </tr>
               </thead>
               <tbody>
-                {rankings.map((r) => (
+                {rankings.map((r, i) => (
                   <tr
                     key={r.project_id}
                     className="border-b border-[var(--line)] last:border-0"
                   >
                     <td className="py-2">
-                      <div className="font-medium">{r.team_name}</div>
-                      <div className="text-xs text-[var(--muted)]">
-                        {r.title}
-                      </div>
+                      <span className="mr-2 font-bold">{i + 1}</span>
+                      {r.team_name}
+                    </td>
+                    <td className="py-2 text-right tabular-nums">
+                      {r.judge_score}
                     </td>
                     <td className="py-2 text-right tabular-nums">
                       {r.team_votes}
                     </td>
                     <td className="py-2 text-right tabular-nums">
                       {r.audience_votes}
+                    </td>
+                    <td className="py-2 text-right font-bold tabular-nums text-vote">
+                      {r.final_score}
                     </td>
                   </tr>
                 ))}
@@ -91,7 +96,7 @@ export default async function VotingAdminPage() {
           </div>
         ) : (
           <p className="text-sm text-[var(--muted)]">
-            아직 집계할 투표가 없습니다.
+            아직 집계할 데이터가 없습니다.
           </p>
         )}
       </div>
