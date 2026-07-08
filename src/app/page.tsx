@@ -4,7 +4,6 @@ import { PHASE_LABEL, type EventPhase } from "@/lib/types";
 import { LogoMarquee } from "@/components/LogoMarquee";
 import { Reveal } from "@/components/Reveal";
 import { RevealGroup } from "@/components/RevealGroup";
-import { PinnedHero } from "@/components/PinnedHero";
 
 // TODO: 실제 구글 신청 폼 링크로 교체하세요
 const APPLY_FORM_URL = "#";
@@ -14,12 +13,6 @@ const THEMES = [
   { icon: "🏪", t: "시장 상권 활성화", en: "Local Commerce", d: "소상공인과 주민을 디지털로 연결해 골목상권·전통시장의 경쟁력 강화" },
   { icon: "📚", t: "교육 문제 해결·지원", en: "Education", d: "교육 격차 해소, 청소년·주민 맞춤 교육 인프라 및 멘토링 매칭" },
   { icon: "🚦", t: "교통 문제", en: "Mobility", d: "상습 정체·주차난·대중교통 접근성을 데이터와 기술로 개선" },
-];
-
-const GOALS = [
-  { n: "01", t: "실효성 있는 지역 맞춤형 솔루션 개발", d: "탄소중립·상권·교육·교통 4개 분야에서 월계동에 실제로 쓰이는 디지털 솔루션을 만듭니다." },
-  { n: "02", t: "지역사회 참여 및 소통의 장 마련", d: "대학생·개발자·기획자 등 청년 인재가 주민과 상생하는 소통 창구를 마련합니다." },
-  { n: "03", t: "실제 서비스로의 발전 및 실행력 확보", d: "우수 결과물은 지역 서비스·지자체 정책 연계·오픈소스로 발전시켜 지속가능한 실행력을 갖춥니다." },
 ];
 
 const SCHEDULE = [
@@ -39,81 +32,51 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-24">
-      {/* ===== 화면 고정 + 제자리 크로스페이드 히어로 (제목→목적→목표) ===== */}
-      <PinnedHero bgSrc="/campus.jpg">
-        {/* 패널 1 — 타이틀 */}
-        <div className="hero-in flex flex-col items-center gap-5 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
-            <span className="h-2 w-2 rounded-full bg-vote" />
-            현재 단계 · {PHASE_LABEL[phase]}
-          </span>
-          <h1 className="text-5xl font-black leading-none tracking-tight sm:text-7xl">
-            2026
-            <br />
-            <span
-              className="text-transparent"
-              style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.9)" }}
-            >
-              HACKATHON
+      {/* ===== 히어로 + 하단 마퀴 ===== */}
+      <div>
+        <section className="bleed relative -mt-8 flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-5 text-center sm:min-h-[640px]">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('/campus.jpg')" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/55 to-black/70" />
+
+          <div className="hero-in relative flex flex-col items-center gap-5 text-white">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-vote" />
+              현재 단계 · {PHASE_LABEL[phase]}
             </span>
-          </h1>
-          <p className="max-w-xl text-lg font-medium text-white/90 sm:text-xl">
-            기술을 통해 월계동의 내일을 그리다
-          </p>
-          <div className="mt-2 flex flex-wrap justify-center gap-3">
-            <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary">
-              참가 신청하기
-            </a>
-            <Link
-              href="/schedule"
-              className="btn inline-flex border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
-            >
-              일정 보기
-            </Link>
-          </div>
-        </div>
-
-        {/* 패널 2 — 목적 */}
-        <div className="text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[#8bb4ff]">
-            Purpose
-          </p>
-          <h2 className="mt-2 text-3xl font-bold sm:text-4xl">해커톤의 목적</h2>
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-white/85">
-            월계동 지역사회가 직면한 실제 현안을 주민과 청년의 시각에서 발굴하고,
-            <br />
-            혁신적인 웹/애플리케이션 기술로 해결합니다. 단순한 아이디어에 그치지 않고
-            <br />
-            <b className="text-white">지역 맞춤형 디지털 솔루션</b>을 개발해 주민의 삶의 질을 향상시키고,
-            <br />
-            지속 가능한 월계동 발전 모델을 구축합니다.
-          </p>
-        </div>
-
-        {/* 패널 3 — 목표 */}
-        <div className="w-full max-w-5xl">
-          <p className="text-center text-xs font-semibold uppercase tracking-widest text-[#8bb4ff]">
-            Goals
-          </p>
-          <h2 className="mt-2 text-center text-3xl font-bold sm:text-4xl">
-            해커톤의 목표
-          </h2>
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
-            {GOALS.map((g) => (
-              <div
-                key={g.n}
-                className="rounded-2xl border border-white/15 bg-white/10 p-6 backdrop-blur"
+            <h1 className="text-5xl font-black leading-none tracking-tight sm:text-7xl">
+              2026
+              <br />
+              <span
+                className="text-transparent"
+                style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.9)" }}
               >
-                <div className="text-sm font-semibold text-[#8bb4ff]">{g.n}</div>
-                <h3 className="mt-2 font-bold">{g.t}</h3>
-                <p className="mt-2 text-sm text-white/75">{g.d}</p>
-              </div>
-            ))}
+                HACKATHON
+              </span>
+            </h1>
+            <p className="max-w-xl text-lg font-medium text-white/90 sm:text-xl">
+              기술을 통해 월계동의 내일을 그리다
+            </p>
+            <div className="mt-2 flex flex-wrap justify-center gap-3">
+              <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary">
+                참가 신청하기
+              </a>
+              <Link
+                href="/schedule"
+                className="btn inline-flex border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
+              >
+                일정 보기
+              </Link>
+            </div>
           </div>
-        </div>
-      </PinnedHero>
 
-      <div className="-mt-24">
+          <div className="scroll-cue absolute bottom-6 text-white/70">
+            <span className="text-2xl">⌄</span>
+          </div>
+        </section>
+
         <LogoMarquee />
       </div>
 
