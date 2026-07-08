@@ -69,6 +69,12 @@ export default async function Home() {
               >
                 일정 보기
               </Link>
+              <Link
+                href="/gallery"
+                className="btn inline-flex border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
+              >
+                제출작 보기
+              </Link>
             </div>
           </div>
 
