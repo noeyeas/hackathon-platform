@@ -213,9 +213,6 @@ export default async function Home() {
               Contact
             </p>
             <h2 className="mt-1 text-3xl font-bold">문의하기</h2>
-            <p className="mt-3 text-white/70">
-              궁금한 점은 아래 연락처로 문의 주시면 안내해 드립니다.
-            </p>
             <div className="mt-6">
               <p className="text-sm text-white/60">담당자</p>
               <p className="mt-1 text-2xl font-bold">김세연</p>
