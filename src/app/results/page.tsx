@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Ranking, EventPhase } from "@/lib/types";
+import { SCORE_WEIGHTS, type Ranking, type EventPhase } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -8,10 +8,10 @@ export default async function ResultsPage() {
 
   const { data: settings } = await supabase
     .from("event_settings")
-    .select("phase, weights")
+    .select("phase")
     .single();
   const phase = (settings?.phase ?? "signup") as EventPhase;
-  const weights = settings?.weights ?? { judge: 0.5, team: 0.25, audience: 0.25 };
+  const weights = SCORE_WEIGHTS;
 
   const { data: rankings } = await supabase
     .from("rankings")

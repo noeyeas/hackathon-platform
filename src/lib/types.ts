@@ -48,6 +48,13 @@ export type Ranking = {
   final_score: number;
 };
 
+// 종합 점수 가중치 (심사 / 팀 상호 / 주민) — 합이 1이 되도록
+export const SCORE_WEIGHTS = {
+  judge: 0.5,
+  team: 0.25,
+  audience: 0.25,
+} as const;
+
 export const PHASE_LABEL: Record<EventPhase, string> = {
   signup: "참가 신청",
   team_building: "팀 빌딩",
