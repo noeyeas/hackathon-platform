@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { formatDateTime } from "@/lib/format";
 import { LikeButton } from "@/components/LikeButton";
+import { CommentForm, DeleteCommentButton } from "@/components/CommentBox";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +47,27 @@ export default async function ProjectDetailPage({
     (p.project_likes as unknown as { count: number }[])?.[0]?.count ?? 0;
 
   const embed = p.video_url ? youtubeEmbed(p.video_url) : null;
+
+  // 로그인 사용자 + 권한(운영진 여부)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let isAdmin = false;
+  if (user) {
+    const { data: me } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isAdmin = me?.role === "admin";
+  }
+
+  // 댓글 (최신순)
+  const { data: comments } = await supabase
+    .from("project_comments")
+    .select("id, body, created_at, user_id, users(name, avatar_url)")
+    .eq("project_id", id)
+    .order("created_at", { ascending: false });
 
   const links = [
     { url: p.repo_url, label: "GitHub", icon: "💻" },
@@ -113,6 +136,79 @@ export default async function ProjectDetailPage({
           투표하러 가기
         </Link>
       </div>
+
+      {/* ===== 댓글 ===== */}
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-bold">
+          💬 댓글 {comments?.length ?? 0}
+        </h2>
+
+        {user ? (
+          <CommentForm projectId={p.id} />
+        ) : (
+          <div className="card flex items-center justify-between">
+            <span className="text-sm text-[var(--muted)]">
+              댓글은 로그인 후 작성할 수 있어요.
+            </span>
+            <Link href="/login" className="btn-primary">
+              로그인
+            </Link>
+          </div>
+        )}
+
+        <ul className="mt-6 flex flex-col gap-4">
+          {!comments?.length ? (
+            <li className="text-sm text-[var(--muted)]">
+              아직 댓글이 없습니다. 첫 응원을 남겨보세요!
+            </li>
+          ) : (
+            comments.map((c) => {
+              const author = c.users as unknown as {
+                name: string | null;
+                avatar_url: string | null;
+              } | null;
+              const mine = user?.id === c.user_id;
+              return (
+                <li key={c.id} className="flex gap-3">
+                  <div className="flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-full bg-vote/10 text-sm font-bold text-vote">
+                    {author?.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={author.avatar_url}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      (author?.name ?? "익")[0]
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">
+                        {author?.name ?? "익명"}
+                      </span>
+                      <span className="text-xs text-[var(--muted)]">
+                        {formatDateTime(c.created_at)}
+                      </span>
+                      {(mine || isAdmin) && (
+                        <span className="ml-auto">
+                          <DeleteCommentButton
+                            commentId={c.id}
+                            projectId={p.id}
+                          />
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">
+                      {c.body}
+                    </p>
+                  </div>
+                </li>
+              );
+            })
+          )}
+        </ul>
+      </section>
     </div>
   );
 }

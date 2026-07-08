@@ -48,3 +48,50 @@ export async function setLike(
   revalidatePath("/gallery");
   return { count: count ?? 0 };
 }
+
+// 댓글 작성 — 로그인 사용자 본인 명의로만 (RLS 로 강제)
+export async function addComment(
+  projectId: string,
+  body: string
+): Promise<{ ok?: true; error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다" };
+
+  const text = body.trim();
+  if (!text) return { error: "내용을 입력하세요" };
+  if (text.length > 1000) return { error: "1000자 이내로 입력하세요" };
+
+  const { error } = await supabase.from("project_comments").insert({
+    project_id: projectId,
+    user_id: user.id,
+    body: text,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath(`/gallery/${projectId}`);
+  return { ok: true };
+}
+
+// 댓글 삭제 — 작성자 본인 또는 운영진 (RLS 로 강제)
+export async function deleteComment(
+  commentId: string,
+  projectId: string
+): Promise<{ ok?: true; error?: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다" };
+
+  const { error } = await supabase
+    .from("project_comments")
+    .delete()
+    .eq("id", commentId);
+  if (error) return { error: error.message };
+
+  revalidatePath(`/gallery/${projectId}`);
+  return { ok: true };
+}
