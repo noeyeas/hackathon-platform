@@ -20,23 +20,36 @@ async function myTeamId() {
 export async function createRecruitPost(formData: FormData) {
   const { user, teamId, supabase } = await myTeamId();
   if (!user) return { error: "로그인이 필요합니다" };
-  if (!teamId) return { error: "먼저 팀을 만들어야 합니다" };
 
   const title = String(formData.get("title") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
+  const contact = String(formData.get("contact") ?? "").trim();
   const positions = String(formData.get("positions") ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
   if (!title) return { error: "제목을 입력하세요" };
 
-  const { error } = await supabase.from("recruit_posts").insert({
-    team_id: teamId,
+  const { data: me } = await supabase
+    .from("users")
+    .select("name")
+    .eq("id", user.id)
+    .single();
+
+  const base = {
     title,
     body: body || null,
     positions,
     is_open: true,
-  });
+    author_id: user.id,
+    author_name: me?.name ?? null,
+  };
+
+  const payload = teamId
+    ? { ...base, team_id: teamId, kind: "team" }
+    : { ...base, team_id: null, kind: "individual", contact: contact || null };
+
+  const { error } = await supabase.from("recruit_posts").insert(payload);
   if (error) return { error: error.message };
 
   revalidatePath("/recruit");

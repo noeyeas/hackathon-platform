@@ -81,15 +81,19 @@ function Month({
           const isToday = today.y === y && today.m === m && today.d === d;
           const isActive = !!info?.id && info.id === activeId;
 
+          // 활성(호버 연동) 시엔 개별 셀 효과(ring/scale) 없이
+          // 배경만 진해져서 띠 전체가 한 번에 강조되게.
           let cls = "text-ink";
           if (info?.single) {
-            cls = "bg-vote font-bold text-white rounded-full";
+            cls = `bg-vote font-bold text-white rounded-full ${
+              isActive ? "ring-2 ring-vote ring-offset-1" : ""
+            }`;
           } else if (info?.rangeStart || info?.rangeEnd) {
             cls = `bg-vote font-bold text-white ${
               info.rangeStart ? "rounded-l-full" : ""
             } ${info.rangeEnd ? "rounded-r-full" : ""}`;
           } else if (info?.rangeMid) {
-            cls = "bg-vote/20 text-ink";
+            cls = isActive ? "bg-vote/50 text-ink" : "bg-vote/20 text-ink";
           } else if (isToday) {
             cls = "font-bold text-vote ring-1 ring-vote rounded-full";
           }
@@ -100,9 +104,9 @@ function Month({
               title={info?.titles.length ? info.titles.join(", ") : undefined}
               onMouseEnter={info?.id ? () => onHover(info.id!) : undefined}
               onMouseLeave={info?.id ? () => onHover(null) : undefined}
-              className={`flex aspect-square items-center justify-center text-sm transition ${cls} ${
+              className={`flex aspect-square items-center justify-center text-sm transition-colors ${cls} ${
                 info?.id ? "cursor-pointer" : ""
-              } ${isActive ? "ring-2 ring-vote ring-offset-1 scale-105" : ""}`}
+              }`}
             >
               {d}
             </div>
