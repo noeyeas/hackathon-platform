@@ -35,6 +35,26 @@ export function RemoteControl({
   const path = usePathname();
   const [hover, setHover] = useState<string | null>(null);
   const [unread, setUnread] = useState(false);
+  const [now, setNow] = useState<number | null>(null);
+
+  // 리모컨 D-day 숫자 (1분마다 갱신)
+  useEffect(() => {
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(t);
+  }, []);
+
+  // 가장 가까운 예정 마일스톤까지 남은 D-day 텍스트
+  const ddayText = (() => {
+    if (now === null || milestones.length === 0) return null;
+    const next = milestones
+      .map((m) => new Date(m.target_at).getTime() - now)
+      .filter((diff) => diff > 0)
+      .sort((a, b) => a - b)[0];
+    if (next === undefined) return "종료";
+    const d = Math.ceil(next / 86400000);
+    return d === 0 ? "D-DAY" : `D-${d}`;
+  })();
 
   const latest = notices[0]?.created_at ?? null;
 
@@ -86,7 +106,13 @@ export function RemoteControl({
                   : "text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
               }`}
             >
-              <span className="text-lg leading-none">{it.icon}</span>
+              {it.key === "dday" && ddayText ? (
+                <span className="text-sm font-extrabold leading-none tabular-nums">
+                  {ddayText}
+                </span>
+              ) : (
+                <span className="text-lg leading-none">{it.icon}</span>
+              )}
               {it.label}
               {it.badge && (
                 <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" />
