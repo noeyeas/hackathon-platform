@@ -35,14 +35,6 @@ export async function Nav() {
           🏆 해커톤
         </Link>
         <nav className="hidden items-center gap-1 text-sm sm:flex">
-          {user && (
-            <Link
-              href="/mypage"
-              className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
-            >
-              마이페이지
-            </Link>
-          )}
           {LINKS.map((l) => (
             <Link
               key={l.href}
@@ -70,13 +62,21 @@ export async function Nav() {
             </Link>
           )}
         </nav>
-        <div className="ml-auto text-sm">
+        <div className="ml-auto flex items-center gap-3 text-sm">
           {user ? (
-            <form action="/auth/signout" method="post">
-              <button className="text-[var(--muted)] hover:text-ink">
-                로그아웃
-              </button>
-            </form>
+            <>
+              <Link
+                href="/mypage"
+                className="text-[var(--muted)] hover:text-ink"
+              >
+                마이페이지
+              </Link>
+              <form action="/auth/signout" method="post">
+                <button className="text-[var(--muted)] hover:text-ink">
+                  로그아웃
+                </button>
+              </form>
+            </>
           ) : (
             <Link href="/login" className="btn-primary">
               로그인
