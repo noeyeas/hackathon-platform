@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PHASE_LABEL, type EventPhase } from "@/lib/types";
-import { InfoModals } from "@/components/InfoModals";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -9,24 +8,6 @@ export default async function Home() {
     .from("event_settings")
     .select("name, phase")
     .single();
-
-  const { data: milestones } = await supabase
-    .from("milestones")
-    .select("id, label, target_at")
-    .order("target_at", { ascending: true });
-
-  const { data: notices } = await supabase
-    .from("announcements")
-    .select("id, title, body, pinned, created_at")
-    .order("pinned", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(5);
-
-  const { data: schedule } = await supabase
-    .from("schedule_items")
-    .select("id, time_label, starts_at, title")
-    .order("starts_at", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: true });
 
   const phase = (settings?.phase ?? "signup") as EventPhase;
 
@@ -54,13 +35,6 @@ export default async function Home() {
             제출작 둘러보기
           </Link>
         </div>
-
-        {/* 공지·일정·D-day 팝업 트리거 */}
-        <InfoModals
-          milestones={milestones ?? []}
-          notices={notices ?? []}
-          schedule={schedule ?? []}
-        />
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
