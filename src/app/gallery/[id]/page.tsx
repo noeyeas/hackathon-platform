@@ -69,11 +69,13 @@ export default async function ProjectDetailPage({
     .eq("project_id", id)
     .order("created_at", { ascending: false });
 
+  // PDF 참고자료는 화면에 임베드, 그 외(옛 링크)는 칩 링크로
+  const isPdfDeck = !!p.deck_url && /\.pdf(\?|#|$)/i.test(p.deck_url);
   const links = [
     { url: p.repo_url, label: "GitHub", icon: "💻" },
     { url: p.demo_url, label: "데모", icon: "🔗" },
     { url: p.video_url, label: "영상", icon: "🎬" },
-    { url: p.deck_url, label: "참고자료", icon: "📑" },
+    { url: isPdfDeck ? null : p.deck_url, label: "참고자료", icon: "📑" },
   ].filter((l) => l.url);
 
   return (
@@ -112,6 +114,31 @@ export default async function ProjectDetailPage({
       <div className="card mt-6 whitespace-pre-wrap leading-relaxed">
         {p.description?.trim() || "설명이 없습니다."}
       </div>
+
+      {isPdfDeck && (
+        <section className="mt-6">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-[var(--muted)]">
+              📑 참고자료
+            </h2>
+            <a
+              href={p.deck_url!}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-vote hover:underline"
+            >
+              새 탭에서 열기 ↗
+            </a>
+          </div>
+          <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg)]">
+            <iframe
+              src={`${p.deck_url}#view=FitH`}
+              title={`${p.title} 참고자료`}
+              className="h-[80vh] w-full"
+            />
+          </div>
+        </section>
+      )}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
         {links.length > 0 && (
