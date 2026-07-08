@@ -111,7 +111,7 @@ export function RemoteControl({
                   <span className="text-sm font-extrabold leading-none tabular-nums">
                     {dday.text}
                   </span>
-                  <span className="text-center text-[10px] leading-tight">
+                  <span className="break-keep text-center text-[10px] leading-tight">
                     {dday.label ?? it.label}
                   </span>
                 </>
