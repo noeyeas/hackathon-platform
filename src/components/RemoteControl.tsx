@@ -44,16 +44,16 @@ export function RemoteControl({
     return () => clearInterval(t);
   }, []);
 
-  // 가장 가까운 예정 마일스톤까지 남은 D-day 텍스트
-  const ddayText = (() => {
+  // 가장 가까운 예정 마일스톤: 남은 D-day 숫자 + 그 마일스톤 이름
+  const dday = (() => {
     if (now === null || milestones.length === 0) return null;
     const next = milestones
-      .map((m) => new Date(m.target_at).getTime() - now)
-      .filter((diff) => diff > 0)
-      .sort((a, b) => a - b)[0];
-    if (next === undefined) return "종료";
-    const d = Math.ceil(next / 86400000);
-    return d === 0 ? "D-DAY" : `D-${d}`;
+      .map((m) => ({ m, diff: new Date(m.target_at).getTime() - now }))
+      .filter((x) => x.diff > 0)
+      .sort((a, b) => a.diff - b.diff)[0];
+    if (!next) return { text: "종료", label: null };
+    const d = Math.ceil(next.diff / 86400000);
+    return { text: d === 0 ? "D-DAY" : `D-${d}`, label: next.m.label };
   })();
 
   const latest = notices[0]?.created_at ?? null;
@@ -106,14 +106,21 @@ export function RemoteControl({
                   : "text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
               }`}
             >
-              {it.key === "dday" && ddayText ? (
-                <span className="text-sm font-extrabold leading-none tabular-nums">
-                  {ddayText}
-                </span>
+              {it.key === "dday" && dday ? (
+                <>
+                  <span className="text-sm font-extrabold leading-none tabular-nums">
+                    {dday.text}
+                  </span>
+                  <span className="text-center text-[10px] leading-tight">
+                    {dday.label ?? it.label}
+                  </span>
+                </>
               ) : (
-                <span className="text-lg leading-none">{it.icon}</span>
+                <>
+                  <span className="text-lg leading-none">{it.icon}</span>
+                  {it.label}
+                </>
               )}
-              {it.label}
               {it.badge && (
                 <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" />
               )}
