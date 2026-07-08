@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f4f5f8;
+  --surface: #ffffff;
+  --ink: #1b1e26;
+  --muted: #6b7180;
+  --line: #dde0e7;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic",
+    "Apple SD Gothic Neo", sans-serif;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5
+      text-sm font-semibold transition disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-vote text-white hover:brightness-95;
+  }
+  .btn-ghost {
+    @apply btn border border-[var(--line)] bg-white text-ink hover:bg-gray-50;
+  }
+  .card {
+    @apply rounded-2xl border border-[var(--line)] bg-white p-6 shadow-sm;
+  }
+  .input {
+    @apply w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2.5
+      text-sm outline-none focus:border-vote focus:ring-2 focus:ring-vote/20;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-ink;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-[var(--line)]
+      bg-white px-3 py-1 text-xs font-medium text-[var(--muted)];
+  }
+}
