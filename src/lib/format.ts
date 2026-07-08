@@ -9,6 +9,17 @@ export function formatDateTime(iso: string): string {
   });
 }
 
+// 일정 항목 표시용: 날짜 라벨(time_label)이 있으면 우선 사용,
+// 없으면 starts_at 을 시:분까지 포맷 (관리자 UI 로 추가한 시간 단위 일정)
+export function scheduleWhen(
+  timeLabel: string | null | undefined,
+  startsAt: string | null | undefined
+): string {
+  if (timeLabel && timeLabel.trim()) return timeLabel;
+  if (startsAt) return formatDateTime(startsAt);
+  return "—";
+}
+
 // datetime-local input 값으로 변환 (YYYY-MM-DDTHH:mm)
 export function toLocalInput(iso: string | null | undefined): string {
   if (!iso) return "";

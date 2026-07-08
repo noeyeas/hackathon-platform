@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { formatDateTime } from "@/lib/format";
+import { scheduleWhen } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +31,7 @@ export default async function SchedulePage() {
                 }`}
               >
                 <span className="font-mono text-sm font-semibold text-vote sm:w-48 sm:flex-none">
-                  {it.starts_at
-                    ? formatDateTime(it.starts_at)
-                    : (it.time_label ?? "—")}
+                  {scheduleWhen(it.time_label, it.starts_at)}
                 </span>
                 <span className="text-sm">{it.title}</span>
               </li>

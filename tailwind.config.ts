@@ -5,11 +5,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#1b1e26",
-        paper: "#f4f5f8",
+        ink: "#0f1b2d",
+        paper: "#f2f5f9",
         team: "#0e8f83",
-        admin: "#5b53d6",
-        vote: "#d9711a",
+        admin: "#1e40af",
+        vote: "#2563eb",
       },
       fontFamily: {
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],

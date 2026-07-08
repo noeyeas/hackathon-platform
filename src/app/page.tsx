@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PHASE_LABEL, type EventPhase } from "@/lib/types";
+import { LogoMarquee } from "@/components/LogoMarquee";
 
 // TODO: 실제 구글 신청 폼 링크로 교체하세요
 const APPLY_FORM_URL = "#";
@@ -25,12 +26,6 @@ const SCHEDULE = [
   { date: "9.18 – 9.19", label: "최종 발표 및 스프린트 (무박 2일)", place: "기념관 319호" },
 ];
 
-const TILES = [
-  { href: APPLY_FORM_URL, ext: true, icon: "📝", t: "참가 신청", en: "Apply", d: "모집 8.24 – 9.2 · 2~4인 팀", dark: true },
-  { href: "/schedule", ext: false, icon: "🗓️", t: "일정 안내", en: "Schedule", d: "모집부터 최종 발표까지 전체 일정" },
-  { href: "/notice", ext: false, icon: "📢", t: "공지사항", en: "Notice", d: "대회 관련 안내와 소식" },
-];
-
 export default async function Home() {
   const supabase = await createClient();
   const { data: settings } = await supabase
@@ -39,62 +34,59 @@ export default async function Home() {
     .single();
   const phase = (settings?.phase ?? "signup") as EventPhase;
 
-  const { data: notices } = await supabase
-    .from("announcements")
-    .select("id, title, body, created_at")
-    .order("pinned", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(3);
-
   return (
     <div className="flex flex-col gap-24">
-      {/* ===== HERO (풀 블리드) ===== */}
-      <section className="bleed relative -mt-8 flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-5 text-center sm:min-h-[640px]">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('/campus.jpg')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/45 to-black/75" />
+      {/* ===== 상단 마퀴 + 히어로 ===== */}
+      <div>
+        <LogoMarquee />
 
-        <div className="relative flex flex-col items-center gap-5 text-white">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
-            <span className="h-2 w-2 rounded-full bg-vote" />
-            현재 단계 · {PHASE_LABEL[phase]}
-          </span>
-          <h1 className="text-5xl font-black leading-none tracking-tight sm:text-7xl">
-            WOLGYE
-            <br />
-            <span
-              className="text-transparent"
-              style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.9)" }}
-            >
-              HACKATHON
+        <section className="bleed relative flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-5 text-center sm:min-h-[640px]">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: "url('/campus.jpg')" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/75" />
+
+          <div className="relative flex flex-col items-center gap-5 text-white">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
+              <span className="h-2 w-2 rounded-full bg-vote" />
+              현재 단계 · {PHASE_LABEL[phase]}
             </span>
-          </h1>
-          <p className="max-w-xl text-lg font-medium text-white/90 sm:text-xl">
-            기술을 통해 월계동의 내일을 그리다
-          </p>
-          <p className="max-w-lg text-sm text-white/70">
-            월계동 지역사회의 실제 현안을 청년의 시각에서 발굴하고,
-            웹/앱 기술로 해결합니다.
-          </p>
-          <div className="mt-2 flex flex-wrap justify-center gap-3">
-            <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary">
-              참가 신청하기
-            </a>
-            <Link
-              href="/schedule"
-              className="btn inline-flex border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
-            >
-              일정 보기
-            </Link>
+            <h1 className="text-5xl font-black leading-none tracking-tight sm:text-7xl">
+              2026
+              <br />
+              <span
+                className="text-transparent"
+                style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.9)" }}
+              >
+                HACKATHON
+              </span>
+            </h1>
+            <p className="max-w-xl text-lg font-medium text-white/90 sm:text-xl">
+              기술을 통해 월계동의 내일을 그리다
+            </p>
+            <p className="max-w-lg text-sm text-white/70">
+              월계동 지역사회의 실제 현안을 청년의 시각에서 발굴하고,
+              웹/앱 기술로 해결합니다.
+            </p>
+            <div className="mt-2 flex flex-wrap justify-center gap-3">
+              <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary">
+                참가 신청하기
+              </a>
+              <Link
+                href="/schedule"
+                className="btn inline-flex border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
+              >
+                일정 보기
+              </Link>
+            </div>
           </div>
-        </div>
 
-        <div className="scroll-cue absolute bottom-6 text-white/70">
-          <span className="text-2xl">⌄</span>
-        </div>
-      </section>
+          <div className="scroll-cue absolute bottom-6 text-white/70">
+            <span className="text-2xl">⌄</span>
+          </div>
+        </section>
+      </div>
 
       {/* ===== 주제 (Theme) ===== */}
       <Section eyebrow="Theme" title="해커톤 주제" desc="월계동 지역사회 문제 해결 및 발전을 위한 웹/애플리케이션 개발">
@@ -111,55 +103,6 @@ export default async function Home() {
           ))}
         </div>
       </Section>
-
-      {/* ===== 피처 타일 ===== */}
-      <section className="grid gap-4 sm:grid-cols-3">
-        {TILES.map((tile) => {
-          const inner = (
-            <>
-              <span className="text-3xl">{tile.icon}</span>
-              <div className="mt-4">
-                <h3 className="text-lg font-bold">{tile.t}</h3>
-                <p
-                  className={`font-mono text-xs uppercase tracking-wider ${
-                    tile.dark ? "text-white/60" : "text-vote"
-                  }`}
-                >
-                  {tile.en}
-                </p>
-              </div>
-              <p
-                className={`mt-2 text-sm ${
-                  tile.dark ? "text-white/70" : "text-[var(--muted)]"
-                }`}
-              >
-                {tile.d}
-              </p>
-              <span
-                className={`mt-4 inline-block text-sm font-semibold ${
-                  tile.dark ? "text-white" : "text-vote"
-                }`}
-              >
-                바로가기 →
-              </span>
-            </>
-          );
-          const cls = `flex flex-col rounded-2xl p-6 shadow-sm transition hover:-translate-y-0.5 ${
-            tile.dark
-              ? "bg-ink text-white"
-              : "border border-[var(--line)] bg-white"
-          }`;
-          return tile.ext ? (
-            <a key={tile.t} href={tile.href} target="_blank" rel="noreferrer" className={cls}>
-              {inner}
-            </a>
-          ) : (
-            <Link key={tile.t} href={tile.href} className={cls}>
-              {inner}
-            </Link>
-          );
-        })}
-      </section>
 
       {/* ===== 목적 ===== */}
       <Section eyebrow="Purpose" title="해커톤의 목적">
@@ -258,41 +201,6 @@ export default async function Home() {
         </div>
       </Section>
 
-      {/* ===== 공지사항 ===== */}
-      {notices && notices.length > 0 && (
-        <Section eyebrow="Notice" title="공지사항">
-          <div className="card !p-0">
-            <ol className="flex flex-col">
-              {notices.map((a, i) => (
-                <li
-                  key={a.id}
-                  className={i !== notices.length - 1 ? "border-b border-[var(--line)]" : ""}
-                >
-                  <Link
-                    href="/notice"
-                    className="flex items-center gap-4 px-5 py-4 transition hover:bg-gray-50"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold">{a.title}</p>
-                      {a.body && (
-                        <p className="truncate text-sm text-[var(--muted)]">{a.body}</p>
-                      )}
-                    </div>
-                    <span className="whitespace-nowrap font-mono text-xs text-[var(--muted)]">
-                      {new Date(a.created_at).toLocaleDateString("ko-KR")}
-                    </span>
-                    <span className="text-[var(--muted)]">→</span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          </div>
-          <Link href="/notice" className="btn-ghost mt-4 self-start">
-            더보기 +
-          </Link>
-        </Section>
-      )}
-
       {/* ===== 문의 (풀 블리드 다크) ===== */}
       <section className="bleed relative overflow-hidden bg-ink px-5 py-16 text-white">
         <div
@@ -324,48 +232,6 @@ export default async function Home() {
             <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary w-full">
               참가 신청하기
             </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ===== 주관 · 후원 ===== */}
-      <section className="flex flex-col gap-5">
-        <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-widest text-vote">
-            Hosts &amp; Sponsors
-          </p>
-          <h2 className="mt-1 text-2xl font-bold sm:text-3xl">주관 · 후원</h2>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="card">
-            <p className="text-sm font-semibold text-[var(--muted)]">주관</p>
-            <div className="mt-3 flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/council.jpg" alt="이음" className="h-12 w-12 flex-none rounded-xl object-cover" />
-                <span className="font-semibold">광운대학교 총학생회 이음</span>
-              </div>
-              <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/hasung.jpg" alt="하성" className="h-12 w-12 flex-none rounded-xl object-cover" />
-                <span className="font-semibold">인공지능융합대학 학생회 하성</span>
-              </div>
-            </div>
-          </div>
-          <div className="card">
-            <p className="text-sm font-semibold text-[var(--muted)]">후원</p>
-            <div className="mt-3 flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/kakaopay.jpeg" alt="카카오페이" className="h-8 flex-none object-contain" />
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-gray-100 text-[10px] font-bold text-[var(--muted)]">
-                  월계동
-                </div>
-                <span className="font-semibold">월계동 주민단체</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>

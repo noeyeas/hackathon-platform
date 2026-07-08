@@ -20,3 +20,4 @@ create policy milestones_admin_write on milestones for all
 
 -- 일정 항목: 실제 날짜+시간 컬럼 (기존 time_label 은 유지, 표시 시 fallback)
 alter table schedule_items add column if not exists starts_at timestamptz;
+;

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm } from "@/components/ActionForm";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, scheduleWhen } from "@/lib/format";
 import { addMilestone, addScheduleItem } from "./actions";
 import { DeleteRow } from "./DeleteRow";
 
@@ -107,7 +107,7 @@ export default async function AdminSchedulePage() {
                 key={it.id}
                 id={it.id}
                 kind="schedule"
-                left={it.starts_at ? formatDateTime(it.starts_at) : (it.time_label ?? "—")}
+                left={scheduleWhen(it.time_label, it.starts_at)}
                 right={it.title}
               />
             ))}
