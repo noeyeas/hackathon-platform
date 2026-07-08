@@ -16,6 +16,9 @@ function hash(str: string): number {
 
 export default async function GalleryPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { data } = await supabase
     .from("projects")
     .select(
@@ -38,9 +41,11 @@ export default async function GalleryPage() {
             총 {projects?.length ?? 0}개 팀이 제출했습니다.
           </p>
         </div>
-        <Link href="/vote" className="btn-primary">
-          투표하기
-        </Link>
+        {user && (
+          <Link href="/vote" className="btn-primary">
+            투표하기
+          </Link>
+        )}
       </div>
 
       {!projects?.length ? (
