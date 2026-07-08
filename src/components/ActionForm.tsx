@@ -11,12 +11,14 @@ export function ActionForm({
   submitLabel,
   className = "",
   successMessage,
+  onSuccess,
 }: {
   action: (formData: FormData) => Promise<Result>;
   children: React.ReactNode;
   submitLabel: string;
   className?: string;
   successMessage?: string;
+  onSuccess?: () => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +31,10 @@ export function ActionForm({
     startTransition(async () => {
       const res = await action(fd);
       if (res && "error" in res && res.error) setError(res.error);
-      else setDone(true);
+      else {
+        setDone(true);
+        onSuccess?.();
+      }
     });
   }
 

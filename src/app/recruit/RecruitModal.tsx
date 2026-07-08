@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ActionForm } from "@/components/ActionForm";
 import { createRecruitPost } from "./actions";
 
@@ -12,6 +13,7 @@ export function RecruitModal({
   loggedIn: boolean;
   hasTeam: boolean;
 }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<"team" | "individual">(
     hasTeam ? "team" : "individual"
@@ -80,7 +82,10 @@ export function RecruitModal({
             <ActionForm
               action={createRecruitPost}
               submitLabel="등록하기"
-              successMessage="등록했습니다. 목록을 새로고침하세요."
+              onSuccess={() => {
+                setOpen(false);
+                router.refresh();
+              }}
             >
               <input type="hidden" name="kind" value={kind} />
 
