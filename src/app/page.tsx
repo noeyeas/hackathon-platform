@@ -9,6 +9,13 @@ export default async function Home() {
     .select("name, phase")
     .single();
 
+  const { data: notices } = await supabase
+    .from("announcements")
+    .select("id, title, body, pinned, created_at")
+    .order("pinned", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(3);
+
   const phase = (settings?.phase ?? "signup") as EventPhase;
 
   return (
@@ -36,6 +43,42 @@ export default async function Home() {
           </Link>
         </div>
       </section>
+
+      {notices && notices.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold">📢 공지사항</h2>
+            <Link href="/notice" className="text-sm text-[var(--muted)] hover:text-ink">
+              전체 보기 →
+            </Link>
+          </div>
+          {notices.map((a) => (
+            <Link
+              key={a.id}
+              href="/notice"
+              className="card flex items-start gap-3 !py-4 transition hover:border-vote"
+            >
+              {a.pinned && (
+                <span className="chip border-vote text-vote">고정</span>
+              )}
+              <div className="min-w-0">
+                <h3 className="font-semibold">{a.title}</h3>
+                {a.body && (
+                  <p className="mt-0.5 line-clamp-1 text-sm text-[var(--muted)]">
+                    {a.body}
+                  </p>
+                )}
+              </div>
+              <span className="ml-auto whitespace-nowrap font-mono text-xs text-[var(--muted)]">
+                {new Date(a.created_at).toLocaleDateString("ko-KR", {
+                  month: "numeric",
+                  day: "numeric",
+                })}
+              </span>
+            </Link>
+          ))}
+        </section>
+      )}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[

@@ -32,6 +32,7 @@ export async function createAnnouncement(formData: FormData) {
 
   revalidatePath("/admin/announcements");
   revalidatePath("/notice");
+  revalidatePath("/");
   return { ok: true };
 }
 
@@ -43,5 +44,6 @@ export async function deleteAnnouncement(id: string) {
 
   revalidatePath("/admin/announcements");
   revalidatePath("/notice");
+  revalidatePath("/");
   return { ok: true };
 }
