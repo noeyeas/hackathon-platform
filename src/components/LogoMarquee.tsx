@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 
-type Org = { name: string; role: string; img?: string };
+type Org = { name: string; role: string; img?: string; contain?: boolean };
 
 const ORGS: Org[] = [
   { name: "광운대학교 총학생회 이음", role: "주관", img: "/council.jpg" },
   { name: "인공지능융합대학 학생회 하성", role: "주관", img: "/hasung.jpg" },
-  { name: "카카오페이", role: "후원", img: "/kakaopay.jpeg" },
+  { name: "카카오페이", role: "후원", img: "/kakaopay.jpeg", contain: true },
   { name: "월계동 주민단체", role: "후원" },
 ];
 
@@ -16,7 +16,11 @@ function Item({ org }: { org: Org }) {
         <img
           src={org.img}
           alt={org.name}
-          className="h-5 w-5 flex-none rounded object-cover"
+          className={
+            org.contain
+              ? "h-3.5 w-auto flex-none object-contain"
+              : "h-5 w-5 flex-none rounded object-cover"
+          }
         />
       ) : (
         <div className="flex h-5 w-5 flex-none items-center justify-center rounded bg-gray-100 text-[7px] font-bold text-[var(--muted)]">
