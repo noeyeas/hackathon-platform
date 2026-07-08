@@ -22,14 +22,14 @@ function Item({ org }: { org: Org }) {
           title={`${org.role} · ${org.name}`}
           className={
             org.contain
-              ? `${reveal} h-6 w-auto object-contain`
-              : `${reveal} h-11 w-11 rounded-full object-cover`
+              ? `${reveal} h-4 w-auto object-contain`
+              : `${reveal} h-7 w-7 rounded-full object-cover`
           }
         />
       ) : (
         <span
           title={`${org.role} · ${org.name}`}
-          className={`${reveal} whitespace-nowrap text-base font-bold tracking-tight text-ink`}
+          className={`${reveal} whitespace-nowrap text-sm font-bold tracking-tight text-ink`}
         >
           {org.name}
         </span>
@@ -45,7 +45,7 @@ export function LogoMarquee() {
   const base = [...ORGS, ...ORGS, ...ORGS];
   const track = [...base, ...base];
   return (
-    <div className="bleed border-y border-[var(--line)] bg-white py-6">
+    <div className="bleed border-y border-[var(--line)] bg-white py-[1.125rem]">
       <div className="marquee-mask overflow-hidden">
         <div className="flex w-max animate-marquee items-center">
           {track.map((org, i) => (
