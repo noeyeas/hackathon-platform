@@ -141,8 +141,6 @@ export function ScheduleCalendar({
     return days.get(d)!;
   };
 
-  const ranges: { id: string; title: string; label: string }[] = [];
-
   for (const it of dated) {
     const s = seoulYMD(new Date(it.starts_at!));
     const e = it.ends_at ? seoulYMD(new Date(it.ends_at)) : null;
@@ -167,11 +165,6 @@ export function ScheduleCalendar({
       else if (cur === endMs) info.rangeEnd = true;
       else info.rangeMid = true;
     }
-    ranges.push({
-      id: it.id,
-      title: it.title,
-      label: `${s.m}월 ${s.d}일 ~ ${e!.m}월 ${e!.d}일`,
-    });
   }
 
   const sorted = [...months.values()].sort((a, b) => a.y - b.y || a.m - b.m);
@@ -190,28 +183,6 @@ export function ScheduleCalendar({
           onHover={onHover}
         />
       ))}
-
-      <div className="flex flex-col gap-2 border-t border-[var(--line)] pt-3 text-xs text-[var(--muted)]">
-        {ranges.map((r) => (
-          <div
-            key={r.id}
-            onMouseEnter={() => onHover(r.id)}
-            onMouseLeave={() => onHover(null)}
-            className={`flex cursor-pointer items-center gap-2 rounded px-1 py-0.5 ${
-              activeId === r.id ? "bg-vote/10" : ""
-            }`}
-          >
-            <span className="inline-block h-2.5 w-6 rounded-full bg-vote/70" />
-            <span>
-              <b className="text-ink">{r.title}</b> · {r.label}
-            </span>
-          </div>
-        ))}
-        <div className="flex items-center gap-2 px-1">
-          <span className="inline-block h-3 w-3 rounded-full bg-vote" />
-          일정 있는 날
-        </div>
-      </div>
     </div>
   );
 }
