@@ -45,6 +45,7 @@ export async function createRecruitPost(formData: FormData) {
     is_open: true,
     author_id: user.id,
     author_name: me?.name ?? null,
+    contact: contact || null,
   };
 
   let payload;
@@ -53,12 +54,7 @@ export async function createRecruitPost(formData: FormData) {
       return { error: "팀원을 모집하려면 먼저 팀을 만들어 주세요." };
     payload = { ...base, team_id: teamId, kind: "team" };
   } else {
-    payload = {
-      ...base,
-      team_id: null,
-      kind: "individual",
-      contact: contact || null,
-    };
+    payload = { ...base, team_id: null, kind: "individual" };
   }
 
   const { error } = await supabase.from("recruit_posts").insert(payload);

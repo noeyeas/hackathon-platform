@@ -106,16 +106,12 @@ function Row({ p }: { p: Post }) {
             className="input"
           />
 
-          {!isTeam && (
-            <>
-              <label className="label mt-2">연락 방법</label>
-              <input
-                name="contact"
-                defaultValue={p.contact ?? ""}
-                className="input"
-              />
-            </>
-          )}
+          <label className="label mt-2">연락 방법</label>
+          <input
+            name="contact"
+            defaultValue={p.contact ?? ""}
+            className="input"
+          />
 
           {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
 

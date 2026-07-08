@@ -134,28 +134,28 @@ function PostCard({ p }: { p: Post }) {
         </p>
       )}
 
-      {isTeam
-        ? team?.status !== "locked" && (
-            <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm">
-              합류하려면{" "}
-              <Link href="/team" className="font-semibold text-vote underline">
-                팀 페이지
-              </Link>
-              에서 초대 코드{" "}
-              <span className="select-all font-mono font-bold">
-                {team?.invite_code}
-              </span>{" "}
-              입력
-            </div>
-          )
-        : p.contact && (
-            <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm">
-              연락:{" "}
-              <span className="select-all font-semibold text-admin">
-                {p.contact}
-              </span>
-            </div>
-          )}
+      {isTeam && team?.status !== "locked" && (
+        <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm">
+          합류하려면{" "}
+          <Link href="/team" className="font-semibold text-vote underline">
+            팀 페이지
+          </Link>
+          에서 초대 코드{" "}
+          <span className="select-all font-mono font-bold">
+            {team?.invite_code}
+          </span>{" "}
+          입력
+        </div>
+      )}
+
+      {p.contact && (
+        <div className="mt-2 rounded-lg bg-gray-50 p-3 text-sm">
+          연락:{" "}
+          <span className="select-all font-semibold text-admin">
+            {p.contact}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
