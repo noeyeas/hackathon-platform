@@ -224,11 +224,18 @@ export default async function Home() {
               </a>
             </div>
           </div>
-          <div className="flex flex-col justify-center gap-4 rounded-2xl bg-white/5 p-6 backdrop-blur">
-            <div>
-              <p className="text-sm text-white/60">참가 신청 기간</p>
-              <p className="mt-1 text-2xl font-bold">8.24 – 9.2</p>
-            </div>
+          <div className="flex flex-col justify-center gap-3 rounded-2xl bg-white/5 p-6 backdrop-blur">
+            <p className="text-sm text-white/70">
+              궁금한 점은 카카오톡으로 편하게 문의하세요.
+            </p>
+            <a
+              href="https://open.kakao.com/o/sJcelIai"
+              target="_blank"
+              rel="noreferrer"
+              className="btn w-full bg-[#FEE500] text-[#3C1E1E] hover:brightness-95"
+            >
+              💬 하성 1:1 오픈채팅 문의
+            </a>
             <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary w-full">
               참가 신청하기
             </a>
