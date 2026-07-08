@@ -1,7 +1,11 @@
+"use client";
+
 // 일정이 있는 달들을 미니 달력으로 보여주고, 일정 있는 날/기간을 표시.
-// 서버 컴포넌트 — 한국시간(Asia/Seoul) 기준으로 날짜 계산.
+// 날짜에 마우스를 올리면 대응하는 일정 id 를 onHover 로 알려 목록을 하이라이트.
+// 한국시간(Asia/Seoul) 기준으로 날짜 계산.
 
 type Item = {
+  id: string;
   starts_at: string | null;
   ends_at?: string | null;
   title: string;
@@ -20,9 +24,9 @@ function seoulYMD(d: Date) {
   return { y: get("year"), m: get("month"), d: get("day") };
 }
 
-// 하루 셀 상태: 단일 일정 / 기간의 시작·중간·끝
 type DayInfo = {
   titles: string[];
+  id?: string; // 대응하는 일정 (하이라이트 연동용)
   single?: boolean;
   rangeStart?: boolean;
   rangeMid?: boolean;
@@ -34,11 +38,15 @@ function Month({
   m,
   days,
   today,
+  activeId,
+  onHover,
 }: {
   y: number;
   m: number; // 1~12
   days: Map<number, DayInfo>;
   today: { y: number; m: number; d: number };
+  activeId: string | null;
+  onHover: (id: string | null) => void;
 }) {
   const firstWeekday = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
   const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
@@ -71,8 +79,8 @@ function Month({
           if (d === null) return <span key={`b${i}`} />;
           const info = days.get(d);
           const isToday = today.y === y && today.m === m && today.d === d;
+          const isActive = !!info?.id && info.id === activeId;
 
-          // 스타일 결정
           let cls = "text-ink";
           if (info?.single) {
             cls = "bg-vote font-bold text-white rounded-full";
@@ -90,7 +98,11 @@ function Month({
             <div
               key={d}
               title={info?.titles.length ? info.titles.join(", ") : undefined}
-              className={`flex aspect-square items-center justify-center text-sm ${cls}`}
+              onMouseEnter={info?.id ? () => onHover(info.id!) : undefined}
+              onMouseLeave={info?.id ? () => onHover(null) : undefined}
+              className={`flex aspect-square items-center justify-center text-sm transition ${cls} ${
+                info?.id ? "cursor-pointer" : ""
+              } ${isActive ? "ring-2 ring-vote ring-offset-1 scale-105" : ""}`}
             >
               {d}
             </div>
@@ -101,7 +113,15 @@ function Month({
   );
 }
 
-export function ScheduleCalendar({ items }: { items: Item[] }) {
+export function ScheduleCalendar({
+  items,
+  activeId,
+  onHover,
+}: {
+  items: Item[];
+  activeId: string | null;
+  onHover: (id: string | null) => void;
+}) {
   const dated = items.filter((it) => it.starts_at);
   if (!dated.length) return null;
 
@@ -117,34 +137,34 @@ export function ScheduleCalendar({ items }: { items: Item[] }) {
     return days.get(d)!;
   };
 
-  // 기간 일정 범례용
-  const ranges: { title: string; label: string }[] = [];
+  const ranges: { id: string; title: string; label: string }[] = [];
 
   for (const it of dated) {
     const s = seoulYMD(new Date(it.starts_at!));
     const e = it.ends_at ? seoulYMD(new Date(it.ends_at)) : null;
-    const isRange =
-      !!e && (e.y !== s.y || e.m !== s.m || e.d !== s.d);
+    const isRange = !!e && (e.y !== s.y || e.m !== s.m || e.d !== s.d);
 
     if (!isRange) {
       const info = ensureDay(s.y, s.m, s.d);
       info.single = true;
+      info.id = it.id;
       info.titles.push(it.title);
       continue;
     }
 
-    // 시작~끝을 하루씩 순회 (정오 KST 기준, 한국은 DST 없음)
     const startMs = Date.UTC(s.y, s.m - 1, s.d, 3);
     const endMs = Date.UTC(e!.y, e!.m - 1, e!.d, 3);
     for (let cur = startMs; cur <= endMs; cur += 86400000) {
       const { y, m, d } = seoulYMD(new Date(cur));
       const info = ensureDay(y, m, d);
+      info.id = it.id;
       info.titles.push(it.title);
       if (cur === startMs) info.rangeStart = true;
       else if (cur === endMs) info.rangeEnd = true;
       else info.rangeMid = true;
     }
     ranges.push({
+      id: it.id,
       title: it.title,
       label: `${s.m}월 ${s.d}일 ~ ${e!.m}월 ${e!.d}일`,
     });
@@ -162,19 +182,28 @@ export function ScheduleCalendar({ items }: { items: Item[] }) {
           m={mo.m}
           days={mo.days}
           today={today}
+          activeId={activeId}
+          onHover={onHover}
         />
       ))}
 
       <div className="flex flex-col gap-2 border-t border-[var(--line)] pt-3 text-xs text-[var(--muted)]">
         {ranges.map((r) => (
-          <div key={r.title} className="flex items-center gap-2">
+          <div
+            key={r.id}
+            onMouseEnter={() => onHover(r.id)}
+            onMouseLeave={() => onHover(null)}
+            className={`flex cursor-pointer items-center gap-2 rounded px-1 py-0.5 ${
+              activeId === r.id ? "bg-vote/10" : ""
+            }`}
+          >
             <span className="inline-block h-2.5 w-6 rounded-full bg-vote/70" />
             <span>
               <b className="text-ink">{r.title}</b> · {r.label}
             </span>
           </div>
         ))}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 px-1">
           <span className="inline-block h-3 w-3 rounded-full bg-vote" />
           일정 있는 날
         </div>
