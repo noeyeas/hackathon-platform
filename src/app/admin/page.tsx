@@ -77,18 +77,47 @@ export default async function AdminPage() {
         <WeightControl weights={weights} />
       </div>
 
-      <div className="card flex items-center justify-between">
-        <div>
-          <h2 className="font-bold">관객 투표 QR</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            테이블별 QR을 생성하고 인쇄용 시트로 출력합니다.
-          </p>
-        </div>
-        <Link href="/admin/qr" className="btn-primary">
-          QR 관리
-        </Link>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <AdminLink
+          href="/admin/qr"
+          title="관객 투표 QR"
+          desc="테이블별 QR 생성·인쇄"
+        />
+        <AdminLink
+          href="/admin/announcements"
+          title="공지사항"
+          desc="공지 작성·관리"
+        />
+        <AdminLink
+          href="/admin/stage"
+          title="발표 진행"
+          desc="현재 발표 팀 제어"
+        />
       </div>
     </div>
+  );
+}
+
+function AdminLink({
+  href,
+  title,
+  desc,
+}: {
+  href: string;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="card transition hover:border-admin hover:shadow-md"
+    >
+      <h2 className="font-bold">{title}</h2>
+      <p className="mt-1 text-sm text-[var(--muted)]">{desc}</p>
+      <span className="mt-3 inline-block text-sm font-medium text-admin">
+        열기 →
+      </span>
+    </Link>
   );
 }
 
