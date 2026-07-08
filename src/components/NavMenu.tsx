@@ -24,7 +24,12 @@ export function NavMenu({
   }, []);
 
   return (
-    <div ref={ref} className="relative">
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
@@ -37,17 +42,19 @@ export function NavMenu({
         </span>
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1 min-w-[140px] rounded-xl border border-[var(--line)] bg-white p-1 shadow-lg">
-          {items.map((it) => (
-            <Link
-              key={it.href}
-              href={it.href}
-              onClick={() => setOpen(false)}
-              className="block rounded-lg px-3 py-2 text-sm text-ink hover:bg-gray-100"
-            >
-              {it.label}
-            </Link>
-          ))}
+        <div className="absolute left-0 top-full z-20 pt-1">
+          <div className="min-w-[140px] rounded-xl border border-[var(--line)] bg-white p-1 shadow-lg">
+            {items.map((it) => (
+              <Link
+                key={it.href}
+                href={it.href}
+                onClick={() => setOpen(false)}
+                className="block rounded-lg px-3 py-2 text-sm text-ink hover:bg-gray-100"
+              >
+                {it.label}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>
