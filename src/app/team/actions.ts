@@ -3,41 +3,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function createTeam(formData: FormData) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "로그인이 필요합니다" };
-
-  const name = String(formData.get("name") ?? "").trim();
-  const tagline = String(formData.get("tagline") ?? "").trim();
-  if (!name) return { error: "팀 이름을 입력하세요" };
-
-  // 이미 팀이 있으면 중단
-  const { data: existing } = await supabase
-    .from("team_members")
-    .select("id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (existing) return { error: "이미 소속된 팀이 있습니다" };
-
-  const { data: team, error } = await supabase
-    .from("teams")
-    .insert({ name, tagline: tagline || null, created_by: user.id })
-    .select("id")
-    .single();
-  if (error || !team) return { error: error?.message ?? "팀 생성 실패" };
-
-  const { error: memberErr } = await supabase
-    .from("team_members")
-    .insert({ team_id: team.id, user_id: user.id, is_leader: true });
-  if (memberErr) return { error: memberErr.message };
-
-  revalidatePath("/team");
-  return { ok: true };
-}
-
 export async function joinTeam(formData: FormData) {
   const supabase = await createClient();
   const {
@@ -69,9 +34,11 @@ export async function joinTeam(formData: FormData) {
     .eq("team_id", team.id);
   if ((count ?? 0) >= 4) return { error: "팀 정원(4명)이 찼습니다" };
 
+  // 코드로 처음 합류한 사람이 자동으로 팀장이 된다.
+  const isLeader = (count ?? 0) === 0;
   const { error } = await supabase
     .from("team_members")
-    .insert({ team_id: team.id, user_id: user.id });
+    .insert({ team_id: team.id, user_id: user.id, is_leader: isLeader });
   if (error) return { error: error.message };
 
   revalidatePath("/team");

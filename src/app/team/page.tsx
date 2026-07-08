@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm } from "@/components/ActionForm";
-import { createTeam, joinTeam, lockTeam } from "./actions";
+import { joinTeam, lockTeam } from "./actions";
 
 export default async function TeamPage() {
   const supabase = await createClient();
@@ -32,30 +32,21 @@ export default async function TeamPage() {
 
   if (!membership) {
     return (
-      <div className="mx-auto grid max-w-3xl gap-5 sm:grid-cols-2">
+      <div className="mx-auto max-w-md">
         <div className="card">
-          <h2 className="text-lg font-bold">새 팀 만들기</h2>
+          <h2 className="text-lg font-bold">초대 코드로 합류</h2>
           <p className="mb-4 mt-1 text-sm text-[var(--muted)]">
-            리더가 되어 팀원을 초대하세요.
-          </p>
-          <ActionForm action={createTeam} submitLabel="팀 생성">
-            <label className="label">팀 이름</label>
-            <input name="name" required className="input" placeholder="예: 코드마법사" />
-            <label className="label mt-3">한 줄 소개</label>
-            <input name="tagline" className="input" placeholder="우리 팀을 소개해 주세요" />
-          </ActionForm>
-        </div>
-
-        <div className="card">
-          <h2 className="text-lg font-bold">기존 팀 합류</h2>
-          <p className="mb-4 mt-1 text-sm text-[var(--muted)]">
-            리더에게 받은 초대 코드를 입력하세요.
+            팀은 운영진이 선정·등록합니다. 팀장에게 받은 초대 코드를
+            입력하세요. (팀장은 운영진에게 받은 코드로 먼저 합류하면 됩니다.)
           </p>
           <ActionForm action={joinTeam} submitLabel="팀 합류">
             <label className="label">초대 코드</label>
             <input name="invite_code" required className="input font-mono" placeholder="a1b2c3d4" />
           </ActionForm>
         </div>
+        <p className="mt-4 text-center text-sm text-[var(--muted)]">
+          아직 팀 신청 전인가요? 구글폼으로 팀을 신청해 주세요.
+        </p>
       </div>
     );
   }

@@ -55,6 +55,11 @@ export default async function AdminPage() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <AdminLink
+          href="/admin/teams"
+          title="팀 등록"
+          desc="선정팀 등록·초대 코드"
+        />
+        <AdminLink
           href="/admin/voting"
           title="투표 관리"
           desc="단계 전환·실시간 집계"
