@@ -52,7 +52,7 @@ export async function Nav() {
           >
             결과
           </Link>
-          {role === "participant" && (
+          {(role === "participant" || role === "admin") && (
             <Link
               href="/vote"
               className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"

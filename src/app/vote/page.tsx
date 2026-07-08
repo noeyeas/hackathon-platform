@@ -33,11 +33,12 @@ export default async function VotePage() {
     .select("role")
     .eq("id", user.id)
     .single();
-  if (me?.role !== "participant") {
+  const isAdmin = me?.role === "admin";
+  if (me?.role !== "participant" && !isAdmin) {
     return (
       <Notice
         title="참가자 전용 페이지입니다"
-        body="팀별 채점은 참가자만 할 수 있습니다. 심사위원·운영진은 심사 화면을 이용하세요."
+        body="팀별 채점은 참가자만 할 수 있습니다. 심사위원은 심사 화면을 이용하세요."
       />
     );
   }
@@ -47,8 +48,10 @@ export default async function VotePage() {
     .select("team_id")
     .eq("user_id", user.id)
     .maybeSingle();
+  const teamId = membership?.team_id ?? null;
 
-  if (!membership) {
+  // 참가자는 팀 소속 필요, 운영자는 미리보기 허용
+  if (!teamId && !isAdmin) {
     return (
       <Notice
         title="먼저 팀에 소속되어야 합니다"
@@ -62,17 +65,20 @@ export default async function VotePage() {
     .select("id, name, max_score, weight, description")
     .order("sort");
 
-  const { data: projects } = await supabase
+  let projectsQuery = supabase
     .from("projects")
     .select("id, title, team_id, teams(name)")
-    .neq("team_id", membership.team_id) // 자기 팀 제외
     .order("submitted_at");
+  if (teamId) projectsQuery = projectsQuery.neq("team_id", teamId); // 자기 팀 제외
+  const { data: projects } = await projectsQuery;
 
-  // 우리 팀이 이미 매긴 점수
-  const { data: myScores } = await supabase
-    .from("team_scores")
-    .select("project_id, criteria_id, score")
-    .eq("voter_team_id", membership.team_id);
+  // 우리 팀이 이미 매긴 점수 (팀이 있을 때만)
+  const { data: myScores } = teamId
+    ? await supabase
+        .from("team_scores")
+        .select("project_id, criteria_id, score")
+        .eq("voter_team_id", teamId)
+    : { data: [] as { project_id: string; criteria_id: string; score: number }[] };
 
   const doneCount = new Set(myScores?.map((s) => s.project_id)).size;
 
@@ -83,6 +89,12 @@ export default async function VotePage() {
         다른 팀({projects?.length ?? 0})을 심사 기준으로 채점해 주세요. 완료{" "}
         {doneCount}팀.
       </p>
+
+      {isAdmin && !teamId && (
+        <div className="mt-4 rounded-lg bg-admin/10 px-4 py-3 text-sm text-admin">
+          운영자 미리보기입니다. 실제 채점 저장은 참가 팀만 할 수 있어요.
+        </div>
+      )}
 
       {!votingOpen && (
         <div className="mt-4 rounded-lg bg-vote/10 px-4 py-3 text-sm text-vote">
