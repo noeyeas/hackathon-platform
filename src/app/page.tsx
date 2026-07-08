@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PHASE_LABEL, type EventPhase } from "@/lib/types";
 import { LogoMarquee } from "@/components/LogoMarquee";
+import { Reveal } from "@/components/Reveal";
 
 // TODO: 실제 구글 신청 폼 링크로 교체하세요
 const APPLY_FORM_URL = "#";
@@ -45,7 +46,7 @@ export default async function Home() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/75" />
 
-          <div className="relative flex flex-col items-center gap-5 text-white">
+          <div className="hero-in relative flex flex-col items-center gap-5 text-white">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
               <span className="h-2 w-2 rounded-full bg-vote" />
               현재 단계 · {PHASE_LABEL[phase]}
@@ -92,7 +93,7 @@ export default async function Home() {
       <Section eyebrow="Theme" title="해커톤 주제" desc="월계동 지역사회 문제 해결 및 발전을 위한 웹/애플리케이션 개발">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {THEMES.map((t) => (
-            <div key={t.t} className="card flex flex-col gap-2">
+            <div key={t.t} className="card flex flex-col gap-2 transition hover:-translate-y-1 hover:shadow-md">
               <span className="text-3xl">{t.icon}</span>
               <p className="text-xs uppercase tracking-wider text-vote">
                 {t.en}
@@ -202,6 +203,7 @@ export default async function Home() {
       </Section>
 
       {/* ===== 문의 (풀 블리드 다크) ===== */}
+      <Reveal>
       <section className="bleed relative overflow-hidden bg-ink px-5 py-16 text-white">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
@@ -236,6 +238,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      </Reveal>
     </div>
   );
 }
@@ -252,15 +255,17 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-5">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-vote">
-          {eyebrow}
-        </p>
-        <h2 className="mt-1 text-2xl font-bold sm:text-3xl">{title}</h2>
-        {desc && <p className="mt-2 text-[var(--muted)]">{desc}</p>}
-      </div>
-      {children}
-    </section>
+    <Reveal>
+      <section className="flex flex-col gap-5">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-vote">
+            {eyebrow}
+          </p>
+          <h2 className="mt-1 text-2xl font-bold sm:text-3xl">{title}</h2>
+          {desc && <p className="mt-2 text-[var(--muted)]">{desc}</p>}
+        </div>
+        {children}
+      </section>
+    </Reveal>
   );
 }

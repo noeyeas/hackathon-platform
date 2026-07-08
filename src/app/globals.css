@@ -37,7 +37,44 @@ body {
   to { transform: translateX(-50%); }
 }
 .animate-marquee {
-  animation: marquee 120s linear infinite;
+  animation: marquee 60s linear infinite;
+}
+/* 양 끝을 부드럽게 흐리게 (로고가 나타났다 사라지는 효과) */
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    to right, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(
+    to right, transparent, #000 7%, #000 93%, transparent);
+}
+/* 마우스 올리면 스크롤 일시정지 */
+.marquee-mask:hover .animate-marquee {
+  animation-play-state: paused;
+}
+
+/* 스크롤 리빌 */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* 히어로 로드 인 */
+@keyframes hero-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+.hero-in {
+  animation: hero-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .hero-in, .scroll-cue, .animate-marquee { animation: none; }
 }
 
 @layer components {

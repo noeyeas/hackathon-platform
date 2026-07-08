@@ -11,27 +11,33 @@ const ORGS: Org[] = [
 
 function Item({ org }: { org: Org }) {
   return (
-    <div className="flex flex-none items-center gap-2.5 px-12">
+    <div className="flex flex-none items-center gap-3 rounded-full border border-[var(--line)] bg-white px-4 py-2 shadow-sm">
       {org.img ? (
-        <img
-          src={org.img}
-          alt={org.name}
-          className={
-            org.contain
-              ? "h-3.5 w-auto flex-none object-contain"
-              : "h-5 w-5 flex-none rounded object-cover"
-          }
-        />
+        org.contain ? (
+          <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-gray-50">
+            <img
+              src={org.img}
+              alt={org.name}
+              className="h-4 w-auto max-w-6 object-contain"
+            />
+          </span>
+        ) : (
+          <img
+            src={org.img}
+            alt={org.name}
+            className="h-7 w-7 flex-none rounded-full object-cover ring-1 ring-[var(--line)]"
+          />
+        )
       ) : (
-        <div className="flex h-5 w-5 flex-none items-center justify-center rounded bg-gray-100 text-[7px] font-bold text-[var(--muted)]">
+        <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-vote/10 text-[11px] font-bold text-vote">
           월
-        </div>
+        </span>
       )}
-      <div className="whitespace-nowrap">
-        <span className="mr-1.5 text-[9px] uppercase tracking-wider text-vote">
+      <div className="flex flex-col whitespace-nowrap leading-tight">
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-vote">
           {org.role}
         </span>
-        <span className="text-xs font-medium">{org.name}</span>
+        <span className="text-xs font-semibold text-ink">{org.name}</span>
       </div>
     </div>
   );
@@ -44,11 +50,13 @@ export function LogoMarquee() {
   const base = [...ORGS, ...ORGS, ...ORGS];
   const track = [...base, ...base];
   return (
-    <div className="bleed overflow-hidden border-b border-[var(--line)] bg-white py-1.5">
-      <div className="flex w-max animate-marquee">
-        {track.map((org, i) => (
-          <Item key={i} org={org} />
-        ))}
+    <div className="bleed border-y border-[var(--line)] bg-[var(--bg)] py-4">
+      <div className="marquee-mask overflow-hidden">
+        <div className="flex w-max animate-marquee items-center gap-4">
+          {track.map((org, i) => (
+            <Item key={i} org={org} />
+          ))}
+        </div>
       </div>
     </div>
   );
