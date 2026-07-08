@@ -36,6 +36,8 @@ export async function createRecruitPost(formData: FormData) {
     .eq("id", user.id)
     .single();
 
+  const kind = String(formData.get("kind") ?? (teamId ? "team" : "individual"));
+
   const base = {
     title,
     body: body || null,
@@ -45,11 +47,50 @@ export async function createRecruitPost(formData: FormData) {
     author_name: me?.name ?? null,
   };
 
-  const payload = teamId
-    ? { ...base, team_id: teamId, kind: "team" }
-    : { ...base, team_id: null, kind: "individual", contact: contact || null };
+  let payload;
+  if (kind === "team") {
+    if (!teamId)
+      return { error: "팀원을 모집하려면 먼저 팀을 만들어 주세요." };
+    payload = { ...base, team_id: teamId, kind: "team" };
+  } else {
+    payload = {
+      ...base,
+      team_id: null,
+      kind: "individual",
+      contact: contact || null,
+    };
+  }
 
   const { error } = await supabase.from("recruit_posts").insert(payload);
+  if (error) return { error: error.message };
+
+  revalidatePath("/recruit");
+  return { ok: true };
+}
+
+// 모집글 수정 (RLS: 팀원 또는 작성자 본인만)
+export async function editRecruitPost(id: string, formData: FormData) {
+  const { user, supabase } = await myTeamId();
+  if (!user) return { error: "로그인이 필요합니다" };
+
+  const title = String(formData.get("title") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
+  const contact = String(formData.get("contact") ?? "").trim();
+  const positions = String(formData.get("positions") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!title) return { error: "제목을 입력하세요" };
+
+  const { error } = await supabase
+    .from("recruit_posts")
+    .update({
+      title,
+      body: body || null,
+      positions,
+      contact: contact || null,
+    })
+    .eq("id", id);
   if (error) return { error: error.message };
 
   revalidatePath("/recruit");

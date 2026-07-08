@@ -68,10 +68,21 @@ export default async function RecruitPage() {
     .filter((p) => p.kind === "individual")
     .map(toPlain);
 
-  const myPosts = all.filter(
-    (p) =>
-      (user && p.author_id === user.id) || (myTeamId && p.team_id === myTeamId)
-  );
+  const myPosts = all
+    .filter(
+      (p) =>
+        (user && p.author_id === user.id) ||
+        (myTeamId && p.team_id === myTeamId)
+    )
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      is_open: p.is_open,
+      kind: p.kind,
+      positions: p.positions,
+      body: p.body,
+      contact: p.contact,
+    }));
 
   return (
     <div className="mx-auto max-w-2xl">

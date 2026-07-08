@@ -13,6 +13,9 @@ export function RecruitModal({
   hasTeam: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState<"team" | "individual">(
+    hasTeam ? "team" : "individual"
+  );
 
   if (!loggedIn) {
     return (
@@ -21,6 +24,8 @@ export function RecruitModal({
       </Link>
     );
   }
+
+  const isTeam = kind === "team";
 
   return (
     <>
@@ -38,9 +43,7 @@ export function RecruitModal({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold">
-                {hasTeam ? "우리 팀 팀원 모집" : "팀 구해요 (개인)"}
-              </h2>
+              <h2 className="text-lg font-bold">모집글 작성</h2>
               <button
                 onClick={() => setOpen(false)}
                 className="rounded-lg p-1 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
@@ -50,31 +53,51 @@ export function RecruitModal({
               </button>
             </div>
 
-            <p className="mb-4 text-sm text-[var(--muted)]">
-              {hasTeam
-                ? "우리 팀에 합류할 팀원을 모집합니다."
-                : "아직 팀이 없다면, 개인으로 팀을 구하는 글을 올릴 수 있어요."}
-            </p>
+            {/* 유형 선택 */}
+            <div className="mb-4 flex gap-2">
+              <KindButton
+                active={isTeam}
+                onClick={() => setKind("team")}
+                label="🧑‍🤝‍🧑 팀원 구함"
+              />
+              <KindButton
+                active={!isTeam}
+                onClick={() => setKind("individual")}
+                label="🙋 팀 구함"
+              />
+            </div>
+
+            {isTeam && !hasTeam && (
+              <p className="mb-3 rounded-lg bg-vote/10 px-3 py-2 text-sm text-vote">
+                팀원 구함 글은 먼저{" "}
+                <Link href="/team" className="font-semibold underline">
+                  팀을 만든 뒤
+                </Link>{" "}
+                올릴 수 있어요.
+              </p>
+            )}
 
             <ActionForm
               action={createRecruitPost}
               submitLabel="등록하기"
               successMessage="등록했습니다. 목록을 새로고침하세요."
             >
+              <input type="hidden" name="kind" value={kind} />
+
               <label className="label">제목 *</label>
               <input
                 name="title"
                 required
                 className="input"
                 placeholder={
-                  hasTeam
+                  isTeam
                     ? "예: 프론트엔드 1명 구해요"
                     : "예: 백엔드 개발자입니다, 팀 구합니다"
                 }
               />
 
               <label className="label mt-3">
-                {hasTeam ? "필요한 역할" : "가능한 역할 / 기술"} (쉼표로 구분)
+                {isTeam ? "필요한 역할" : "가능한 역할 / 기술"} (쉼표로 구분)
               </label>
               <input
                 name="positions"
@@ -88,13 +111,13 @@ export function RecruitModal({
                 rows={3}
                 className="input"
                 placeholder={
-                  hasTeam
+                  isTeam
                     ? "어떤 프로젝트인지, 어떤 분을 찾는지"
                     : "본인 소개, 관심 주제 등"
                 }
               />
 
-              {!hasTeam && (
+              {!isTeam && (
                 <>
                   <label className="label mt-3">연락 방법</label>
                   <input
@@ -109,5 +132,29 @@ export function RecruitModal({
         </div>
       )}
     </>
+  );
+}
+
+function KindButton({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+        active
+          ? "bg-vote text-white"
+          : "border border-[var(--line)] bg-white text-[var(--muted)] hover:text-ink"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
