@@ -99,22 +99,12 @@ export default async function ProjectDetailPage({
         </div>
       </div>
 
-      {embed && (
-        <div className="mt-6 aspect-video overflow-hidden rounded-2xl border border-[var(--line)]">
-          <iframe
-            src={embed}
-            title={`${p.title} 영상`}
-            className="h-full w-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
-      )}
-
+      {/* 1) 설명 */}
       <div className="card mt-6 whitespace-pre-wrap leading-relaxed">
         {p.description?.trim() || "설명이 없습니다."}
       </div>
 
+      {/* 2) 참고자료 PDF */}
       {isPdfDeck && (
         <section className="mt-6">
           <div className="mb-2 flex items-center justify-between">
@@ -138,6 +128,19 @@ export default async function ProjectDetailPage({
             />
           </div>
         </section>
+      )}
+
+      {/* 3) 영상 */}
+      {embed && (
+        <div className="mt-6 aspect-video overflow-hidden rounded-2xl border border-[var(--line)]">
+          <iframe
+            src={embed}
+            title={`${p.title} 영상`}
+            className="h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
       )}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
