@@ -64,7 +64,11 @@ export default async function AdminPage() {
           title="투표 관리"
           desc="단계 전환·실시간 집계"
         />
-        <AdminLink href="/judge" title="심사 채점" desc="심사위원 채점 화면" />
+        <AdminLink
+          href="/admin/scoring"
+          title="심사 / 평가"
+          desc="심사위원·팀 평가 진행 확인"
+        />
         <AdminLink
           href="/admin/announcements"
           title="공지사항"
