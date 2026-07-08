@@ -16,3 +16,13 @@ from (values
 where not exists (
   select 1 from schedule_items s where s.title = v.title
 );
+
+-- D-day 마일스톤: 모집 마감 (9.2 23:59 KST)
+insert into milestones (label, target_at, sort)
+select v.label, v.target_at, v.sort
+from (values
+  ('참가팀 모집 마감', timestamptz '2026-09-02 23:59:00+09', 10)
+) as v(label, target_at, sort)
+where not exists (
+  select 1 from milestones m where m.label = v.label
+);

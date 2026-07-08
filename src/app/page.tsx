@@ -36,11 +36,9 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-24">
-      {/* ===== 상단 마퀴 + 히어로 ===== */}
+      {/* ===== 히어로 + 하단 마퀴 ===== */}
       <div>
-        <LogoMarquee />
-
-        <section className="bleed relative flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-5 text-center sm:min-h-[640px]">
+        <section className="bleed relative -mt-8 flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-5 text-center sm:min-h-[640px]">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: "url('/campus.jpg')" }}
@@ -86,6 +84,8 @@ export default async function Home() {
             <span className="text-2xl">⌄</span>
           </div>
         </section>
+
+        <LogoMarquee />
       </div>
 
       {/* ===== 주제 (Theme) ===== */}

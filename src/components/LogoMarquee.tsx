@@ -11,23 +11,23 @@ const ORGS: Org[] = [
 
 function Item({ org }: { org: Org }) {
   return (
-    <div className="flex flex-none items-center gap-3 px-8">
+    <div className="flex flex-none items-center gap-2 px-5">
       {org.img ? (
         <img
           src={org.img}
           alt={org.name}
-          className="h-9 w-9 flex-none rounded-lg object-cover"
+          className="h-5 w-5 flex-none rounded object-cover"
         />
       ) : (
-        <div className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-gray-100 text-[9px] font-bold text-[var(--muted)]">
-          월계동
+        <div className="flex h-5 w-5 flex-none items-center justify-center rounded bg-gray-100 text-[7px] font-bold text-[var(--muted)]">
+          월
         </div>
       )}
       <div className="whitespace-nowrap">
-        <span className="mr-2 font-mono text-[10px] uppercase tracking-wider text-vote">
+        <span className="mr-1.5 font-mono text-[9px] uppercase tracking-wider text-vote">
           {org.role}
         </span>
-        <span className="text-sm font-semibold">{org.name}</span>
+        <span className="text-xs font-medium">{org.name}</span>
       </div>
     </div>
   );
@@ -37,7 +37,7 @@ function Item({ org }: { org: Org }) {
 export function LogoMarquee() {
   const list = [...ORGS, ...ORGS]; // 이음새 없는 루프용 2배 복제
   return (
-    <div className="marquee-mask bleed -mt-8 overflow-hidden border-b border-[var(--line)] bg-white py-3">
+    <div className="marquee-mask bleed overflow-hidden border-b border-[var(--line)] bg-white py-1.5">
       <div className="flex w-max animate-marquee">
         {list.map((org, i) => (
           <Item key={i} org={org} />
