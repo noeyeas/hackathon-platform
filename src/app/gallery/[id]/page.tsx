@@ -113,28 +113,29 @@ export default async function ProjectDetailPage({
         {p.description?.trim() || "설명이 없습니다."}
       </div>
 
-      {links.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {links.map((l) => (
-            <a
-              key={l.label}
-              href={l.url!}
-              target="_blank"
-              rel="noreferrer"
-              className="chip hover:border-vote hover:text-vote"
-            >
-              <span>{l.icon}</span>
-              {l.label}
-            </a>
-          ))}
+      <div className="mt-6 flex flex-wrap items-center gap-3">
+        {links.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {links.map((l) => (
+              <a
+                key={l.label}
+                href={l.url!}
+                target="_blank"
+                rel="noreferrer"
+                className="chip hover:border-vote hover:text-vote"
+              >
+                <span>{l.icon}</span>
+                {l.label}
+              </a>
+            ))}
+          </div>
+        )}
+        <div className="ml-auto flex items-center gap-3">
+          <LikeButton projectId={p.id} initialCount={likeCount} />
+          <Link href="/vote" className="btn-ghost">
+            투표하러 가기
+          </Link>
         </div>
-      )}
-
-      <div className="mt-8 flex items-center gap-3 border-t border-[var(--line)] pt-6">
-        <LikeButton projectId={p.id} initialCount={likeCount} />
-        <Link href="/vote" className="btn-ghost">
-          투표하러 가기
-        </Link>
       </div>
 
       {/* ===== 댓글 ===== */}
