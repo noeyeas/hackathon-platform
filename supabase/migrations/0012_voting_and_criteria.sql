@@ -32,7 +32,9 @@ begin
 end; $$ language plpgsql;
 
 -- ---------- 집계 뷰: 관객 투표를 수기 입력값으로 ----------
-create or replace view rankings as
+-- 컬럼 타입 변경(bigint→int)이 있어 replace 불가 → 먼저 DROP
+drop view if exists rankings;
+create view rankings as
 with judge_norm as (
   select p.id as project_id,
          coalesce(
