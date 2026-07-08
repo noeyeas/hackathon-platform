@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ParticipantMenu } from "./ParticipantMenu";
 
 const LINKS = [
-  { href: "/team", label: "내 팀" },
-  { href: "/recruit", label: "모집" },
-  { href: "/submit", label: "제출" },
   { href: "/gallery", label: "갤러리" },
   { href: "/notice", label: "공지" },
   { href: "/results", label: "결과" },
@@ -32,7 +30,8 @@ export async function Nav() {
         <Link href="/" className="font-bold tracking-tight">
           🏆 해커톤
         </Link>
-        <nav className="hidden gap-1 text-sm sm:flex">
+        <nav className="hidden items-center gap-1 text-sm sm:flex">
+          <ParticipantMenu />
           {LINKS.map((l) => (
             <Link
               key={l.href}
