@@ -21,6 +21,7 @@ export type Team = {
   name: string;
   tagline: string | null;
   invite_code: string;
+  leader_code: string;
   status: "forming" | "locked";
   created_by: string | null;
 };

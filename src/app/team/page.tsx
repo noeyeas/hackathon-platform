@@ -34,13 +34,14 @@ export default async function TeamPage() {
     return (
       <div className="mx-auto max-w-md">
         <div className="card">
-          <h2 className="text-lg font-bold">초대 코드로 합류</h2>
+          <h2 className="text-lg font-bold">코드로 합류</h2>
           <p className="mb-4 mt-1 text-sm text-[var(--muted)]">
-            팀은 운영진이 선정·등록합니다. 팀장에게 받은 초대 코드를
-            입력하세요. (팀장은 운영진에게 받은 코드로 먼저 합류하면 됩니다.)
+            팀은 운영진이 선정·등록합니다. 팀장은 운영진에게 받은{" "}
+            <b>팀장 코드</b>로 먼저 합류하고, 팀원은 팀장에게 받은{" "}
+            <b>팀원 코드</b>를 입력하세요.
           </p>
           <ActionForm action={joinTeam} submitLabel="팀 합류">
-            <label className="label">초대 코드</label>
+            <label className="label">팀장 코드 / 팀원 코드</label>
             <input name="invite_code" required className="input font-mono" placeholder="a1b2c3d4" />
           </ActionForm>
         </div>
@@ -93,7 +94,7 @@ export default async function TeamPage() {
 
         {!locked && (
           <div className="mt-4 rounded-lg bg-gray-50 p-4">
-            <p className="text-sm text-[var(--muted)]">초대 코드</p>
+            <p className="text-sm text-[var(--muted)]">팀원 초대 코드</p>
             <p className="mt-1 select-all font-mono text-lg font-bold">
               {team?.invite_code}
             </p>

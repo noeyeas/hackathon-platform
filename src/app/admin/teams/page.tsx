@@ -22,7 +22,9 @@ export default async function AdminTeamsPage() {
 
   const { data: teams } = await supabase
     .from("teams")
-    .select("id, name, tagline, invite_code, status, team_members(count)")
+    .select(
+      "id, name, tagline, invite_code, leader_code, status, team_members(count)"
+    )
     .order("created_at", { ascending: true });
 
   const list = teams ?? [];
@@ -31,9 +33,9 @@ export default async function AdminTeamsPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-bold">팀 등록</h1>
       <p className="mt-1 text-[var(--muted)]">
-        구글폼으로 신청받아 선정한 팀을 등록하세요. 등록하면 초대 코드가
-        발급됩니다. 그 코드를 팀장에게 전달하면, 팀장이 코드로 먼저 합류(자동
-        팀장)한 뒤 팀원에게 공유합니다.
+        구글폼으로 신청받아 선정한 팀을 등록하세요. 등록하면 팀장 코드와 팀원
+        코드가 각각 발급됩니다. <b>팀장 코드</b>는 팀장에게만 전달하고, 팀장이
+        먼저 합류한 뒤 <b>팀원 코드</b>를 팀원에게 공유합니다.
       </p>
 
       {/* 팀 등록 */}
@@ -79,6 +81,7 @@ export default async function AdminTeamsPage() {
                   name={t.name}
                   tagline={t.tagline}
                   inviteCode={t.invite_code}
+                  leaderCode={t.leader_code}
                   memberCount={memberCount}
                   locked={t.status === "locked"}
                 />
