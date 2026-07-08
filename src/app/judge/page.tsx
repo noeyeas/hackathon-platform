@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScoreCard } from "./ScoreCard";
+import { saveScores } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,7 @@ export default async function JudgePage() {
               title={p.title}
               criteria={criteria ?? []}
               existing={existing}
+              action={saveScores}
             />
           );
         })}

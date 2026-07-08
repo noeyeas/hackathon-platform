@@ -38,7 +38,7 @@ export default async function ResultsPage() {
               <th className="px-4 py-3">순위</th>
               <th className="px-4 py-3">팀 / 작품</th>
               <th className="px-4 py-3 text-right">심사</th>
-              <th className="px-4 py-3 text-right">팀표</th>
+              <th className="px-4 py-3 text-right">팀 점수</th>
               <th className="px-4 py-3 text-right">주민표</th>
               <th className="px-4 py-3 text-right">종합</th>
             </tr>

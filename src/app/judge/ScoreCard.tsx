@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { saveScores } from "./actions";
 
 type Criterion = {
   id: string;
@@ -18,12 +17,19 @@ export function ScoreCard({
   title,
   criteria,
   existing,
+  action,
+  withComment = true,
 }: {
   projectId: string;
   teamName: string;
   title: string;
   criteria: Criterion[];
   existing: Existing[];
+  action: (
+    projectId: string,
+    formData: FormData
+  ) => Promise<{ ok?: boolean; error?: string } | void>;
+  withComment?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -39,7 +45,7 @@ export function ScoreCard({
     const fd = new FormData(e.currentTarget);
     setError(null);
     startTransition(async () => {
-      const res = await saveScores(projectId, fd);
+      const res = await action(projectId, fd);
       if (res?.error) setError(res.error);
       else {
         setSaved(true);
@@ -102,13 +108,15 @@ export function ScoreCard({
                 </div>
               </div>
             ))}
-            <textarea
-              name="comment"
-              rows={2}
-              defaultValue={commentOf}
-              placeholder="심사 코멘트 (선택)"
-              className="input"
-            />
+            {withComment && (
+              <textarea
+                name="comment"
+                rows={2}
+                defaultValue={commentOf}
+                placeholder="심사 코멘트 (선택)"
+                className="input"
+              />
+            )}
           </div>
           {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
           <button disabled={pending} className="btn-primary mt-3 w-full">

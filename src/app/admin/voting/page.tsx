@@ -62,7 +62,7 @@ export default async function VotingAdminPage() {
                 <tr className="border-b border-[var(--line)] text-left text-xs uppercase tracking-wider text-[var(--muted)]">
                   <th className="py-2">순위 / 팀</th>
                   <th className="py-2 text-right">심사</th>
-                  <th className="py-2 text-right">팀표</th>
+                  <th className="py-2 text-right">팀 점수</th>
                   <th className="py-2 text-right">주민</th>
                   <th className="py-2 text-right">종합</th>
                 </tr>
