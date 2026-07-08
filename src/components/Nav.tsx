@@ -47,7 +47,7 @@ export async function Nav() {
             </Link>
           ))}
           <NavMenu label="대회" items={EVENT_ITEMS} />
-          {role === "judge" && (
+          {(role === "judge" || role === "admin") && (
             <Link
               href="/judge"
               className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"

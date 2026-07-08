@@ -16,7 +16,7 @@ export default async function JudgePage() {
     .select("role")
     .eq("id", user.id)
     .single();
-  if (me?.role !== "judge") {
+  if (me?.role !== "judge" && me?.role !== "admin") {
     return (
       <div className="card mx-auto max-w-md text-center">
         <h1 className="text-xl font-bold">심사위원 전용 페이지입니다</h1>

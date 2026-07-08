@@ -64,6 +64,7 @@ export default async function AdminPage() {
           title="점수 가중치"
           desc="심사·팀·주민 비율 조정"
         />
+        <AdminLink href="/judge" title="심사 채점" desc="심사위원 채점 화면" />
         <AdminLink
           href="/admin/announcements"
           title="공지사항"

@@ -1,9 +1,9 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-// 한 팀(project)에 대한 기준별 점수 저장 (전 심사위원이 전 팀 채점)
+// 한 팀(project)에 대한 기준별 점수 저장 (심사위원·운영진이 전 팀 채점)
 export async function saveScores(projectId: string, formData: FormData) {
   const supabase = await createClient();
   const {
@@ -16,7 +16,8 @@ export async function saveScores(projectId: string, formData: FormData) {
     .select("role")
     .eq("id", user.id)
     .single();
-  if (me?.role !== "judge") return { error: "심사위원만 채점할 수 있습니다" };
+  if (me?.role !== "judge" && me?.role !== "admin")
+    return { error: "심사위원·운영진만 채점할 수 있습니다" };
 
   const { data: criteria } = await supabase.from("criteria").select("id, max_score");
   if (!criteria) return { error: "평가 기준을 불러오지 못했습니다" };
@@ -33,7 +34,9 @@ export async function saveScores(projectId: string, formData: FormData) {
     };
   });
 
-  const { error } = await supabase
+  // 운영진도 저장 가능하도록 서버(Service Role)로 기록 (역할은 위에서 검증)
+  const admin = createAdminClient();
+  const { error } = await admin
     .from("judge_scores")
     .upsert(rows, { onConflict: "project_id,judge_id,criteria_id" });
   if (error) return { error: error.message };
