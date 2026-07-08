@@ -1,19 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PHASE_LABEL, type EventPhase } from "@/lib/types";
-import { PhaseControl } from "./PhaseControl";
-import { WeightControl } from "./WeightControl";
 
 export const dynamic = "force-dynamic";
-
-const PHASES: EventPhase[] = [
-  "signup",
-  "team_building",
-  "building",
-  "submitted",
-  "voting",
-  "closed",
-];
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -39,7 +28,7 @@ export default async function AdminPage() {
 
   const { data: settings } = await supabase
     .from("event_settings")
-    .select("*")
+    .select("phase")
     .single();
 
   const [{ count: teamCount }, { count: projectCount }, { count: tokenCount }] =
@@ -48,8 +37,6 @@ export default async function AdminPage() {
       supabase.from("projects").select("id", { count: "exact", head: true }),
       supabase.from("audience_tokens").select("id", { count: "exact", head: true }),
     ]);
-
-  const weights = settings?.weights ?? { judge: 0.5, team: 0.25, audience: 0.25 };
 
   return (
     <div className="flex flex-col gap-6">
@@ -66,18 +53,17 @@ export default async function AdminPage() {
         <Stat label="발급 QR" value={tokenCount ?? 0} />
       </div>
 
-      <div className="card">
-        <h2 className="mb-3 font-bold">대회 단계 전환</h2>
-        <PhaseControl current={settings?.phase as EventPhase} phases={PHASES} />
-      </div>
-
-      <div className="card">
-        <h2 className="mb-1 font-bold">점수 가중치</h2>
-        <p className="mb-4 text-sm text-[var(--muted)]">합이 100%가 되어야 합니다.</p>
-        <WeightControl weights={weights} />
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-3">
+        <AdminLink
+          href="/admin/voting"
+          title="투표 관리"
+          desc="단계 전환·실시간 집계"
+        />
+        <AdminLink
+          href="/admin/weights"
+          title="점수 가중치"
+          desc="심사·팀·관객 비율 조정"
+        />
         <AdminLink
           href="/admin/qr"
           title="관객 투표 QR"
