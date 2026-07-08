@@ -30,7 +30,7 @@ export default async function QRPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="print:hidden">
-        <h1 className="text-2xl font-bold">관객 투표 QR 관리</h1>
+        <h1 className="text-2xl font-bold">주민 투표 QR 관리</h1>
         <p className="mt-1 text-[var(--muted)]">
           테이블마다 다른 QR을 생성합니다. 각 QR은 지정한 표 수만큼 투표할 수
           있습니다.

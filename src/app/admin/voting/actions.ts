@@ -31,7 +31,7 @@ export async function setVotingOpen(open: boolean) {
   return { ok: true };
 }
 
-// 관객(주민) 수기 득표수 저장
+// 주민 수기 득표수 저장
 export async function setAudienceVotes(projectId: string, count: number) {
   if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
   const n = Math.max(0, Math.round(count) || 0);

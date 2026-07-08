@@ -46,7 +46,7 @@ export default async function VotingAdminPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-bold">투표 관리</h1>
       <p className="mt-1 text-[var(--muted)]">
-        온라인 투표를 열고 닫고, 관객 득표를 입력하면 집계가 즉시 반영됩니다.
+        온라인 투표를 열고 닫고, 주민 득표를 입력하면 집계가 즉시 반영됩니다.
       </p>
 
       <div className="mt-6">
@@ -63,7 +63,7 @@ export default async function VotingAdminPage() {
                   <th className="py-2">순위 / 팀</th>
                   <th className="py-2 text-right">심사</th>
                   <th className="py-2 text-right">팀표</th>
-                  <th className="py-2 text-right">관객</th>
+                  <th className="py-2 text-right">주민</th>
                   <th className="py-2 text-right">종합</th>
                 </tr>
               </thead>

@@ -31,7 +31,7 @@ export function WeightControl({
   const fields: [keyof typeof vals, string][] = [
     ["judge", "심사위원"],
     ["team", "팀 상호"],
-    ["audience", "관객"],
+    ["audience", "주민"],
   ];
 
   return (

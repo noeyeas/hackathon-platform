@@ -26,7 +26,7 @@ export default async function ResultsPage() {
         {showFinal ? "최종 결과 🏆" : "실시간 집계 현황"}
       </h1>
       <p className="mt-1 text-[var(--muted)]">
-        가중치 · 심사 {pct(weights.judge)} / 팀 {pct(weights.team)} / 관객{" "}
+        가중치 · 심사 {pct(weights.judge)} / 팀 {pct(weights.team)} / 주민{" "}
         {pct(weights.audience)}
         {!showFinal && " · 투표 종료 후 최종 순위가 확정됩니다."}
       </p>
@@ -39,7 +39,7 @@ export default async function ResultsPage() {
               <th className="px-4 py-3">팀 / 작품</th>
               <th className="px-4 py-3 text-right">심사</th>
               <th className="px-4 py-3 text-right">팀표</th>
-              <th className="px-4 py-3 text-right">관객표</th>
+              <th className="px-4 py-3 text-right">주민표</th>
               <th className="px-4 py-3 text-right">종합</th>
             </tr>
           </thead>

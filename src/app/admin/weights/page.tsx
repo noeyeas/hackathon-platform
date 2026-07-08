@@ -28,7 +28,7 @@ export default async function WeightsPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-bold">점수 가중치</h1>
       <p className="mt-1 text-[var(--muted)]">
-        심사·팀·관객 투표 반영 비율을 조정합니다. 합이 100%가 되어야 합니다.
+        심사·팀·주민 투표 반영 비율을 조정합니다. 합이 100%가 되어야 합니다.
       </p>
       <div className="card mt-6">
         <WeightControl weights={weights} />

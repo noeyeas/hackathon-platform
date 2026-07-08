@@ -62,7 +62,7 @@ export default async function AdminPage() {
         <AdminLink
           href="/admin/weights"
           title="점수 가중치"
-          desc="심사·팀·관객 비율 조정"
+          desc="심사·팀·주민 비율 조정"
         />
         <AdminLink
           href="/admin/announcements"

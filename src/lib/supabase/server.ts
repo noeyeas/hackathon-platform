@@ -27,7 +27,7 @@ export async function createClient() {
   );
 }
 
-// Service Role 클라이언트 — QR 토큰 발급, 관객 투표 기록 등 운영 전용.
+// Service Role 클라이언트 — QR 토큰 발급, 주민 투표 기록 등 운영 전용.
 // 반드시 서버에서만 사용 (RLS 우회).
 export function createAdminClient() {
   return createServerClient(

@@ -55,9 +55,9 @@ export function VotingControls({
         현재: 투표 {open ? "열림 🟢" : "닫힘 🔴"}
       </p>
 
-      {/* 관객(주민) 수기 입력 */}
+      {/* 주민 수기 입력 */}
       <div className="card">
-        <h2 className="font-bold">관객(주민) 투표 수기 입력</h2>
+        <h2 className="font-bold">주민 투표 수기 입력</h2>
         <p className="mb-4 mt-1 text-sm text-[var(--muted)]">
           오프라인에서 집계한 팀별 득표수를 입력하세요. 저장 즉시 집계에 반영됩니다.
         </p>

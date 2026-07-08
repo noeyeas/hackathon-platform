@@ -32,7 +32,7 @@ export async function castTeamVote(projectId: string) {
   return { ok: true };
 }
 
-// 관객 QR 투표 — 토큰 기반, 로그인 불필요 (Service Role 로 기록)
+// 주민 QR 투표 — 토큰 기반, 로그인 불필요 (Service Role 로 기록)
 export async function castAudienceVote(token: string, projectId: string) {
   const admin = createAdminClient();
 
