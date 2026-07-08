@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { PHASE_LABEL, type EventPhase } from "@/lib/types";
 import { LogoMarquee } from "@/components/LogoMarquee";
 import { Reveal } from "@/components/Reveal";
+import { RevealGroup } from "@/components/RevealGroup";
+import { ParallaxBg } from "@/components/ParallaxBg";
 
 // TODO: 실제 구글 신청 폼 링크로 교체하세요
 const APPLY_FORM_URL = "#";
@@ -40,10 +42,7 @@ export default async function Home() {
       {/* ===== 히어로 + 하단 마퀴 ===== */}
       <div>
         <section className="bleed relative -mt-8 flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-5 text-center sm:min-h-[640px]">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('/campus.jpg')" }}
-          />
+          <ParallaxBg src="/campus.jpg" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/75" />
 
           <div className="hero-in relative flex flex-col items-center gap-5 text-white">
@@ -91,9 +90,9 @@ export default async function Home() {
 
       {/* ===== 주제 (Theme) ===== */}
       <Section eyebrow="Theme" title="해커톤 주제" desc="월계동 지역사회 문제 해결 및 발전을 위한 웹/애플리케이션 개발">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <RevealGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {THEMES.map((t) => (
-            <div key={t.t} className="card flex flex-col gap-2 transition hover:-translate-y-1 hover:shadow-md">
+            <div key={t.t} className="card flex h-full flex-col gap-2 transition hover:-translate-y-1 hover:shadow-md">
               <span className="text-3xl">{t.icon}</span>
               <p className="text-xs uppercase tracking-wider text-vote">
                 {t.en}
@@ -102,11 +101,12 @@ export default async function Home() {
               <p className="text-sm text-[var(--muted)]">{t.d}</p>
             </div>
           ))}
-        </div>
+        </RevealGroup>
       </Section>
 
       {/* ===== 목적 ===== */}
       <Section eyebrow="Purpose" title="해커톤의 목적">
+        <Reveal>
         <div className="card">
           <p className="text-lg leading-relaxed">
             월계동 지역사회가 직면한 실제 현안을 주민과 청년의 시각에서 발굴하고,
@@ -115,23 +115,25 @@ export default async function Home() {
             삶의 질을 향상시키고, 지속 가능한 월계동 발전 모델을 구축합니다.
           </p>
         </div>
+        </Reveal>
       </Section>
 
       {/* ===== 목표 ===== */}
       <Section eyebrow="Goals" title="해커톤의 목표">
-        <div className="grid gap-4 lg:grid-cols-3">
+        <RevealGroup className="grid gap-4 lg:grid-cols-3">
           {GOALS.map((g) => (
-            <div key={g.n} className="card">
+            <div key={g.n} className="card h-full">
               <div className="text-sm font-semibold text-vote">{g.n}</div>
               <h3 className="mt-2 font-bold">{g.t}</h3>
               <p className="mt-2 text-sm text-[var(--muted)]">{g.d}</p>
             </div>
           ))}
-        </div>
+        </RevealGroup>
       </Section>
 
       {/* ===== 일정 & 장소 ===== */}
       <Section eyebrow="Schedule & Venue" title="일정 및 장소">
+        <Reveal>
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="card !p-0">
             <ol className="flex flex-col">
@@ -170,12 +172,13 @@ export default async function Home() {
             </div>
           </div>
         </div>
+        </Reveal>
       </Section>
 
       {/* ===== 참가 안내 ===== */}
       <Section eyebrow="How to Join" title="참가 안내">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="card">
+        <RevealGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="card h-full">
             <h3 className="mb-3 font-bold">팀 구성</h3>
             <ul className="flex flex-col gap-1.5 text-sm text-[var(--muted)]">
               <li>· 팀당 <b className="text-ink">최소 2인 ~ 최대 4인</b></li>
@@ -185,21 +188,21 @@ export default async function Home() {
               <li>· 초과 시 가산점 기준으로 선정</li>
             </ul>
           </div>
-          <div className="card">
+          <div className="card h-full">
             <h3 className="mb-3 font-bold">참가비</h3>
             <p className="text-2xl font-bold">인당 10,000원</p>
             <p className="mt-1 text-sm text-[var(--muted)]">
               행사 종료 후 <b className="text-team">전액 환불</b>
             </p>
           </div>
-          <div className="card">
+          <div className="card h-full">
             <h3 className="mb-3 font-bold">모집 기간</h3>
             <p className="text-2xl font-bold">8.24 – 9.2</p>
             <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary mt-3 w-full">
               신청 폼 열기
             </a>
           </div>
-        </div>
+        </RevealGroup>
       </Section>
 
       {/* ===== 문의 (풀 블리드 다크) ===== */}
@@ -255,8 +258,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <Reveal>
-      <section className="flex flex-col gap-5">
+    <section className="flex flex-col gap-5">
+      <Reveal>
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-vote">
             {eyebrow}
@@ -264,8 +267,8 @@ function Section({
           <h2 className="mt-1 text-2xl font-bold sm:text-3xl">{title}</h2>
           {desc && <p className="mt-2 text-[var(--muted)]">{desc}</p>}
         </div>
-        {children}
-      </section>
-    </Reveal>
+      </Reveal>
+      {children}
+    </section>
   );
 }

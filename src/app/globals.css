@@ -63,6 +63,19 @@ body {
   transform: none;
 }
 
+/* 스태거 그룹 (자식 순차 등장) */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal-group.is-visible .reveal-item {
+  opacity: 1;
+  transform: none;
+}
+
 /* 히어로 로드 인 */
 @keyframes hero-in {
   from { opacity: 0; transform: translateY(18px); }
@@ -73,17 +86,21 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
+  .reveal, .reveal-item { opacity: 1; transform: none; transition: none; }
   .hero-in, .scroll-cue, .animate-marquee { animation: none; }
+  .btn { transition: none; }
 }
 
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5
-      text-sm font-semibold transition disabled:opacity-50;
+      text-sm font-semibold transition-all duration-200
+      hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]
+      disabled:opacity-50 disabled:hover:translate-y-0;
   }
   .btn-primary {
-    @apply btn bg-vote text-white hover:brightness-95;
+    @apply btn bg-vote text-white hover:brightness-105
+      hover:shadow-lg hover:shadow-vote/30;
   }
   .btn-ghost {
     @apply btn border border-[var(--line)] bg-white text-ink hover:bg-gray-50;

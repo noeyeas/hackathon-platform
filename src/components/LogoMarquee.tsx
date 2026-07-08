@@ -6,39 +6,34 @@ const ORGS: Org[] = [
   { name: "광운대학교 총학생회 이음", role: "주관", img: "/council.jpg" },
   { name: "인공지능융합대학 학생회 하성", role: "주관", img: "/hasung.jpg" },
   { name: "카카오페이", role: "후원", img: "/kakaopay.jpeg", contain: true },
-  { name: "월계동 주민단체", role: "후원" },
+  { name: "월계동 주민단체", role: "후원", img: "/people.png", contain: true },
 ];
 
 function Item({ org }: { org: Org }) {
+  // 평소엔 흑백+흐리게, 호버하면 컬러로 또렷하게
+  const reveal =
+    "flex-none opacity-60 grayscale transition duration-500 hover:opacity-100 hover:grayscale-0";
   return (
-    <div className="flex flex-none items-center gap-3 rounded-full border border-[var(--line)] bg-white px-4 py-2 shadow-sm">
+    <div className="flex flex-none items-center px-10">
       {org.img ? (
-        org.contain ? (
-          <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-gray-50">
-            <img
-              src={org.img}
-              alt={org.name}
-              className="h-4 w-auto max-w-6 object-contain"
-            />
-          </span>
-        ) : (
-          <img
-            src={org.img}
-            alt={org.name}
-            className="h-7 w-7 flex-none rounded-full object-cover ring-1 ring-[var(--line)]"
-          />
-        )
+        <img
+          src={org.img}
+          alt={org.name}
+          title={`${org.role} · ${org.name}`}
+          className={
+            org.contain
+              ? `${reveal} h-6 w-auto object-contain`
+              : `${reveal} h-11 w-11 rounded-full object-cover`
+          }
+        />
       ) : (
-        <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-vote/10 text-[11px] font-bold text-vote">
-          월
+        <span
+          title={`${org.role} · ${org.name}`}
+          className={`${reveal} whitespace-nowrap text-base font-bold tracking-tight text-ink`}
+        >
+          {org.name}
         </span>
       )}
-      <div className="flex flex-col whitespace-nowrap leading-tight">
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-vote">
-          {org.role}
-        </span>
-        <span className="text-xs font-semibold text-ink">{org.name}</span>
-      </div>
     </div>
   );
 }
@@ -50,9 +45,9 @@ export function LogoMarquee() {
   const base = [...ORGS, ...ORGS, ...ORGS];
   const track = [...base, ...base];
   return (
-    <div className="bleed border-y border-[var(--line)] bg-[var(--bg)] py-4">
+    <div className="bleed border-y border-[var(--line)] bg-white py-6">
       <div className="marquee-mask overflow-hidden">
-        <div className="flex w-max animate-marquee items-center gap-4">
+        <div className="flex w-max animate-marquee items-center">
           {track.map((org, i) => (
             <Item key={i} org={org} />
           ))}
