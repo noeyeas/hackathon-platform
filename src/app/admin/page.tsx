@@ -31,12 +31,10 @@ export default async function AdminPage() {
     .select("phase")
     .single();
 
-  const [{ count: teamCount }, { count: projectCount }, { count: tokenCount }] =
-    await Promise.all([
-      supabase.from("teams").select("id", { count: "exact", head: true }),
-      supabase.from("projects").select("id", { count: "exact", head: true }),
-      supabase.from("audience_tokens").select("id", { count: "exact", head: true }),
-    ]);
+  const [{ count: teamCount }, { count: projectCount }] = await Promise.all([
+    supabase.from("teams").select("id", { count: "exact", head: true }),
+    supabase.from("projects").select("id", { count: "exact", head: true }),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -47,10 +45,9 @@ export default async function AdminPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Stat label="등록 팀" value={teamCount ?? 0} />
         <Stat label="제출작" value={projectCount ?? 0} />
-        <Stat label="발급 QR" value={tokenCount ?? 0} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
