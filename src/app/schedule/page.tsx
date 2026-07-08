@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { scheduleWhen } from "@/lib/format";
+import { ScheduleCalendar } from "@/components/ScheduleCalendar";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function SchedulePage() {
     .order("created_at", { ascending: true });
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-4xl">
       <h1 className="text-2xl font-bold">🗓️ 일정표</h1>
       <p className="mt-1 text-[var(--muted)]">대회 진행 일정입니다.</p>
 
@@ -21,7 +22,12 @@ export default async function SchedulePage() {
           아직 등록된 일정이 없습니다.
         </p>
       ) : (
-        <div className="card mt-6 !p-0">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[20rem_1fr] lg:items-start">
+          {/* 왼쪽: 달력 */}
+          <ScheduleCalendar items={items} />
+
+          {/* 오른쪽: 일정표 */}
+          <div className="card !p-0">
           <ol className="flex flex-col">
             {items.map((it, i) => {
               const when = scheduleWhen(it.time_label, it.starts_at);
@@ -65,6 +71,7 @@ export default async function SchedulePage() {
               );
             })}
           </ol>
+          </div>
         </div>
       )}
     </div>
