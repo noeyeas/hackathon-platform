@@ -59,12 +59,28 @@ export async function addScheduleItem(formData: FormData) {
   if (!title) return { error: "일정 내용을 입력하세요" };
   if (!raw) return { error: "날짜/시간을 선택하세요" };
 
+  const detail = String(formData.get("detail") ?? "").trim() || null;
+
   const admin = createAdminClient();
   const { error } = await admin.from("schedule_items").insert({
     starts_at: new Date(raw).toISOString(),
     title,
+    detail,
     sort: 0,
   });
+  if (error) return { error: error.message };
+  revalidate();
+  return { ok: true };
+}
+
+// 일정 항목 상세(세부 일정) 수정
+export async function updateScheduleDetail(id: string, detail: string) {
+  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("schedule_items")
+    .update({ detail: detail.trim() || null })
+    .eq("id", id);
   if (error) return { error: error.message };
   revalidate();
   return { ok: true };

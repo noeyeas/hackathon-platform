@@ -4,6 +4,7 @@ import { ActionForm } from "@/components/ActionForm";
 import { formatDateTime, scheduleWhen } from "@/lib/format";
 import { addMilestone, addScheduleItem } from "./actions";
 import { DeleteRow } from "./DeleteRow";
+import { ScheduleAdminRow } from "./ScheduleAdminRow";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function AdminSchedulePage() {
 
   const { data: items } = await supabase
     .from("schedule_items")
-    .select("id, time_label, starts_at, title")
+    .select("id, time_label, starts_at, title, detail")
     .order("starts_at", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
 
@@ -98,17 +99,24 @@ export default async function AdminSchedulePage() {
               <input name="title" required className="input" placeholder="개회식 & 오리엔테이션" />
             </div>
           </div>
+          <label className="label mt-3">상세 일정 (선택)</label>
+          <textarea
+            name="detail"
+            rows={2}
+            className="input resize-none"
+            placeholder="여러 줄 입력 가능. 공개 일정표에서 토글로 펼쳐 보여요."
+          />
         </ActionForm>
 
         {items && items.length > 0 && (
           <div className="mt-4 flex flex-col gap-2 border-t border-[var(--line)] pt-4">
             {items.map((it) => (
-              <DeleteRow
+              <ScheduleAdminRow
                 key={it.id}
                 id={it.id}
-                kind="schedule"
-                left={scheduleWhen(it.time_label, it.starts_at)}
-                right={it.title}
+                when={scheduleWhen(it.time_label, it.starts_at)}
+                title={it.title}
+                detail={it.detail}
               />
             ))}
           </div>
