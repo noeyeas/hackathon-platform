@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm } from "@/components/ActionForm";
-import { joinTeam, lockTeam } from "./actions";
+import { joinTeam, lockTeam, updateTeamInfo } from "./actions";
+import { canEditTeam } from "@/lib/teamEdit";
+import { MemberRemoveButton } from "./MemberRemoveButton";
 
 export default async function TeamPage() {
   const supabase = await createClient();
@@ -61,7 +63,7 @@ export default async function TeamPage() {
 
   const { data: members } = await supabase
     .from("team_members")
-    .select("is_leader, users(name, email)")
+    .select("user_id, is_leader, users(name, email)")
     .eq("team_id", membership.team_id);
 
   const { data: project } = await supabase
@@ -72,6 +74,8 @@ export default async function TeamPage() {
 
   const count = members?.length ?? 0;
   const locked = team?.status === "locked";
+  // 팀장이 마감(9/3) 전이면 팀 정보·팀원을 수정할 수 있다.
+  const canEdit = membership.is_leader && !locked && canEditTeam();
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
@@ -105,19 +109,59 @@ export default async function TeamPage() {
         )}
       </div>
 
+      {canEdit && (
+        <div className="card">
+          <h2 className="mb-1 font-bold">팀 정보 수정</h2>
+          <p className="mb-4 text-sm text-[var(--muted)]">
+            팀 이름·소개는 9월 3일 전까지 수정할 수 있어요.
+          </p>
+          <ActionForm
+            action={updateTeamInfo}
+            submitLabel="저장"
+            successMessage="저장했습니다."
+          >
+            <label className="label">팀 이름</label>
+            <input
+              name="name"
+              required
+              defaultValue={team?.name ?? ""}
+              className="input"
+            />
+            <label className="label mt-3">한 줄 소개</label>
+            <input
+              name="tagline"
+              defaultValue={team?.tagline ?? ""}
+              className="input"
+              placeholder="우리 팀을 소개해 주세요"
+            />
+          </ActionForm>
+        </div>
+      )}
+
       <div className="card">
         <h2 className="mb-3 font-bold">팀원 ({count}/4)</h2>
         <ul className="flex flex-col divide-y divide-[var(--line)]">
           {members?.map((m, i) => {
             const u = m.users as unknown as { name: string | null; email: string };
+            const label = u?.name ?? u?.email;
             return (
               <li key={i} className="flex items-center justify-between py-2.5">
-                <span className="text-sm">{u?.name ?? u?.email}</span>
-                {m.is_leader && <span className="chip">리더</span>}
+                <span className="text-sm">{label}</span>
+                <div className="flex items-center gap-3">
+                  {m.is_leader && <span className="chip">리더</span>}
+                  {canEdit && !m.is_leader && (
+                    <MemberRemoveButton userId={m.user_id} name={label} />
+                  )}
+                </div>
               </li>
             );
           })}
         </ul>
+        {canEdit && (
+          <p className="mt-3 text-xs text-[var(--muted)]">
+            팀원 구성은 9월 3일 전까지 변경할 수 있어요.
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
