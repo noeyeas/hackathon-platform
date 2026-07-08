@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PHASE_LABEL, type EventPhase } from "@/lib/types";
+import { Dday } from "@/components/Dday";
 
 export default async function Home() {
   const supabase = await createClient();
   const { data: settings } = await supabase
     .from("event_settings")
-    .select("name, phase")
+    .select("name, phase, event_date")
     .single();
 
   const { data: notices } = await supabase
@@ -15,6 +16,12 @@ export default async function Home() {
     .order("pinned", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(3);
+
+  const { data: schedule } = await supabase
+    .from("schedule_items")
+    .select("id, time_label, title")
+    .order("sort", { ascending: true })
+    .order("created_at", { ascending: true });
 
   const phase = (settings?.phase ?? "signup") as EventPhase;
 
@@ -43,6 +50,33 @@ export default async function Home() {
           </Link>
         </div>
       </section>
+
+      {settings?.event_date && <Dday eventDate={settings.event_date} />}
+
+      {schedule && schedule.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="font-bold">🗓️ 일정표</h2>
+          <div className="card !p-0">
+            <ol className="flex flex-col">
+              {schedule.map((it, i) => (
+                <li
+                  key={it.id}
+                  className={`flex items-center gap-4 px-5 py-3.5 ${
+                    i !== schedule.length - 1
+                      ? "border-b border-[var(--line)]"
+                      : ""
+                  }`}
+                >
+                  <span className="w-20 flex-none font-mono text-sm font-semibold text-vote">
+                    {it.time_label ?? "—"}
+                  </span>
+                  <span className="text-sm">{it.title}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+      )}
 
       {notices && notices.length > 0 && (
         <section className="flex flex-col gap-3">

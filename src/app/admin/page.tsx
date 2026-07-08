@@ -93,6 +93,11 @@ export default async function AdminPage() {
           title="발표 진행"
           desc="현재 발표 팀 제어"
         />
+        <AdminLink
+          href="/admin/schedule"
+          title="일정 · D-day"
+          desc="대회 날짜·일정표 관리"
+        />
       </div>
     </div>
   );
