@@ -7,7 +7,9 @@ export default async function GalleryPage() {
   const supabase = await createClient();
   const { data: projects } = await supabase
     .from("projects")
-    .select("id, title, description, repo_url, demo_url, video_url, teams(name)")
+    .select(
+      "id, title, description, view_count, teams(name), project_likes(count)"
+    )
     .order("submitted_at", { ascending: true });
 
   return (
@@ -32,31 +34,26 @@ export default async function GalleryPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((p) => {
             const team = p.teams as unknown as { name: string } | null;
+            const likeCount =
+              (p.project_likes as unknown as { count: number }[])?.[0]?.count ??
+              0;
             return (
-              <div key={p.id} className="card flex flex-col">
+              <Link
+                key={p.id}
+                href={`/gallery/${p.id}`}
+                className="card flex flex-col transition hover:-translate-y-1 hover:shadow-md"
+              >
                 <span className="chip mb-2 w-fit">{team?.name}</span>
                 <h3 className="font-bold">{p.title}</h3>
                 <p className="mt-1 line-clamp-3 text-sm text-[var(--muted)]">
                   {p.description ?? "설명 없음"}
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                  {p.repo_url && (
-                    <a href={p.repo_url} target="_blank" className="chip hover:text-ink">
-                      GitHub
-                    </a>
-                  )}
-                  {p.demo_url && (
-                    <a href={p.demo_url} target="_blank" className="chip hover:text-ink">
-                      데모
-                    </a>
-                  )}
-                  {p.video_url && (
-                    <a href={p.video_url} target="_blank" className="chip hover:text-ink">
-                      영상
-                    </a>
-                  )}
+                <div className="mt-4 flex items-center gap-4 border-t border-[var(--line)] pt-3 text-xs text-[var(--muted)]">
+                  <span>👁 {p.view_count ?? 0}</span>
+                  <span>♥ {likeCount}</span>
+                  <span className="ml-auto font-medium text-vote">자세히 →</span>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
