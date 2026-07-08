@@ -15,6 +15,21 @@ body {
   color: var(--ink);
   font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic",
     "Apple SD Gothic Neo", sans-serif;
+  overflow-x: clip;
+}
+
+/* 컨테이너를 벗어나 화면 가로 전체 폭으로 확장 */
+.bleed {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+.scroll-cue {
+  animation: bounce-down 1.6s ease-in-out infinite;
 }
 
 @layer components {
