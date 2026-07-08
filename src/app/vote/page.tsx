@@ -86,7 +86,7 @@ export default async function VotePage() {
 
       {!votingOpen && (
         <div className="mt-4 rounded-lg bg-vote/10 px-4 py-3 text-sm text-vote">
-          현재는 투표가 닫혀 있습니다. 투표가 열리면 채점을 저장할 수 있어요.
+          현재는 평가가 닫혀 있습니다. 평가가 열리면 채점을 저장할 수 있어요.
         </div>
       )}
 

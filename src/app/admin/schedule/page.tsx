@@ -91,10 +91,14 @@ export default async function AdminSchedulePage() {
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="label">날짜/시간 *</label>
+              <label className="label">시작 날짜/시간 *</label>
               <input name="starts_at" type="datetime-local" required className="input" />
             </div>
             <div>
+              <label className="label">종료일 (선택 · 기간이면)</label>
+              <input name="ends_at" type="datetime-local" className="input" />
+            </div>
+            <div className="sm:col-span-2">
               <label className="label">내용 *</label>
               <input name="title" required className="input" placeholder="개회식 & 오리엔테이션" />
             </div>

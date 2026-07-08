@@ -60,10 +60,12 @@ export async function addScheduleItem(formData: FormData) {
   if (!raw) return { error: "날짜/시간을 선택하세요" };
 
   const detail = String(formData.get("detail") ?? "").trim() || null;
+  const endRaw = String(formData.get("ends_at") ?? "").trim();
 
   const admin = createAdminClient();
   const { error } = await admin.from("schedule_items").insert({
     starts_at: new Date(raw).toISOString(),
+    ends_at: endRaw ? new Date(endRaw).toISOString() : null,
     title,
     detail,
     sort: 0,

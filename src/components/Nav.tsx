@@ -57,7 +57,7 @@ export async function Nav() {
               href="/vote"
               className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
             >
-              투표
+              평가
             </Link>
           )}
           {(role === "judge" || role === "admin") && (

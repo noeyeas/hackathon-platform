@@ -8,7 +8,7 @@ export default async function SchedulePage() {
   const supabase = await createClient();
   const { data: items } = await supabase
     .from("schedule_items")
-    .select("id, time_label, starts_at, title, detail")
+    .select("id, time_label, starts_at, ends_at, title, detail")
     .order("starts_at", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
 
