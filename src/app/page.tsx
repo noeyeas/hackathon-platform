@@ -236,9 +236,6 @@ export default async function Home() {
             >
               💬 하성 1:1 오픈채팅 문의
             </a>
-            <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary w-full">
-              참가 신청하기
-            </a>
           </div>
         </div>
       </section>
