@@ -123,11 +123,6 @@ export function RecruitModal({
                 className="input"
                 placeholder="오픈카톡 링크 / 이메일 등"
               />
-              {isTeam && (
-                <p className="mt-1 text-xs text-[var(--muted)]">
-                  초대 코드 외에, 문의받을 연락처를 남겨두면 좋아요 (선택).
-                </p>
-              )}
             </ActionForm>
           </div>
         </div>

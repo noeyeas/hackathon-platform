@@ -23,10 +23,6 @@ export function RecruitTabs({
 }) {
   const [tab, setTab] = useState<"team" | "individual">("team");
   const posts = tab === "team" ? teamPosts : individualPosts;
-  const hint =
-    tab === "team"
-      ? "팀이 함께할 팀원을 찾고 있어요."
-      : "아직 팀이 없는 분이 팀을 찾고 있어요.";
   const empty =
     tab === "team"
       ? "팀원을 모집하는 팀이 아직 없습니다."
@@ -49,9 +45,7 @@ export function RecruitTabs({
         />
       </div>
 
-      <p className="mt-3 text-sm text-[var(--muted)]">{hint}</p>
-
-      <div className="mt-3 flex flex-col gap-3">
+      <div className="mt-4 flex flex-col gap-3">
         {posts.length === 0 ? (
           <p className="card text-center text-sm text-[var(--muted)]">
             {empty}
