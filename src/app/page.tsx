@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { PHASE_LABEL, type EventPhase } from "@/lib/types";
 import { LogoMarquee } from "@/components/LogoMarquee";
 import { Reveal } from "@/components/Reveal";
 import { RevealGroup } from "@/components/RevealGroup";
@@ -22,14 +20,7 @@ const SCHEDULE = [
   { date: "9.18 – 9.19", label: "최종 발표 및 스프린트 (무박 2일)", place: "기념관 319호" },
 ];
 
-export default async function Home() {
-  const supabase = await createClient();
-  const { data: settings } = await supabase
-    .from("event_settings")
-    .select("phase")
-    .single();
-  const phase = (settings?.phase ?? "signup") as EventPhase;
-
+export default function Home() {
   return (
     <div className="flex flex-col gap-24">
       {/* ===== 히어로 + 하단 마퀴 ===== */}
@@ -42,10 +33,6 @@ export default async function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/55 to-black/70" />
 
           <div className="hero-in relative flex flex-col items-center gap-5 text-white">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
-              <span className="h-2 w-2 rounded-full bg-vote" />
-              현재 단계 · {PHASE_LABEL[phase]}
-            </span>
             <h1 className="text-5xl font-black leading-none tracking-tight sm:text-7xl">
               2026
               <br />
