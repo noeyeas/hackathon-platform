@@ -4,6 +4,8 @@ import { NavMenu } from "./NavMenu";
 
 const EVENT_ITEMS = [
   { href: "/notice", label: "공지" },
+  { href: "/schedule", label: "일정" },
+  { href: "/dday", label: "D-day" },
   { href: "/results", label: "결과" },
 ];
 
