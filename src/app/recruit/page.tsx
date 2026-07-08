@@ -26,6 +26,7 @@ export default async function RecruitPage() {
   } = await supabase.auth.getUser();
 
   let myTeamId: string | null = null;
+  let isAdmin = false;
   if (user) {
     const { data } = await supabase
       .from("team_members")
@@ -33,6 +34,13 @@ export default async function RecruitPage() {
       .eq("user_id", user.id)
       .maybeSingle();
     myTeamId = data?.team_id ?? null;
+
+    const { data: me } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    isAdmin = me?.role === "admin";
   }
 
   const { data: posts } = await supabase
@@ -101,7 +109,11 @@ export default async function RecruitPage() {
       </div>
 
       {/* 팀원 구함 / 팀 구함 탭 전환 */}
-      <RecruitTabs teamPosts={teamPosts} individualPosts={individualPosts} />
+      <RecruitTabs
+        teamPosts={teamPosts}
+        individualPosts={individualPosts}
+        isAdmin={isAdmin}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 async function myTeamId() {
@@ -108,7 +108,16 @@ export async function toggleRecruitPost(id: string, isOpen: boolean) {
 export async function deleteRecruitPost(id: string) {
   const { user, supabase } = await myTeamId();
   if (!user) return { error: "로그인이 필요합니다" };
-  const { error } = await supabase.from("recruit_posts").delete().eq("id", id);
+
+  // 운영진은 모든 모집 글을 삭제할 수 있음 (RLS 우회) — 그 외엔 본인/팀원만 (RLS 강제)
+  const { data: me } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  const client = me?.role === "admin" ? createAdminClient() : supabase;
+
+  const { error } = await client.from("recruit_posts").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/recruit");
   return { ok: true };

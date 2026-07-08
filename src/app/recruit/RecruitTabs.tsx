@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { deleteRecruitPost } from "./actions";
 
 type Post = {
   id: string;
@@ -16,9 +18,11 @@ type Post = {
 export function RecruitTabs({
   teamPosts,
   individualPosts,
+  isAdmin = false,
 }: {
   teamPosts: Post[];
   individualPosts: Post[];
+  isAdmin?: boolean;
 }) {
   const [tab, setTab] = useState<"team" | "individual">("team");
   const posts = tab === "team" ? teamPosts : individualPosts;
@@ -50,7 +54,7 @@ export function RecruitTabs({
             {empty}
           </p>
         ) : (
-          posts.map((p) => <PostCard key={p.id} p={p} />)
+          posts.map((p) => <PostCard key={p.id} p={p} isAdmin={isAdmin} />)
         )}
       </div>
     </div>
@@ -85,9 +89,24 @@ function TabButton({
   );
 }
 
-function PostCard({ p }: { p: Post }) {
+function PostCard({ p, isAdmin }: { p: Post; isAdmin: boolean }) {
   const isTeam = p.kind !== "individual";
   const team = p.team;
+  const [pending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function remove() {
+    if (pending) return;
+    if (!confirm("이 모집 글을 삭제할까요?")) return;
+    startTransition(async () => {
+      const res = await deleteRecruitPost(p.id);
+      if (res?.error) {
+        alert(res.error);
+        return;
+      }
+      router.refresh();
+    });
+  }
 
   return (
     <div className="card">
@@ -104,9 +123,21 @@ function PostCard({ p }: { p: Post }) {
             {isTeam ? team?.name : (p.author_name ?? "익명")}
           </span>
         </div>
-        {isTeam && team?.status === "locked" && (
-          <span className="text-xs text-[var(--muted)]">마감된 팀</span>
-        )}
+        <div className="flex flex-none items-center gap-3">
+          {isTeam && team?.status === "locked" && (
+            <span className="text-xs text-[var(--muted)]">마감된 팀</span>
+          )}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={remove}
+              disabled={pending}
+              className="text-xs text-[var(--muted)] hover:text-red-500 disabled:opacity-50"
+            >
+              삭제
+            </button>
+          )}
+        </div>
       </div>
 
       <h3 className="mt-2 font-bold">{p.title}</h3>
