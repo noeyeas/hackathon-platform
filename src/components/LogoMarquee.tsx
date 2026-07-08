@@ -11,7 +11,7 @@ const ORGS: Org[] = [
 
 function Item({ org }: { org: Org }) {
   return (
-    <div className="flex flex-none items-center gap-2 px-5">
+    <div className="flex flex-none items-center gap-2.5 px-12">
       {org.img ? (
         <img
           src={org.img}
@@ -39,11 +39,14 @@ function Item({ org }: { org: Org }) {
 
 // 상단 자동 스크롤(마퀴) 로고 스트립 — 주관·후원 기관
 export function LogoMarquee() {
-  const list = [...ORGS, ...ORGS]; // 이음새 없는 루프용 2배 복제
+  // 한 세트를 넓은 화면도 채울 만큼 반복(base), 그 base를 2배로 이어 붙여
+  // -50% 이동만으로 이음새 없이 무한 순환
+  const base = [...ORGS, ...ORGS, ...ORGS];
+  const track = [...base, ...base];
   return (
-    <div className="marquee-mask bleed overflow-hidden border-b border-[var(--line)] bg-white py-1.5">
+    <div className="bleed overflow-hidden border-b border-[var(--line)] bg-white py-1.5">
       <div className="flex w-max animate-marquee">
-        {list.map((org, i) => (
+        {track.map((org, i) => (
           <Item key={i} org={org} />
         ))}
       </div>
