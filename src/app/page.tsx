@@ -36,35 +36,48 @@ export default async function Home() {
   return (
     <div className="flex flex-col gap-20">
       {/* HERO */}
-      <section className="flex flex-col items-start gap-5 py-6 sm:py-10">
-        <span className="chip">
-          <span className="h-2 w-2 rounded-full bg-vote" />
-          현재 단계 · {PHASE_LABEL[phase]}
-        </span>
-        <p className="font-mono text-sm font-semibold uppercase tracking-widest text-vote">
-          WOLGYE HACKATHON
-        </p>
-        <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-6xl">
-          기술을 통해
-          <br />
-          월계동의 <span className="text-vote">내일</span>을 그리다
-        </h1>
-        <p className="max-w-2xl text-lg text-[var(--muted)]">
-          월계동 지역사회의 실제 현안(환경·경제·교육·교통)을 주민과 청년의
-          시각에서 발굴하고, 혁신적인 웹/앱 기술로 해결하는 해커톤입니다.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href={APPLY_FORM_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="btn-primary"
-          >
-            참가 신청하기
-          </a>
-          <Link href="/schedule" className="btn-ghost">
-            일정 보기
-          </Link>
+      <section className="relative flex min-h-[440px] flex-col justify-end overflow-hidden rounded-3xl p-8 sm:min-h-[520px] sm:p-12">
+        {/* 배경 사진 */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/campus.jpg')" }}
+        />
+        {/* 가독성용 어두운 오버레이 */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/25" />
+
+        <div className="relative flex flex-col items-start gap-5 text-white">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-medium backdrop-blur">
+            <span className="h-2 w-2 rounded-full bg-vote" />
+            현재 단계 · {PHASE_LABEL[phase]}
+          </span>
+          <p className="font-mono text-sm font-semibold uppercase tracking-widest text-vote">
+            WOLGYE HACKATHON
+          </p>
+          <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight drop-shadow-lg sm:text-6xl">
+            기술을 통해
+            <br />
+            월계동의 <span className="text-vote">내일</span>을 그리다
+          </h1>
+          <p className="max-w-2xl text-lg text-white/80">
+            월계동 지역사회의 실제 현안(환경·경제·교육·교통)을 주민과 청년의
+            시각에서 발굴하고, 혁신적인 웹/앱 기술로 해결하는 해커톤입니다.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={APPLY_FORM_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-primary"
+            >
+              참가 신청하기
+            </a>
+            <Link
+              href="/schedule"
+              className="btn inline-flex border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
+            >
+              일정 보기
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -205,17 +218,47 @@ export default async function Home() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="card">
             <p className="text-sm font-semibold text-[var(--muted)]">주관</p>
-            <ul className="mt-2 flex flex-col gap-1 font-semibold">
-              <li>광운대학교 총학생회 이음</li>
-              <li>인공지능융합대학 학생회 하성</li>
-            </ul>
+            <div className="mt-3 flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/council.jpg"
+                  alt="이음"
+                  className="h-12 w-12 flex-none rounded-xl object-cover"
+                />
+                <span className="font-semibold">광운대학교 총학생회 이음</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/hasung.jpg"
+                  alt="하성"
+                  className="h-12 w-12 flex-none rounded-xl object-cover"
+                />
+                <span className="font-semibold">
+                  인공지능융합대학 학생회 하성
+                </span>
+              </div>
+            </div>
           </div>
           <div className="card">
             <p className="text-sm font-semibold text-[var(--muted)]">후원</p>
-            <ul className="mt-2 flex flex-col gap-1 font-semibold">
-              <li>카카오페이</li>
-              <li>월계동 주민단체</li>
-            </ul>
+            <div className="mt-3 flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/kakaopay.jpeg"
+                  alt="카카오페이"
+                  className="h-8 flex-none object-contain"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-gray-100 text-center text-[10px] font-bold leading-tight text-[var(--muted)]">
+                  월계동
+                </div>
+                <span className="font-semibold">월계동 주민단체</span>
+              </div>
+            </div>
           </div>
         </div>
       </Section>
