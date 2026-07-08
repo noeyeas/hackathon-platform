@@ -94,7 +94,7 @@ export default async function Home() {
           {THEMES.map((t) => (
             <div key={t.t} className="card flex flex-col gap-2">
               <span className="text-3xl">{t.icon}</span>
-              <p className="font-mono text-xs uppercase tracking-wider text-vote">
+              <p className="text-xs uppercase tracking-wider text-vote">
                 {t.en}
               </p>
               <h3 className="font-bold">{t.t}</h3>
@@ -121,7 +121,7 @@ export default async function Home() {
         <div className="grid gap-4 lg:grid-cols-3">
           {GOALS.map((g) => (
             <div key={g.n} className="card">
-              <div className="font-mono text-sm font-semibold text-vote">{g.n}</div>
+              <div className="text-sm font-semibold text-vote">{g.n}</div>
               <h3 className="mt-2 font-bold">{g.t}</h3>
               <p className="mt-2 text-sm text-[var(--muted)]">{g.d}</p>
             </div>
@@ -141,7 +141,7 @@ export default async function Home() {
                     i !== SCHEDULE.length - 1 ? "border-b border-[var(--line)]" : ""
                   }`}
                 >
-                  <span className="w-28 flex-none font-mono text-sm font-bold text-vote">
+                  <span className="w-28 flex-none text-sm font-bold text-vote">
                     {s.date}
                   </span>
                   <div>
@@ -209,7 +209,7 @@ export default async function Home() {
         />
         <div className="relative mx-auto grid max-w-5xl gap-10 sm:grid-cols-2">
           <div>
-            <p className="font-mono text-xs font-semibold uppercase tracking-widest text-vote">
+            <p className="text-xs font-semibold uppercase tracking-widest text-vote">
               Contact
             </p>
             <h2 className="mt-1 text-3xl font-bold">문의하기</h2>
@@ -254,7 +254,7 @@ function Section({
   return (
     <section className="flex flex-col gap-5">
       <div>
-        <p className="font-mono text-xs font-semibold uppercase tracking-widest text-vote">
+        <p className="text-xs font-semibold uppercase tracking-widest text-vote">
           {eyebrow}
         </p>
         <h2 className="mt-1 text-2xl font-bold sm:text-3xl">{title}</h2>

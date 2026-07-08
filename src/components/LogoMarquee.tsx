@@ -28,7 +28,7 @@ function Item({ org }: { org: Org }) {
         </div>
       )}
       <div className="whitespace-nowrap">
-        <span className="mr-1.5 font-mono text-[9px] uppercase tracking-wider text-vote">
+        <span className="mr-1.5 text-[9px] uppercase tracking-wider text-vote">
           {org.role}
         </span>
         <span className="text-xs font-medium">{org.name}</span>

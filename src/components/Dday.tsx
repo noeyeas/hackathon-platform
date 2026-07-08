@@ -48,7 +48,7 @@ export function Dday({
       </div>
       <span className="text-xs text-[var(--muted)]">{dateLabel}</span>
       {now !== null && !past && (
-        <div className="mt-1 flex gap-1.5 font-mono text-xs">
+        <div className="mt-1 flex gap-1.5 text-xs">
           {[
             ["일", days],
             ["시", hours],
