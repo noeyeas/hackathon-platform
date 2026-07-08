@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { ParticipantMenu } from "./ParticipantMenu";
+import { NavMenu } from "./NavMenu";
 
-const LINKS = [
-  { href: "/gallery", label: "갤러리" },
+const EVENT_ITEMS = [
   { href: "/notice", label: "공지" },
   { href: "/results", label: "결과" },
+];
+
+const LINKS = [
+  { href: "/recruit", label: "모집" },
+  { href: "/gallery", label: "갤러리" },
 ];
 
 export async function Nav() {
@@ -31,7 +35,14 @@ export async function Nav() {
           🏆 해커톤
         </Link>
         <nav className="hidden items-center gap-1 text-sm sm:flex">
-          <ParticipantMenu />
+          {user && (
+            <Link
+              href="/mypage"
+              className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
+            >
+              마이페이지
+            </Link>
+          )}
           {LINKS.map((l) => (
             <Link
               key={l.href}
@@ -41,6 +52,7 @@ export async function Nav() {
               {l.label}
             </Link>
           ))}
+          <NavMenu label="대회" items={EVENT_ITEMS} />
           {role === "judge" && (
             <Link
               href="/judge"
