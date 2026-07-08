@@ -5,6 +5,20 @@ import { RecruitManage } from "./RecruitManage";
 
 export const dynamic = "force-dynamic";
 
+type Post = {
+  id: string;
+  title: string;
+  body: string | null;
+  positions: string[] | null;
+  is_open: boolean;
+  kind: string;
+  team_id: string | null;
+  author_id: string | null;
+  author_name: string | null;
+  contact: string | null;
+  teams: unknown;
+};
+
 export default async function RecruitPage() {
   const supabase = await createClient();
   const {
@@ -28,13 +42,14 @@ export default async function RecruitPage() {
     )
     .order("created_at", { ascending: false });
 
-  const openPosts = posts?.filter((p) => p.is_open) ?? [];
-  const myPosts =
-    posts?.filter(
-      (p) =>
-        (user && p.author_id === user.id) ||
-        (myTeamId && p.team_id === myTeamId)
-    ) ?? [];
+  const all = (posts ?? []) as Post[];
+  const openPosts = all.filter((p) => p.is_open);
+  const teamPosts = openPosts.filter((p) => p.kind !== "individual");
+  const individualPosts = openPosts.filter((p) => p.kind === "individual");
+  const myPosts = all.filter(
+    (p) =>
+      (user && p.author_id === user.id) || (myTeamId && p.team_id === myTeamId)
+  );
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -49,93 +64,29 @@ export default async function RecruitPage() {
         <RecruitModal loggedIn={!!user} hasTeam={!!myTeamId} />
       </div>
 
-      {/* 팀 / 개인 목록 (최상단) */}
-      <div className="mt-6 flex flex-col gap-3">
-        <h2 className="font-bold">팀 / 개인 ({openPosts.length})</h2>
-        {openPosts.map((p) => {
-          const team = p.teams as unknown as {
-            name: string;
-            invite_code: string;
-            status: string;
-          } | null;
-          const isTeam = p.kind !== "individual";
-          return (
-            <div key={p.id} className="card">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`chip ${
-                      isTeam
-                        ? "border-team text-team"
-                        : "border-admin text-admin"
-                    }`}
-                  >
-                    {isTeam ? "팀" : "개인"}
-                  </span>
-                  <span className="text-sm font-semibold">
-                    {isTeam ? team?.name : (p.author_name ?? "익명")}
-                  </span>
-                </div>
-                {isTeam && team?.status === "locked" && (
-                  <span className="text-xs text-[var(--muted)]">마감된 팀</span>
-                )}
-              </div>
+      {/* 팀원 구함 (팀 → 팀원) */}
+      <Group
+        title="🧑‍🤝‍🧑 팀원 구함"
+        hint="팀이 함께할 팀원을 찾고 있어요"
+        count={teamPosts.length}
+        empty="팀원을 모집하는 팀이 아직 없습니다."
+      >
+        {teamPosts.map((p) => (
+          <PostCard key={p.id} p={p} />
+        ))}
+      </Group>
 
-              <h3 className="mt-2 font-bold">{p.title}</h3>
-
-              {p.positions?.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {p.positions.map((pos: string) => (
-                    <span key={pos} className="chip">
-                      {pos}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {p.body && (
-                <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--muted)]">
-                  {p.body}
-                </p>
-              )}
-
-              {/* 합류/연락 안내 */}
-              {isTeam ? (
-                team?.status !== "locked" && (
-                  <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm">
-                    합류하려면{" "}
-                    <Link
-                      href="/team"
-                      className="font-semibold text-vote underline"
-                    >
-                      팀 페이지
-                    </Link>
-                    에서 초대 코드{" "}
-                    <span className="select-all font-mono font-bold">
-                      {team?.invite_code}
-                    </span>{" "}
-                    입력
-                  </div>
-                )
-              ) : (
-                p.contact && (
-                  <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm">
-                    연락:{" "}
-                    <span className="select-all font-semibold text-admin">
-                      {p.contact}
-                    </span>
-                  </div>
-                )
-              )}
-            </div>
-          );
-        })}
-        {!openPosts.length && (
-          <p className="card text-center text-[var(--muted)]">
-            아직 모집글이 없습니다. 첫 글을 올려보세요.
-          </p>
-        )}
-      </div>
+      {/* 팀 구함 (개인 → 팀) */}
+      <Group
+        title="🙋 팀 구함"
+        hint="아직 팀이 없는 분이 팀을 찾고 있어요"
+        count={individualPosts.length}
+        empty="팀을 구하는 개인이 아직 없습니다."
+      >
+        {individualPosts.map((p) => (
+          <PostCard key={p.id} p={p} />
+        ))}
+      </Group>
 
       {/* 내 모집글 관리 */}
       {myPosts.length > 0 && (
@@ -144,6 +95,108 @@ export default async function RecruitPage() {
           <RecruitManage posts={myPosts} />
         </div>
       )}
+    </div>
+  );
+}
+
+function Group({
+  title,
+  hint,
+  count,
+  empty,
+  children,
+}: {
+  title: string;
+  hint: string;
+  count: number;
+  empty: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mt-8 flex flex-col gap-3">
+      <div>
+        <h2 className="font-bold">
+          {title} <span className="text-[var(--muted)]">({count})</span>
+        </h2>
+        <p className="text-sm text-[var(--muted)]">{hint}</p>
+      </div>
+      {count === 0 ? (
+        <p className="card text-center text-sm text-[var(--muted)]">{empty}</p>
+      ) : (
+        children
+      )}
+    </section>
+  );
+}
+
+function PostCard({ p }: { p: Post }) {
+  const isTeam = p.kind !== "individual";
+  const team = p.teams as {
+    name: string;
+    invite_code: string;
+    status: string;
+  } | null;
+
+  return (
+    <div className="card">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span
+            className={`chip ${
+              isTeam ? "border-team text-team" : "border-admin text-admin"
+            }`}
+          >
+            {isTeam ? "팀원 구함" : "팀 구함"}
+          </span>
+          <span className="text-sm font-semibold">
+            {isTeam ? team?.name : (p.author_name ?? "익명")}
+          </span>
+        </div>
+        {isTeam && team?.status === "locked" && (
+          <span className="text-xs text-[var(--muted)]">마감된 팀</span>
+        )}
+      </div>
+
+      <h3 className="mt-2 font-bold">{p.title}</h3>
+
+      {p.positions && p.positions.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {p.positions.map((pos: string) => (
+            <span key={pos} className="chip">
+              {pos}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {p.body && (
+        <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--muted)]">
+          {p.body}
+        </p>
+      )}
+
+      {isTeam
+        ? team?.status !== "locked" && (
+            <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm">
+              합류하려면{" "}
+              <Link href="/team" className="font-semibold text-vote underline">
+                팀 페이지
+              </Link>
+              에서 초대 코드{" "}
+              <span className="select-all font-mono font-bold">
+                {team?.invite_code}
+              </span>{" "}
+              입력
+            </div>
+          )
+        : p.contact && (
+            <div className="mt-3 rounded-lg bg-gray-50 p-3 text-sm">
+              연락:{" "}
+              <span className="select-all font-semibold text-admin">
+                {p.contact}
+              </span>
+            </div>
+          )}
     </div>
   );
 }
