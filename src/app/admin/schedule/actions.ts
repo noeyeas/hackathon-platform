@@ -22,31 +22,49 @@ function revalidate() {
   revalidatePath("/");
 }
 
-// 대회 날짜 설정 (D-day 기준). datetime-local 문자열을 받음
-export async function setEventDate(formData: FormData) {
+// ---------- 마일스톤 (여러 D-day) ----------
+export async function addMilestone(formData: FormData) {
   if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
-  const raw = String(formData.get("event_date") ?? "").trim();
+  const label = String(formData.get("label") ?? "").trim();
+  const raw = String(formData.get("target_at") ?? "").trim();
+  const sort = Number(formData.get("sort") ?? 0);
+  if (!label) return { error: "이름을 입력하세요 (예: 신청 마감)" };
+  if (!raw) return { error: "날짜/시간을 선택하세요" };
+
   const admin = createAdminClient();
-  const { error } = await admin
-    .from("event_settings")
-    .update({ event_date: raw ? new Date(raw).toISOString() : null })
-    .eq("id", 1);
+  const { error } = await admin.from("milestones").insert({
+    label,
+    target_at: new Date(raw).toISOString(),
+    sort,
+  });
   if (error) return { error: error.message };
   revalidate();
   return { ok: true };
 }
 
+export async function deleteMilestone(id: string) {
+  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  const admin = createAdminClient();
+  const { error } = await admin.from("milestones").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidate();
+  return { ok: true };
+}
+
+// ---------- 일정 항목 (실제 날짜+시간) ----------
 export async function addScheduleItem(formData: FormData) {
   if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
-  const time_label = String(formData.get("time_label") ?? "").trim();
+  const raw = String(formData.get("starts_at") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
-  const sort = Number(formData.get("sort") ?? 0);
   if (!title) return { error: "일정 내용을 입력하세요" };
+  if (!raw) return { error: "날짜/시간을 선택하세요" };
 
   const admin = createAdminClient();
-  const { error } = await admin
-    .from("schedule_items")
-    .insert({ time_label: time_label || null, title, sort });
+  const { error } = await admin.from("schedule_items").insert({
+    starts_at: new Date(raw).toISOString(),
+    title,
+    sort: 0,
+  });
   if (error) return { error: error.message };
   revalidate();
   return { ok: true };

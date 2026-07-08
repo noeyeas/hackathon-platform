@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-// event_date까지 D-day + 실시간 카운트다운
-export function Dday({ eventDate }: { eventDate: string }) {
-  const target = new Date(eventDate).getTime();
+// 특정 마일스톤까지 D-day + 실시간 카운트다운
+export function Dday({
+  label,
+  targetAt,
+}: {
+  label: string;
+  targetAt: string;
+}) {
+  const target = new Date(targetAt).getTime();
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
@@ -16,7 +22,7 @@ export function Dday({ eventDate }: { eventDate: string }) {
   const diff = now === null ? 0 : target - now;
   const past = now !== null && diff <= 0;
 
-  const dday = Math.ceil(diff / 86400000); // 남은 일수(올림)
+  const dday = Math.ceil(diff / 86400000);
   const s = Math.max(0, Math.floor(diff / 1000));
   const days = Math.floor(s / 86400);
   const hours = Math.floor((s % 86400) / 3600);
@@ -24,25 +30,25 @@ export function Dday({ eventDate }: { eventDate: string }) {
   const secs = s % 60;
   const pad = (n: number) => String(n).padStart(2, "0");
 
-  const label = new Date(eventDate).toLocaleString("ko-KR", {
-    year: "numeric",
+  const dateLabel = new Date(targetAt).toLocaleString("ko-KR", {
     month: "long",
     day: "numeric",
     weekday: "short",
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
   });
 
   return (
-    <div className="flex flex-col items-start gap-3 rounded-2xl border border-[var(--line)] bg-gradient-to-br from-vote/10 to-transparent p-6">
-      <div className="flex items-baseline gap-3">
-        <span className="text-5xl font-extrabold tracking-tight text-vote">
-          {now === null ? "D-…" : past ? "진행 중" : dday === 0 ? "D-DAY" : `D-${dday}`}
+    <div className="flex flex-col gap-2 rounded-2xl border border-[var(--line)] bg-gradient-to-br from-vote/10 to-transparent p-5">
+      <span className="text-sm font-semibold text-[var(--muted)]">{label}</span>
+      <div className="flex items-baseline gap-2">
+        <span className="text-4xl font-extrabold tracking-tight text-vote">
+          {now === null ? "D-…" : past ? "종료" : dday === 0 ? "D-DAY" : `D-${dday}`}
         </span>
-        <span className="text-sm text-[var(--muted)]">{label}</span>
       </div>
+      <span className="text-xs text-[var(--muted)]">{dateLabel}</span>
       {now !== null && !past && (
-        <div className="flex gap-2 font-mono text-sm">
+        <div className="mt-1 flex gap-1.5 font-mono text-xs">
           {[
             ["일", days],
             ["시", hours],
@@ -51,12 +57,10 @@ export function Dday({ eventDate }: { eventDate: string }) {
           ].map(([unit, v]) => (
             <span
               key={unit as string}
-              className="rounded-lg bg-white px-2.5 py-1.5 tabular-nums shadow-sm"
+              className="rounded-md bg-white px-2 py-1 tabular-nums shadow-sm"
             >
               <b className="text-ink">{pad(v as number)}</b>
-              <span className="ml-0.5 text-xs text-[var(--muted)]">
-                {unit}
-              </span>
+              <span className="ml-0.5 text-[var(--muted)]">{unit}</span>
             </span>
           ))}
         </div>

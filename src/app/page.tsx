@@ -2,13 +2,19 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { PHASE_LABEL, type EventPhase } from "@/lib/types";
 import { Dday } from "@/components/Dday";
+import { formatDateTime } from "@/lib/format";
 
 export default async function Home() {
   const supabase = await createClient();
   const { data: settings } = await supabase
     .from("event_settings")
-    .select("name, phase, event_date")
+    .select("name, phase")
     .single();
+
+  const { data: milestones } = await supabase
+    .from("milestones")
+    .select("id, label, target_at")
+    .order("target_at", { ascending: true });
 
   const { data: notices } = await supabase
     .from("announcements")
@@ -19,8 +25,8 @@ export default async function Home() {
 
   const { data: schedule } = await supabase
     .from("schedule_items")
-    .select("id, time_label, title")
-    .order("sort", { ascending: true })
+    .select("id, time_label, starts_at, title")
+    .order("starts_at", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
 
   const phase = (settings?.phase ?? "signup") as EventPhase;
@@ -51,7 +57,13 @@ export default async function Home() {
         </div>
       </section>
 
-      {settings?.event_date && <Dday eventDate={settings.event_date} />}
+      {milestones && milestones.length > 0 && (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {milestones.map((m) => (
+            <Dday key={m.id} label={m.label} targetAt={m.target_at} />
+          ))}
+        </section>
+      )}
 
       {schedule && schedule.length > 0 && (
         <section className="flex flex-col gap-3">
@@ -67,8 +79,8 @@ export default async function Home() {
                       : ""
                   }`}
                 >
-                  <span className="w-20 flex-none font-mono text-sm font-semibold text-vote">
-                    {it.time_label ?? "—"}
+                  <span className="w-44 flex-none font-mono text-sm font-semibold text-vote">
+                    {it.starts_at ? formatDateTime(it.starts_at) : (it.time_label ?? "—")}
                   </span>
                   <span className="text-sm">{it.title}</span>
                 </li>
