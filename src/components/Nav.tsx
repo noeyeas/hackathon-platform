@@ -6,7 +6,6 @@ const EVENT_ITEMS = [
   { href: "/notice", label: "공지" },
   { href: "/schedule", label: "일정" },
   { href: "/dday", label: "D-day" },
-  { href: "/results", label: "결과" },
 ];
 
 const LINKS = [
@@ -47,6 +46,20 @@ export async function Nav() {
             </Link>
           ))}
           <NavMenu label="대회" items={EVENT_ITEMS} />
+          <Link
+            href="/results"
+            className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
+          >
+            결과
+          </Link>
+          {role === "participant" && (
+            <Link
+              href="/vote"
+              className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
+            >
+              투표
+            </Link>
+          )}
           {(role === "judge" || role === "admin") && (
             <Link
               href="/judge"

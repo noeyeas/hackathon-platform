@@ -28,6 +28,20 @@ export default async function VotePage() {
     );
   }
 
+  const { data: me } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (me?.role !== "participant") {
+    return (
+      <Notice
+        title="참가자 전용 페이지입니다"
+        body="팀별 채점은 참가자만 할 수 있습니다. 심사위원·운영진은 심사 화면을 이용하세요."
+      />
+    );
+  }
+
   const { data: membership } = await supabase
     .from("team_members")
     .select("team_id")
