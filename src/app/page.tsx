@@ -113,7 +113,9 @@ export default async function Home() {
         </div>
       </PinnedHero>
 
-      <LogoMarquee />
+      <div className="-mt-24">
+        <LogoMarquee />
+      </div>
 
       {/* ===== 주제 (Theme) ===== */}
       <Section eyebrow="Theme" title="해커톤 주제" desc="월계동 지역사회 문제 해결 및 발전을 위한 웹/애플리케이션 개발">
