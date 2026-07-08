@@ -33,7 +33,8 @@ export default async function Home() {
 
   const hasSidebar =
     (milestones && milestones.length > 0) ||
-    (schedule && schedule.length > 0);
+    (schedule && schedule.length > 0) ||
+    (notices && notices.length > 0);
 
   return (
     <div
@@ -69,42 +70,6 @@ export default async function Home() {
           </div>
         </section>
 
-        {notices && notices.length > 0 && (
-          <section className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-bold">📢 공지사항</h2>
-              <Link href="/notice" className="text-sm text-[var(--muted)] hover:text-ink">
-                전체 보기 →
-              </Link>
-            </div>
-            {notices.map((a) => (
-              <Link
-                key={a.id}
-                href="/notice"
-                className="card flex items-start gap-3 !py-4 transition hover:border-vote"
-              >
-                {a.pinned && (
-                  <span className="chip border-vote text-vote">고정</span>
-                )}
-                <div className="min-w-0">
-                  <h3 className="font-semibold">{a.title}</h3>
-                  {a.body && (
-                    <p className="mt-0.5 line-clamp-1 text-sm text-[var(--muted)]">
-                      {a.body}
-                    </p>
-                  )}
-                </div>
-                <span className="ml-auto whitespace-nowrap font-mono text-xs text-[var(--muted)]">
-                  {new Date(a.created_at).toLocaleDateString("ko-KR", {
-                    month: "numeric",
-                    day: "numeric",
-                  })}
-                </span>
-              </Link>
-            ))}
-          </section>
-        )}
-
         <section className="grid gap-4 sm:grid-cols-2">
           {[
             { n: "01", t: "팀 구성", d: "팀을 만들거나 초대 코드로 합류 (2~4명)" },
@@ -132,6 +97,45 @@ export default async function Home() {
                 <Dday key={m.id} label={m.label} targetAt={m.target_at} />
               ))}
             </div>
+          )}
+
+          {notices && notices.length > 0 && (
+            <section className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h2 className="font-bold">📢 공지사항</h2>
+                <Link
+                  href="/notice"
+                  className="text-sm text-[var(--muted)] hover:text-ink"
+                >
+                  전체 →
+                </Link>
+              </div>
+              {notices.map((a) => (
+                <Link
+                  key={a.id}
+                  href="/notice"
+                  className="card flex flex-col gap-1 !p-4 transition hover:border-vote"
+                >
+                  <div className="flex items-center gap-2">
+                    {a.pinned && (
+                      <span className="chip border-vote text-vote">고정</span>
+                    )}
+                    <h3 className="font-semibold">{a.title}</h3>
+                  </div>
+                  {a.body && (
+                    <p className="line-clamp-2 text-sm text-[var(--muted)]">
+                      {a.body}
+                    </p>
+                  )}
+                  <span className="font-mono text-xs text-[var(--muted)]">
+                    {new Date(a.created_at).toLocaleDateString("ko-KR", {
+                      month: "numeric",
+                      day: "numeric",
+                    })}
+                  </span>
+                </Link>
+              ))}
+            </section>
           )}
 
           {schedule && schedule.length > 0 && (
