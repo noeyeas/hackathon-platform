@@ -166,11 +166,6 @@ export default async function ProjectDetailPage({
         )}
         <div className="ml-auto flex items-center gap-3">
           <LikeButton projectId={p.id} initialCount={likeCount} />
-          {user && (
-            <Link href="/vote" className="btn-ghost">
-              투표하러 가기
-            </Link>
-          )}
         </div>
       </div>
 
