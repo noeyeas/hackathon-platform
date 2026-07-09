@@ -48,18 +48,18 @@ export default function Home() {
               기술을 통해 월계동의 내일을 그리다
             </p>
             <div className="mt-2 flex flex-wrap justify-center gap-3">
-              <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary">
+              <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary !rounded-full">
                 참가 신청하기
               </a>
               <Link
                 href="/schedule"
-                className="btn inline-flex border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
+                className="btn inline-flex !rounded-full border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
               >
                 일정 보기
               </Link>
               <Link
                 href="/gallery"
-                className="btn inline-flex border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
+                className="btn inline-flex !rounded-full border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
               >
                 제출작 보기
               </Link>
