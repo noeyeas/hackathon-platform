@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { ActionForm } from "@/components/ActionForm";
 import { createTeamAsAdmin } from "./actions";
 import { TeamRow } from "./TeamRow";
@@ -20,10 +20,12 @@ export default async function AdminTeamsPage() {
     .single();
   if (me?.role !== "admin") redirect("/");
 
-  const { data: teams } = await supabase
+  // 이메일 등 팀원 정보는 RLS 우회를 위해 Service Role 로 조회
+  const admin = createAdminClient();
+  const { data: teams } = await admin
     .from("teams")
     .select(
-      "id, name, tagline, invite_code, leader_code, status, team_members(count)"
+      "id, name, tagline, invite_code, leader_code, status, team_members(is_leader, users(email, name))"
     )
     .order("created_at", { ascending: true });
 
@@ -71,9 +73,18 @@ export default async function AdminTeamsPage() {
           <h2 className="mb-4 font-bold">등록된 팀 ({list.length})</h2>
           <div className="flex flex-col gap-2">
             {list.map((t) => {
-              const memberCount =
-                (t.team_members as unknown as { count: number }[])?.[0]
-                  ?.count ?? 0;
+              const raw =
+                (t.team_members as unknown as {
+                  is_leader: boolean;
+                  users: { email: string; name: string | null } | null;
+                }[]) ?? [];
+              const members = raw
+                .map((m) => ({
+                  email: m.users?.email ?? "",
+                  name: m.users?.name ?? null,
+                  isLeader: m.is_leader,
+                }))
+                .sort((a, b) => Number(b.isLeader) - Number(a.isLeader));
               return (
                 <TeamRow
                   key={t.id}
@@ -82,7 +93,8 @@ export default async function AdminTeamsPage() {
                   tagline={t.tagline}
                   inviteCode={t.invite_code}
                   leaderCode={t.leader_code}
-                  memberCount={memberCount}
+                  memberCount={members.length}
+                  members={members}
                   locked={t.status === "locked"}
                 />
               );

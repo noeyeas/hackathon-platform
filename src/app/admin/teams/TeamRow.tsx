@@ -3,6 +3,8 @@
 import { useTransition } from "react";
 import { deleteTeamAsAdmin } from "./actions";
 
+type Member = { email: string; name: string | null; isLeader: boolean };
+
 export function TeamRow({
   id,
   name,
@@ -10,6 +12,7 @@ export function TeamRow({
   inviteCode,
   leaderCode,
   memberCount,
+  members,
   locked,
 }: {
   id: string;
@@ -18,12 +21,13 @@ export function TeamRow({
   inviteCode: string;
   leaderCode: string;
   memberCount: number;
+  members: Member[];
   locked: boolean;
 }) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 py-3">
+    <div className="flex items-start justify-between gap-3 rounded-lg bg-gray-50 px-4 py-3">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <span className="truncate font-semibold">{name}</span>
@@ -51,6 +55,23 @@ export function TeamRow({
           </span>{" "}
           · {memberCount}/4명
         </p>
+        {members.length > 0 && (
+          <ul className="mt-2 flex flex-col gap-0.5">
+            {members.map((m) => (
+              <li key={m.email} className="flex items-center gap-1.5 text-xs">
+                {m.isLeader && (
+                  <span className="chip border-admin text-admin">팀장</span>
+                )}
+                <span className="select-all font-mono text-ink">
+                  {m.email}
+                </span>
+                {m.name && (
+                  <span className="text-[var(--muted)]">({m.name})</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       <button
         disabled={pending}
