@@ -95,27 +95,11 @@ export default async function MyPage() {
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">마이페이지</h1>
-          <p className="mt-1 text-[var(--muted)]">
-            {me?.name ?? me?.email}님, 환영합니다.
-          </p>
-        </div>
-        {membership && (
-          <div className="flex flex-wrap gap-2">
-            {isLeader && (
-              <Link href="/vote" className="btn-ghost">
-                다른 팀 평가하기
-              </Link>
-            )}
-            {project && (
-              <Link href={`/gallery/${project.id}`} className="btn-primary">
-                내 프로젝트 갤러리 보러가기
-              </Link>
-            )}
-          </div>
-        )}
+      <div>
+        <h1 className="text-2xl font-bold">마이페이지</h1>
+        <p className="mt-1 text-[var(--muted)]">
+          {me?.name ?? me?.email}님, 환영합니다.
+        </p>
       </div>
 
       {/* 팀 미연결 안내 */}
