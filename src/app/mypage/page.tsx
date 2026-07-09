@@ -170,7 +170,7 @@ export default async function MyPage() {
 
                 <div className="mt-3 grid grid-cols-3 gap-3">
                   <Stat icon="👁" label="조회" value={project.view_count ?? 0} tone="sky" />
-                  <Stat icon="♥" label="좋아요" value={likeCount} tone="rose" />
+                  <Stat icon="♥" label="응원" value={likeCount} tone="rose" />
                   <Stat icon="💬" label="댓글" value={commentCount} tone="amber" />
                 </div>
 
