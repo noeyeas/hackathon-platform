@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { type Ranking } from "@/lib/types";
+import { VotingControls } from "../voting/VotingControls";
 
 export const dynamic = "force-dynamic";
 
@@ -52,20 +54,24 @@ export default async function ScoringProgressPage() {
 
   const admin = createAdminClient();
   const [
+    { data: settings },
     { data: criteria },
     { data: projects },
     { data: judges },
     { data: judgeScores },
     { data: teamScores },
+    { data: rankings },
   ] = await Promise.all([
+    admin.from("event_settings").select("voting_open").single(),
     admin.from("criteria").select("id"),
     admin
       .from("projects")
-      .select("id, team_id, title, teams(name)")
+      .select("id, team_id, title, audience_votes_manual, teams(name)")
       .order("submitted_at"),
     admin.from("users").select("id, name, email").eq("role", "judge").order("name"),
     admin.from("judge_scores").select("judge_id, project_id, criteria_id"),
     admin.from("team_scores").select("voter_team_id, project_id, criteria_id"),
+    admin.from("rankings").select("*").returns<Ranking[]>(),
   ]);
 
   const criteriaCount = criteria?.length ?? 0;
@@ -103,11 +109,19 @@ export default async function ScoringProgressPage() {
   const judgeComplete = judgeRows.filter((r) => r.complete).length;
   const teamCompleteCount = teamRows.filter((r) => r.complete).length;
 
+  // 주민 수기 입력용 행
+  const voteRows = projectList.map((p) => ({
+    id: p.id,
+    team: (p.teams as unknown as { name: string } | null)?.name ?? "",
+    title: p.title,
+    audience: p.audience_votes_manual ?? 0,
+  }));
+
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold">심사 / 평가</h1>
+      <h1 className="text-2xl font-bold">심사 · 평가 · 투표</h1>
       <p className="mt-1 text-[var(--muted)]">
-        심사위원과 참여 팀이 모든 팀 평가를 마쳤는지 확인합니다.
+        온라인 투표를 열고 닫고, 진행 현황과 집계를 한곳에서 관리합니다.
       </p>
 
       <div className="mt-4 flex flex-wrap gap-3 text-sm">
@@ -122,14 +136,19 @@ export default async function ScoringProgressPage() {
         </Link>
       </div>
 
+      {/* 온라인 투표 ON/OFF + 주민 수기 입력 (수기 입력은 자체 토글) */}
+      <div className="mt-6">
+        <VotingControls
+          votingOpen={settings?.voting_open ?? false}
+          rows={voteRows}
+        />
+      </div>
+
       {/* 심사위원 진행 현황 */}
-      <section className="card mt-6">
-        <div className="mb-1 flex items-center justify-between">
-          <h2 className="font-bold">심사위원 진행 현황</h2>
-          <span className="text-sm text-[var(--muted)]">
-            완료 {judgeComplete}/{judgeRows.length}명
-          </span>
-        </div>
+      <Section
+        title="심사위원 진행 현황"
+        summaryRight={`완료 ${judgeComplete}/${judgeRows.length}명`}
+      >
         <p className="mb-3 text-xs text-[var(--muted)]">
           심사위원별로 전체 {teamCount}팀 중 몇 팀을 채점했는지 표시합니다.
         </p>
@@ -150,16 +169,13 @@ export default async function ScoringProgressPage() {
             등록된 심사위원이 없습니다.
           </p>
         )}
-      </section>
+      </Section>
 
       {/* 참여 팀 진행 현황 */}
-      <section className="card mt-4">
-        <div className="mb-1 flex items-center justify-between">
-          <h2 className="font-bold">참여 팀 진행 현황</h2>
-          <span className="text-sm text-[var(--muted)]">
-            완료 {teamCompleteCount}/{teamRows.length}팀
-          </span>
-        </div>
+      <Section
+        title="참여 팀 진행 현황"
+        summaryRight={`완료 ${teamCompleteCount}/${teamRows.length}팀`}
+      >
         <p className="mb-3 text-xs text-[var(--muted)]">
           각 팀이 자기 팀을 제외한 {teamTarget}팀을 모두 평가했는지 표시합니다.
         </p>
@@ -180,8 +196,84 @@ export default async function ScoringProgressPage() {
             제출한 참여 팀이 없습니다.
           </p>
         )}
-      </section>
+      </Section>
+
+      {/* 실시간 집계 */}
+      <Section title="실시간 집계">
+        {rankings && rankings.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[520px] text-sm">
+              <thead>
+                <tr className="border-b border-[var(--line)] text-left text-xs uppercase tracking-wider text-[var(--muted)]">
+                  <th className="py-2">순위 / 팀</th>
+                  <th className="py-2 text-right">심사</th>
+                  <th className="py-2 text-right">팀 점수</th>
+                  <th className="py-2 text-right">주민</th>
+                  <th className="py-2 text-right">종합</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rankings.map((r, i) => (
+                  <tr
+                    key={r.project_id}
+                    className="border-b border-[var(--line)] last:border-0"
+                  >
+                    <td className="py-2">
+                      <span className="mr-2 font-bold">{i + 1}</span>
+                      {r.team_name}
+                    </td>
+                    <td className="py-2 text-right tabular-nums">
+                      {r.judge_score}
+                    </td>
+                    <td className="py-2 text-right tabular-nums">
+                      {r.team_votes}
+                    </td>
+                    <td className="py-2 text-right tabular-nums">
+                      {r.audience_votes}
+                    </td>
+                    <td className="py-2 text-right font-bold tabular-nums text-vote">
+                      {r.final_score}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-sm text-[var(--muted)]">
+            아직 집계할 데이터가 없습니다.
+          </p>
+        )}
+      </Section>
     </div>
+  );
+}
+
+// 접이식 섹션 (native <details>)
+function Section({
+  title,
+  summaryRight,
+  children,
+}: {
+  title: string;
+  summaryRight?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <details className="group card mt-4">
+      <summary className="flex cursor-pointer list-none items-center justify-between">
+        <span className="flex items-center gap-2 font-bold">
+          <span className="text-[var(--muted)] transition group-open:rotate-90">
+            ▶
+          </span>
+          {title}
+        </span>
+        {summaryRight && (
+          <span className="text-sm text-[var(--muted)]">{summaryRight}</span>
+        )}
+      </summary>
+      <div className="mt-4">{children}</div>
+    </details>
   );
 }
 

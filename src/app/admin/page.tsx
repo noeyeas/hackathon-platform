@@ -57,14 +57,9 @@ export default async function AdminPage() {
           desc="선정팀 등록·초대 코드"
         />
         <AdminLink
-          href="/admin/voting"
-          title="투표 관리"
-          desc="단계 전환·실시간 집계"
-        />
-        <AdminLink
           href="/admin/scoring"
-          title="심사 / 평가"
-          desc="심사위원·팀 평가 진행 확인"
+          title="심사 · 평가 · 투표"
+          desc="투표 열기·진행 현황·집계"
         />
         <AdminLink
           href="/admin/announcements"

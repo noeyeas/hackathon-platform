@@ -26,7 +26,7 @@ export async function setVotingOpen(open: boolean) {
     .update({ voting_open: open })
     .eq("id", 1);
   if (error) return { error: error.message };
-  revalidatePath("/admin/voting");
+  revalidatePath("/admin/scoring");
   revalidatePath("/vote");
   return { ok: true };
 }
@@ -41,7 +41,7 @@ export async function setAudienceVotes(projectId: string, count: number) {
     .update({ audience_votes_manual: n })
     .eq("id", projectId);
   if (error) return { error: error.message };
-  revalidatePath("/admin/voting");
+  revalidatePath("/admin/scoring");
   revalidatePath("/results");
   return { ok: true };
 }
