@@ -6,7 +6,7 @@ import { TeamName } from "@/components/TeamName";
 import { canEditTeam } from "@/lib/teamEdit";
 import { formatDateTime } from "@/lib/format";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
-import { NewCommentsBadge } from "./NewCommentsBadge";
+import { NewCommentsDot } from "./NewCommentsDot";
 
 export const dynamic = "force-dynamic";
 
@@ -185,15 +185,10 @@ export default async function MyPage() {
             {/* 팀 작품 반응 */}
             {project && (
               <section className="card">
-                <div className="flex items-center justify-between gap-3">
-                  <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                    팀 작품 반응
-                  </h2>
-                  <NewCommentsBadge
-                    projectId={project.id}
-                    latestAt={latestCommentAt}
-                  />
-                </div>
+                <NewCommentsDot
+                  projectId={project.id}
+                  latestAt={latestCommentAt}
+                />
 
                 <div className="mt-3 grid grid-cols-3 gap-3">
                   <Stat icon="👁" label="조회" value={project.view_count ?? 0} />
