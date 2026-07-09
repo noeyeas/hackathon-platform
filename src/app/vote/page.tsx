@@ -45,10 +45,11 @@ export default async function VotePage() {
 
   const { data: membership } = await supabase
     .from("team_members")
-    .select("team_id")
+    .select("team_id, is_leader")
     .eq("user_id", user.id)
     .maybeSingle();
   const teamId = membership?.team_id ?? null;
+  const isLeader = membership?.is_leader ?? false;
 
   // 참가자는 팀 소속 필요, 운영자는 미리보기 허용
   if (!teamId && !isAdmin) {
@@ -56,6 +57,16 @@ export default async function VotePage() {
       <Notice
         title="먼저 팀에 소속되어야 합니다"
         body="팀을 만들거나 초대 코드로 합류한 뒤 다른 팀을 채점할 수 있어요."
+      />
+    );
+  }
+
+  // 팀 평가는 팀장만 (팀원은 안내만) — 운영자 미리보기는 허용
+  if (teamId && !isLeader && !isAdmin) {
+    return (
+      <Notice
+        title="팀 평가는 팀장이 진행합니다"
+        body="한 팀당 한 번만 반영되도록, 다른 팀 평가는 팀장이 대표로 제출합니다."
       />
     );
   }

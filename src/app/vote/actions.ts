@@ -21,10 +21,12 @@ export async function saveTeamScores(projectId: string, formData: FormData) {
   // 내 팀
   const { data: membership } = await supabase
     .from("team_members")
-    .select("team_id")
+    .select("team_id, is_leader")
     .eq("user_id", user.id)
     .maybeSingle();
   if (!membership) return { error: "팀 소속만 채점할 수 있습니다" };
+  if (!membership.is_leader)
+    return { error: "팀 평가는 팀장만 할 수 있습니다" };
 
   // 자기 팀 작품은 채점 불가
   const { data: target } = await supabase
