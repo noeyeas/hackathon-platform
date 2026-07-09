@@ -64,7 +64,7 @@ export default async function MyPage() {
   const canEdit = isLeader && canEditTeam();
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-5">
+    <div className="mx-auto flex max-w-5xl flex-col gap-5">
       <div>
         <h1 className="text-2xl font-bold">마이페이지</h1>
         <p className="mt-1 text-[var(--muted)]">
@@ -74,7 +74,7 @@ export default async function MyPage() {
 
       {/* 팀 미소속 — 팀장 코드로 합류 */}
       {!membership && (
-        <div className="card">
+        <div className="card mx-auto w-full max-w-md">
           <h2 className="text-lg font-bold">팀장 코드로 합류</h2>
           <p className="mb-4 mt-1 text-sm text-[var(--muted)]">
             팀은 운영진이 선정·등록합니다. 팀을 대표하는 <b>팀장</b>이 운영진에게
@@ -93,8 +93,9 @@ export default async function MyPage() {
         </div>
       )}
 
-      {/* 내 팀 */}
       {membership && (
+        <div className="grid items-start gap-5 lg:grid-cols-2">
+      {/* 내 팀 */}
         <section className="card">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -153,10 +154,8 @@ export default async function MyPage() {
             )
           )}
         </section>
-      )}
 
       {/* 프로젝트 제출 */}
-      {membership && (
         <section className="card">
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
@@ -183,6 +182,7 @@ export default async function MyPage() {
             </p>
           )}
         </section>
+        </div>
       )}
 
       {/* 바로가기 */}
