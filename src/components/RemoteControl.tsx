@@ -100,10 +100,10 @@ export function RemoteControl({
           >
             <Link
               href={it.href}
-              className={`relative flex w-14 flex-col items-center gap-0.5 rounded-xl px-1 py-2.5 text-[11px] font-semibold transition ${
+              className={`relative flex w-14 flex-col items-center gap-0.5 px-1 py-2.5 text-[11px] font-semibold transition-all ${
                 active
-                  ? "bg-vote text-white"
-                  : "text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
+                  ? "rounded-full bg-vote text-white"
+                  : "rounded-xl text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
               }`}
             >
               {it.key === "dday" && dday ? (

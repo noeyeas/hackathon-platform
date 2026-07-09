@@ -108,7 +108,7 @@ export async function Nav() {
               </form>
             </>
           ) : (
-            <Link href="/login" className="btn-primary">
+            <Link href="/login" className="btn-primary !rounded-full">
               로그인
             </Link>
           )}
