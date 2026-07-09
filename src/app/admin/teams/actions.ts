@@ -17,8 +17,8 @@ async function assertAdmin() {
   return data?.role === "admin";
 }
 
-// 선정된 팀을 운영진이 등록. 초대 코드는 자동 발급되며, 팀장에게 코드를 전달하면
-// 팀장이 코드로 먼저 합류(→ 자동 팀장)한 뒤 팀원에게 코드를 공유한다.
+// 선정된 팀을 운영진이 등록. 팀장 코드가 자동 발급되며, 팀장에게 코드를 전달하면
+// 팀장이 코드로 합류(→ 자동 팀장)해 팀 정보 관리·프로젝트 제출을 담당한다.
 export async function createTeamAsAdmin(formData: FormData) {
   if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
   const name = String(formData.get("name") ?? "").trim();

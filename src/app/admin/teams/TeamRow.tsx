@@ -9,18 +9,14 @@ export function TeamRow({
   id,
   name,
   tagline,
-  inviteCode,
   leaderCode,
-  memberCount,
   members,
   locked,
 }: {
   id: string;
   name: string;
   tagline: string | null;
-  inviteCode: string;
   leaderCode: string;
-  memberCount: number;
   members: Member[];
   locked: boolean;
 }) {
@@ -48,12 +44,7 @@ export function TeamRow({
           팀장 코드{" "}
           <span className="select-all font-mono font-semibold text-admin">
             {leaderCode}
-          </span>{" "}
-          · 팀원 코드{" "}
-          <span className="select-all font-mono font-semibold text-ink">
-            {inviteCode}
-          </span>{" "}
-          · {memberCount}/4명
+          </span>
         </p>
         {members.length > 0 && (
           <ul className="mt-2 flex flex-col gap-0.5">

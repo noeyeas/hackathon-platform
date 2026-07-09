@@ -35,9 +35,9 @@ export default async function AdminTeamsPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-bold">팀 등록</h1>
       <p className="mt-1 text-[var(--muted)]">
-        구글폼으로 신청받아 선정한 팀을 등록하세요. 등록하면 팀장 코드와 팀원
-        코드가 각각 발급됩니다. <b>팀장 코드</b>는 팀장에게만 전달하고, 팀장이
-        먼저 합류한 뒤 <b>팀원 코드</b>를 팀원에게 공유합니다.
+        구글폼으로 신청받아 선정한 팀을 등록하세요. 등록하면 <b>팀장 코드</b>가
+        발급됩니다. 팀을 대표하는 팀장에게 코드를 전달하면, 팀장이 합류해 팀
+        정보를 관리하고 프로젝트를 제출합니다.
       </p>
 
       {/* 팀 등록 */}
@@ -91,9 +91,7 @@ export default async function AdminTeamsPage() {
                   id={t.id}
                   name={t.name}
                   tagline={t.tagline}
-                  inviteCode={t.invite_code}
                   leaderCode={t.leader_code}
-                  memberCount={members.length}
                   members={members}
                   locked={t.status === "locked"}
                 />

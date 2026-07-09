@@ -14,10 +14,12 @@ export async function saveProject(formData: FormData) {
 
   const { data: membership } = await supabase
     .from("team_members")
-    .select("team_id")
+    .select("team_id, is_leader")
     .eq("user_id", user.id)
     .maybeSingle();
   if (!membership) return { error: "먼저 팀에 소속되어야 합니다" };
+  if (!membership.is_leader)
+    return { error: "프로젝트 제출은 팀장만 할 수 있습니다" };
 
   // 기존 제출물 (새 파일을 안 올리면 참고자료 링크 보존)
   const { data: existing } = await supabase
