@@ -92,27 +92,23 @@ export default function Home() {
       <Section eyebrow="Schedule & Venue" title="일정 및 장소">
         <Reveal>
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="card !p-0">
-            <ol className="flex flex-col">
-              {SCHEDULE.map((s, i) => (
-                <li
-                  key={s.label}
-                  className={`flex gap-4 px-5 py-4 ${
-                    i !== SCHEDULE.length - 1 ? "border-b border-[var(--line)]" : ""
-                  }`}
-                >
-                  <span className="w-28 flex-none text-sm font-bold text-vote">
-                    {s.date}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">{s.label}</p>
-                    {s.place && (
-                      <p className="mt-0.5 text-xs text-[var(--muted)]">📍 {s.place}</p>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ol>
+          <div className="flex flex-col gap-3">
+            {SCHEDULE.map((s) => (
+              <div
+                key={s.label}
+                className="card flex items-start gap-4 transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <span className="w-24 flex-none text-sm font-bold text-vote">
+                  {s.date}
+                </span>
+                <div>
+                  <p className="text-sm font-semibold">{s.label}</p>
+                  {s.place && (
+                    <p className="mt-0.5 text-xs text-[var(--muted)]">📍 {s.place}</p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
           <div className="flex flex-col gap-3">
             <div className="card">
