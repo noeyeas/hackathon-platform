@@ -33,7 +33,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/55 to-black/70" />
 
           <div className="hero-in relative flex flex-col items-center gap-5 text-white">
-            <h1 className="text-5xl font-black leading-none tracking-tight sm:text-7xl">
+            <h1 className="font-display text-6xl leading-none tracking-tight sm:text-8xl">
               2026
               <br />
               <span

@@ -13,8 +13,8 @@
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic",
-    "Apple SD Gothic Neo", sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI",
+    "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
   overflow-x: clip;
 }
 
