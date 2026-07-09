@@ -169,9 +169,9 @@ export default async function MyPage() {
                 />
 
                 <div className="mt-3 grid grid-cols-3 gap-3">
-                  <Stat icon="👁" label="조회" value={project.view_count ?? 0} />
-                  <Stat icon="♥" label="좋아요" value={likeCount} />
-                  <Stat icon="💬" label="댓글" value={commentCount} />
+                  <Stat icon="👁" label="조회" value={project.view_count ?? 0} tone="sky" />
+                  <Stat icon="♥" label="좋아요" value={likeCount} tone="rose" />
+                  <Stat icon="💬" label="댓글" value={commentCount} tone="amber" />
                 </div>
 
                 <Link
@@ -215,20 +215,28 @@ export default async function MyPage() {
   );
 }
 
+const STAT_TONES = {
+  sky: "bg-sky-50 text-sky-600",
+  rose: "bg-rose-50 text-rose-500",
+  amber: "bg-amber-50 text-amber-600",
+} as const;
+
 function Stat({
   icon,
   label,
   value,
+  tone,
 }: {
   icon: string;
   label: string;
   value: number;
+  tone: keyof typeof STAT_TONES;
 }) {
   return (
-    <div className="rounded-lg bg-gray-50 py-3 text-center">
+    <div className={`rounded-lg py-3 text-center ${STAT_TONES[tone]}`}>
       <div className="text-lg">{icon}</div>
       <div className="mt-0.5 text-xl font-bold tabular-nums">{value}</div>
-      <div className="text-xs text-[var(--muted)]">{label}</div>
+      <div className="text-xs opacity-70">{label}</div>
     </div>
   );
 }
