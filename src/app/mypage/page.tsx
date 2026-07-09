@@ -128,7 +128,59 @@ export default async function MyPage() {
       )}
 
       {membership && (
-        <div className="grid items-start gap-5 lg:grid-cols-2">
+        <>
+          {/* 팀 작품 반응 */}
+          {project && (
+            <section className="card">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                  팀 작품 반응
+                </h2>
+                <NewCommentsBadge
+                  projectId={project.id}
+                  latestAt={latestCommentAt}
+                />
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-3 sm:max-w-md">
+                <Stat icon="👁" label="조회" value={project.view_count ?? 0} />
+                <Stat icon="♥" label="좋아요" value={likeCount} />
+                <Stat icon="💬" label="댓글" value={commentCount} />
+              </div>
+
+              {comments.length > 0 ? (
+                <ul className="mt-4 flex flex-col divide-y divide-[var(--line)]">
+                  {comments.map((c) => {
+                    const author = c.users as { name: string | null } | null;
+                    return (
+                      <li key={c.id} className="py-2.5">
+                        <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
+                          <span className="font-semibold text-ink">
+                            {author?.name ?? "익명"}
+                          </span>
+                          <span>{formatDateTime(c.created_at)}</span>
+                        </div>
+                        <p className="mt-0.5 line-clamp-2 text-sm">{c.body}</p>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <p className="mt-4 text-sm text-[var(--muted)]">
+                  아직 댓글이 없습니다.
+                </p>
+              )}
+
+              <Link
+                href={`/gallery/${project.id}`}
+                className="mt-3 inline-block text-sm font-medium text-vote hover:underline"
+              >
+                갤러리에서 보기 →
+              </Link>
+            </section>
+          )}
+
+          <div className="grid items-start gap-5 lg:grid-cols-2">
           {/* 내 팀 */}
           <section className="card">
             <div className="flex items-center gap-2">
@@ -197,69 +249,15 @@ export default async function MyPage() {
             )}
           </section>
 
-          {/* 내 작품 반응 */}
-          {project && (
-            <section className="card">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                  내 작품 반응
-                </h2>
-                <NewCommentsBadge
-                  projectId={project.id}
-                  latestAt={latestCommentAt}
-                />
-              </div>
-
-              <div className="mt-3 grid grid-cols-3 gap-3">
-                <Stat icon="👁" label="조회" value={project.view_count ?? 0} />
-                <Stat icon="♥" label="좋아요" value={likeCount} />
-                <Stat icon="💬" label="댓글" value={commentCount} />
-              </div>
-
-              {comments.length > 0 ? (
-                <ul className="mt-4 flex flex-col divide-y divide-[var(--line)]">
-                  {comments.map((c) => {
-                    const author = c.users as { name: string | null } | null;
-                    return (
-                      <li key={c.id} className="py-2.5">
-                        <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
-                          <span className="font-semibold text-ink">
-                            {author?.name ?? "익명"}
-                          </span>
-                          <span>{formatDateTime(c.created_at)}</span>
-                        </div>
-                        <p className="mt-0.5 line-clamp-2 text-sm">{c.body}</p>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="mt-4 text-sm text-[var(--muted)]">
-                  아직 댓글이 없습니다.
-                </p>
-              )}
-
-              <Link
-                href={`/gallery/${project.id}`}
-                className="mt-3 inline-block text-sm font-medium text-vote hover:underline"
-              >
-                갤러리에서 보기 →
-              </Link>
-            </section>
-          )}
-        </div>
+          </div>
+        </>
       )}
 
       {/* 바로가기 */}
-      {membership && (
+      {membership && isLeader && (
         <div className="flex flex-wrap gap-3">
-          {isLeader && (
-            <Link href="/vote" className="btn-ghost">
-              다른 팀 평가하기 →
-            </Link>
-          )}
-          <Link href="/gallery" className="btn-ghost">
-            갤러리 보기 →
+          <Link href="/vote" className="btn-ghost">
+            다른 팀 평가하기 →
           </Link>
         </div>
       )}
