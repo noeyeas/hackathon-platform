@@ -36,10 +36,11 @@ export function ProjectForm({ project }: { project: Project }) {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="label">GitHub 저장소</label>
+          <label className="label">GitHub 저장소 *</label>
           <input
             name="repo_url"
             type="url"
+            required
             defaultValue={project?.repo_url ?? ""}
             className="input"
             placeholder="https://github.com/..."

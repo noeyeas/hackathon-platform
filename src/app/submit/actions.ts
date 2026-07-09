@@ -51,12 +51,13 @@ export async function saveProject(formData: FormData) {
     team_id: membership.team_id,
     title: String(formData.get("title") ?? "").trim(),
     description: String(formData.get("description") ?? "").trim() || null,
-    repo_url: String(formData.get("repo_url") ?? "").trim() || null,
+    repo_url: String(formData.get("repo_url") ?? "").trim(),
     demo_url: String(formData.get("demo_url") ?? "").trim() || null,
     video_url: String(formData.get("video_url") ?? "").trim() || null,
     deck_url: deckUrl,
   };
   if (!payload.title) return { error: "프로젝트 제목을 입력하세요" };
+  if (!payload.repo_url) return { error: "GitHub 저장소 링크를 입력하세요" };
 
   // 팀당 1개 — upsert (team_id UNIQUE)
   const { error } = await supabase
