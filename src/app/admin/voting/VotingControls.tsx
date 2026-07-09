@@ -19,6 +19,7 @@ export function VotingControls({
 }) {
   const [open, setOpen] = useState(votingOpen);
   const [pending, startTransition] = useTransition();
+  const [residentOpen, setResidentOpen] = useState(false);
 
   function toggle() {
     const next = !open;
@@ -55,21 +56,37 @@ export function VotingControls({
         현재: 투표 {open ? "열림 🟢" : "닫힘 🔴"}
       </p>
 
-      {/* 주민 수기 입력 */}
+      {/* 주민 수기 입력 (토글로 열기/닫기) */}
       <div className="card">
-        <h2 className="font-bold">주민 투표 수기 입력</h2>
-        <p className="mb-4 mt-1 text-sm text-[var(--muted)]">
-          오프라인에서 집계한 팀별 득표수를 입력하세요. 저장 즉시 집계에 반영됩니다.
-        </p>
-        {rows.length === 0 ? (
-          <p className="text-sm text-[var(--muted)]">제출된 팀이 없습니다.</p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {rows.map((r) => (
-              <AudienceRow key={r.id} row={r} />
-            ))}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="font-bold">주민 투표 수기 입력</h2>
+            <p className="mt-1 text-sm text-[var(--muted)]">
+              오프라인에서 집계한 팀별 득표수를 입력하세요. 저장 즉시 집계에
+              반영됩니다.
+            </p>
           </div>
-        )}
+          <button
+            onClick={() => setResidentOpen((v) => !v)}
+            className="flex-none rounded-lg border border-[var(--line)] px-3 py-1.5 text-sm font-medium text-[var(--muted)] hover:text-ink"
+            aria-expanded={residentOpen}
+          >
+            {residentOpen ? "닫기" : "열기"}
+          </button>
+        </div>
+
+        {residentOpen &&
+          (rows.length === 0 ? (
+            <p className="mt-4 text-sm text-[var(--muted)]">
+              제출된 팀이 없습니다.
+            </p>
+          ) : (
+            <div className="mt-4 flex flex-col gap-2">
+              {rows.map((r) => (
+                <AudienceRow key={r.id} row={r} />
+              ))}
+            </div>
+          ))}
       </div>
     </div>
   );
