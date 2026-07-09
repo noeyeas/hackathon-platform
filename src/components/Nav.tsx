@@ -65,22 +65,6 @@ export async function Nav() {
           >
             결과
           </Link>
-          {isLeader && (
-            <Link
-              href="/vote"
-              className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
-            >
-              평가
-            </Link>
-          )}
-          {role === "judge" && (
-            <Link
-              href="/judge"
-              className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
-            >
-              심사
-            </Link>
-          )}
           {role === "admin" && (
             <Link
               href="/admin"
@@ -91,6 +75,22 @@ export async function Nav() {
           )}
         </nav>
         <div className="ml-auto flex items-center gap-3 text-sm">
+          {isLeader && (
+            <Link
+              href="/vote"
+              className="hidden rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink sm:inline-flex"
+            >
+              평가
+            </Link>
+          )}
+          {role === "judge" && (
+            <Link
+              href="/judge"
+              className="hidden rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink sm:inline-flex"
+            >
+              심사
+            </Link>
+          )}
           {user ? (
             <>
               {isLeader && (
