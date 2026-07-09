@@ -128,102 +128,106 @@ export default async function MyPage() {
       )}
 
       {membership && (
-        <>
-          {/* 팀 작품 반응 */}
-          {project && (
+        <div className="grid items-start gap-5 lg:grid-cols-2">
+          {/* 왼쪽: 내 팀(위) + 팀 작품 반응(아래) */}
+          <div className="flex flex-col gap-5">
+            {/* 내 팀 */}
             <section className="card">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                  팀 작품 반응
+                  내 팀
                 </h2>
-                <NewCommentsBadge
-                  projectId={project.id}
-                  latestAt={latestCommentAt}
+              </div>
+              <div className="mt-1 flex items-center gap-2">
+                <TeamName
+                  name={team?.name ?? ""}
+                  membersNote={team?.members_note}
+                  chipClassName="text-lg font-bold"
                 />
+                {isLeader && (
+                  <span className="chip border-team text-team">팀장</span>
+                )}
               </div>
 
-              <div className="mt-3 grid grid-cols-3 gap-3 sm:max-w-md">
-                <Stat icon="👁" label="조회" value={project.view_count ?? 0} />
-                <Stat icon="♥" label="좋아요" value={likeCount} />
-                <Stat icon="💬" label="댓글" value={commentCount} />
+              <div className="mt-4 flex flex-col gap-4 border-t border-[var(--line)] pt-4">
+                <EditableField
+                  label="한 줄 소개"
+                  field="tagline"
+                  value={team?.tagline ?? null}
+                  editable={canEdit}
+                  placeholder="우리 팀을 소개해 주세요"
+                />
+                <EditableField
+                  label="팀원 구성"
+                  field="members_note"
+                  value={team?.members_note ?? null}
+                  editable={canEdit}
+                  multiline
+                  placeholder="예: 김철수(기획), 이영희(프론트), 박민수(백엔드)"
+                />
+                {isLeader && !canEdit && (
+                  <p className="text-xs text-[var(--muted)]">
+                    수정 기간이 종료되어 팀 정보를 변경할 수 없습니다.
+                  </p>
+                )}
               </div>
-
-              {comments.length > 0 ? (
-                <ul className="mt-4 flex flex-col divide-y divide-[var(--line)]">
-                  {comments.map((c) => {
-                    const author = c.users as { name: string | null } | null;
-                    return (
-                      <li key={c.id} className="py-2.5">
-                        <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
-                          <span className="font-semibold text-ink">
-                            {author?.name ?? "익명"}
-                          </span>
-                          <span>{formatDateTime(c.created_at)}</span>
-                        </div>
-                        <p className="mt-0.5 line-clamp-2 text-sm">{c.body}</p>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="mt-4 text-sm text-[var(--muted)]">
-                  아직 댓글이 없습니다.
-                </p>
-              )}
-
-              <Link
-                href={`/gallery/${project.id}`}
-                className="mt-3 inline-block text-sm font-medium text-vote hover:underline"
-              >
-                갤러리에서 보기 →
-              </Link>
             </section>
-          )}
 
-          <div className="grid items-start gap-5 lg:grid-cols-2">
-          {/* 내 팀 */}
-          <section className="card">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                내 팀
-              </h2>
-            </div>
-            <div className="mt-1 flex items-center gap-2">
-              <TeamName
-                name={team?.name ?? ""}
-                membersNote={team?.members_note}
-                chipClassName="text-lg font-bold"
-              />
-              {isLeader && (
-                <span className="chip border-team text-team">팀장</span>
-              )}
-            </div>
+            {/* 팀 작품 반응 */}
+            {project && (
+              <section className="card">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    팀 작품 반응
+                  </h2>
+                  <NewCommentsBadge
+                    projectId={project.id}
+                    latestAt={latestCommentAt}
+                  />
+                </div>
 
-            <div className="mt-4 flex flex-col gap-4 border-t border-[var(--line)] pt-4">
-              <EditableField
-                label="한 줄 소개"
-                field="tagline"
-                value={team?.tagline ?? null}
-                editable={canEdit}
-                placeholder="우리 팀을 소개해 주세요"
-              />
-              <EditableField
-                label="팀원 구성"
-                field="members_note"
-                value={team?.members_note ?? null}
-                editable={canEdit}
-                multiline
-                placeholder="예: 김철수(기획), 이영희(프론트), 박민수(백엔드)"
-              />
-              {isLeader && !canEdit && (
-                <p className="text-xs text-[var(--muted)]">
-                  수정 기간이 종료되어 팀 정보를 변경할 수 없습니다.
-                </p>
-              )}
-            </div>
-          </section>
+                <div className="mt-3 grid grid-cols-3 gap-3">
+                  <Stat icon="👁" label="조회" value={project.view_count ?? 0} />
+                  <Stat icon="♥" label="좋아요" value={likeCount} />
+                  <Stat icon="💬" label="댓글" value={commentCount} />
+                </div>
 
-          {/* 프로젝트 제출 */}
+                {comments.length > 0 ? (
+                  <ul className="mt-4 flex flex-col divide-y divide-[var(--line)]">
+                    {comments.map((c) => {
+                      const author = c.users as { name: string | null } | null;
+                      return (
+                        <li key={c.id} className="py-2.5">
+                          <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
+                            <span className="font-semibold text-ink">
+                              {author?.name ?? "익명"}
+                            </span>
+                            <span>{formatDateTime(c.created_at)}</span>
+                          </div>
+                          <p className="mt-0.5 line-clamp-2 text-sm">
+                            {c.body}
+                          </p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <p className="mt-4 text-sm text-[var(--muted)]">
+                    아직 댓글이 없습니다.
+                  </p>
+                )}
+
+                <Link
+                  href={`/gallery/${project.id}`}
+                  className="mt-3 inline-block text-sm font-medium text-vote hover:underline"
+                >
+                  갤러리에서 보기 →
+                </Link>
+              </section>
+            )}
+          </div>
+
+          {/* 오른쪽: 프로젝트 제출 */}
           <section className="card">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
@@ -248,9 +252,7 @@ export default async function MyPage() {
               </p>
             )}
           </section>
-
-          </div>
-        </>
+        </div>
       )}
 
       {/* 바로가기 */}
