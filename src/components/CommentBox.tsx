@@ -36,6 +36,9 @@ export function CommentForm({ projectId }: { projectId: string }) {
         maxLength={1000}
         className="input resize-none"
       />
+      <p className="text-xs text-[var(--muted)]">
+        무분별한 비난이나 악성 댓글은 통보 없이 삭제될 수 있습니다.
+      </p>
       {error && <p className="text-sm text-red-500">{error}</p>}
       <div className="flex items-center justify-between">
         <span className="text-xs text-[var(--muted)]">{body.length}/1000</span>
