@@ -4,10 +4,9 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 // 좋아요(응원) 등록/취소 — want=true 면 등록, false 면 취소. 멱등.
-// 로그인 사용자는 user:<uid>, 익명은 anon:<브라우저토큰>으로 중복 방지.
+// 로그인 사용자 본인(user:<uid>)만 가능. 익명 응원은 허용하지 않는다.
 export async function setLike(
   projectId: string,
-  anonKey: string,
   want: boolean
 ): Promise<{ count?: number; error?: string }> {
   if (!projectId) return { error: "잘못된 요청입니다" };
@@ -16,9 +15,9 @@ export async function setLike(
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다" };
 
-  const likerKey = user ? `user:${user.id}` : `anon:${anonKey}`;
-  if (!user && !anonKey) return { error: "잘못된 요청입니다" };
+  const likerKey = `user:${user.id}`;
 
   const admin = createAdminClient();
 

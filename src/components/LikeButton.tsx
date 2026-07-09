@@ -1,53 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { setLike } from "@/app/gallery/actions";
-
-const ANON_KEY = "gallery_anon_id";
-const LIKED_KEY = "gallery_liked";
-
-function readLiked(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(LIKED_KEY) || "[]");
-  } catch {
-    return [];
-  }
-}
-
-function getAnonId(): string {
-  let id = localStorage.getItem(ANON_KEY);
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem(ANON_KEY, id);
-  }
-  return id;
-}
 
 export function LikeButton({
   projectId,
   initialCount,
+  loggedIn,
+  initialLiked = false,
 }: {
   projectId: string;
   initialCount: number;
+  loggedIn: boolean;
+  initialLiked?: boolean;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [count, setCount] = useState(initialCount);
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(initialLiked);
   const [pending, setPending] = useState(false);
-
-  // 브라우저에 저장된 '내가 누른 목록'으로 초기 상태 복원
-  useEffect(() => {
-    setLiked(readLiked().includes(projectId));
-  }, [projectId]);
 
   async function toggle() {
     if (pending) return;
+    // 미로그인 시 로그인 페이지로 유도 (돌아올 위치 전달)
+    if (!loggedIn) {
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
     const want = !liked;
     setPending(true);
     // 낙관적 업데이트
     setLiked(want);
     setCount((c) => Math.max(0, c + (want ? 1 : -1)));
 
-    const res = await setLike(projectId, getAnonId(), want);
+    const res = await setLike(projectId, want);
     setPending(false);
 
     if (res?.error) {
@@ -57,12 +45,6 @@ export function LikeButton({
       return;
     }
     if (typeof res.count === "number") setCount(res.count);
-
-    // 내가 누른 목록 갱신
-    const set = new Set(readLiked());
-    if (want) set.add(projectId);
-    else set.delete(projectId);
-    localStorage.setItem(LIKED_KEY, JSON.stringify([...set]));
   }
 
   return (
@@ -71,6 +53,7 @@ export function LikeButton({
       onClick={toggle}
       disabled={pending}
       aria-pressed={liked}
+      title={loggedIn ? undefined : "로그인 후 응원할 수 있어요"}
       className={`btn gap-1.5 transition ${
         liked
           ? "bg-vote text-white hover:brightness-95"

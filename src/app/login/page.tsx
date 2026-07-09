@@ -13,11 +13,23 @@ export default function LoginPage() {
     process.env.NEXT_PUBLIC_SITE_URL ??
     (typeof window !== "undefined" ? window.location.origin : "");
 
+  // 로그인 전 위치(?redirect=)를 콜백의 next 로 전달해 원래 페이지로 복귀
+  function callbackUrl() {
+    let next = "";
+    if (typeof window !== "undefined") {
+      const r = new URLSearchParams(window.location.search).get("redirect");
+      if (r && r.startsWith("/")) next = r;
+    }
+    return `${siteUrl}/auth/callback${
+      next ? `?next=${encodeURIComponent(next)}` : ""
+    }`;
+  }
+
   async function signInWithGoogle() {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${siteUrl}/auth/callback` },
+      options: { redirectTo: callbackUrl() },
     });
   }
 
@@ -28,7 +40,7 @@ export default function LoginPage() {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${siteUrl}/auth/callback` },
+      options: { emailRedirectTo: callbackUrl() },
     });
     setLoading(false);
     if (error) setError(error.message);

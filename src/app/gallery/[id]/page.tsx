@@ -55,6 +55,7 @@ export default async function ProjectDetailPage({
     data: { user },
   } = await supabase.auth.getUser();
   let isAdmin = false;
+  let likedByMe = false;
   if (user) {
     const { data: me } = await supabase
       .from("users")
@@ -62,6 +63,14 @@ export default async function ProjectDetailPage({
       .eq("id", user.id)
       .single();
     isAdmin = me?.role === "admin";
+
+    const { data: mine } = await supabase
+      .from("project_likes")
+      .select("id")
+      .eq("project_id", id)
+      .eq("liker_key", `user:${user.id}`)
+      .maybeSingle();
+    likedByMe = !!mine;
   }
 
   // 댓글 (최신순)
@@ -165,7 +174,12 @@ export default async function ProjectDetailPage({
           </div>
         )}
         <div className="ml-auto flex items-center gap-3">
-          <LikeButton projectId={p.id} initialCount={likeCount} />
+          <LikeButton
+            projectId={p.id}
+            initialCount={likeCount}
+            loggedIn={!!user}
+            initialLiked={likedByMe}
+          />
         </div>
       </div>
 
