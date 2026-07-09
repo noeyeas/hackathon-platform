@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm } from "@/components/ActionForm";
-import { joinTeam, updateTeamInfo } from "./actions";
+import { joinTeam } from "./actions";
+import { TeamInfoForm } from "./TeamInfoForm";
 import { canEditTeam } from "@/lib/teamEdit";
 
 export default async function TeamPage() {
@@ -107,33 +108,13 @@ export default async function TeamPage() {
             소개·팀원 구성은 9월 3일 전까지 수정할 수 있어요. 팀 이름은 운영진이
             등록한 값으로 고정됩니다.
           </p>
-          <ActionForm
-            action={updateTeamInfo}
-            submitLabel="저장"
-            successMessage="저장했습니다."
-          >
-            <label className="label">팀 이름</label>
-            <input
-              value={team?.name ?? ""}
-              disabled
-              className="input bg-gray-50 text-[var(--muted)]"
-            />
-            <label className="label mt-3">한 줄 소개</label>
-            <input
-              name="tagline"
-              defaultValue={team?.tagline ?? ""}
-              className="input"
-              placeholder="우리 팀을 소개해 주세요"
-            />
-            <label className="label mt-3">팀원 구성 (선택)</label>
-            <textarea
-              name="members_note"
-              rows={3}
-              defaultValue={team?.members_note ?? ""}
-              className="input"
-              placeholder="예: 김철수(기획), 이영희(프론트), 박민수(백엔드)"
-            />
-          </ActionForm>
+          <TeamInfoForm
+            team={{
+              name: team?.name ?? "",
+              tagline: team?.tagline ?? null,
+              members_note: team?.members_note ?? null,
+            }}
+          />
         </div>
       )}
 
