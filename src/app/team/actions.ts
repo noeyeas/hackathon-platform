@@ -65,26 +65,26 @@ export async function joinTeam(formData: FormData) {
   return { ok: true };
 }
 
-// 팀 소개·팀원 구성 수정 (팀장, 마감 전). 팀 이름은 운영진 등록값으로 고정.
-export async function updateTeamInfo(formData: FormData) {
+// 항목 하나만 인라인 수정 (팀장, 마감 전). 팀 이름은 운영진 등록값으로 고정.
+export async function updateTeamField(field: string, value: string) {
   const supabase = await createClient();
   const res = await requireLeaderTeam(supabase);
   if ("error" in res) return { error: res.error };
   if (!canEditTeam())
     return { error: "수정 기간이 종료되었습니다 (9월 3일 마감)" };
 
-  const tagline = String(formData.get("tagline") ?? "").trim();
-  const membersNote = String(formData.get("members_note") ?? "").trim();
+  const allowed = ["tagline", "members_note"];
+  if (!allowed.includes(field))
+    return { error: "수정할 수 없는 항목입니다" };
 
+  const v = value.trim();
   const { error } = await supabase
     .from("teams")
-    .update({
-      tagline: tagline || null,
-      members_note: membersNote || null,
-    })
+    .update({ [field]: v || null })
     .eq("id", res.teamId);
   if (error) return { error: error.message };
 
+  revalidatePath("/mypage");
   revalidatePath("/team");
   return { ok: true };
 }

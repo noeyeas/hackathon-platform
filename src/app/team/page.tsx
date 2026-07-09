@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm } from "@/components/ActionForm";
 import { joinTeam } from "./actions";
-import { TeamInfoForm } from "./TeamInfoForm";
+import { EditableField } from "./EditableField";
 import { canEditTeam } from "@/lib/teamEdit";
 
 export default async function TeamPage() {
@@ -79,44 +79,34 @@ export default async function TeamPage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
       <div className="card">
         <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{team?.name}</h1>
-            {team?.tagline && (
-              <p className="mt-1 text-[var(--muted)]">{team.tagline}</p>
-            )}
-          </div>
+          <h1 className="text-2xl font-bold">{team?.name}</h1>
           <span className="chip border-team text-team">팀장</span>
         </div>
-        {team?.members_note ? (
-          <div className="mt-4 rounded-lg bg-gray-50 p-4">
-            <p className="text-xs font-semibold text-[var(--muted)]">팀원 구성</p>
-            <p className="mt-1 whitespace-pre-wrap text-sm">
-              {team.members_note}
-            </p>
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-[var(--muted)]">
-            팀을 대표해 팀 정보를 관리하고 프로젝트를 제출합니다.
-          </p>
-        )}
-      </div>
 
-      {canEdit && (
-        <div className="card">
-          <h2 className="mb-1 font-bold">팀 정보 수정</h2>
-          <p className="mb-4 text-sm text-[var(--muted)]">
-            소개·팀원 구성은 9월 3일 전까지 수정할 수 있어요. 팀 이름은 운영진이
-            등록한 값으로 고정됩니다.
-          </p>
-          <TeamInfoForm
-            team={{
-              name: team?.name ?? "",
-              tagline: team?.tagline ?? null,
-              members_note: team?.members_note ?? null,
-            }}
+        <div className="mt-4 flex flex-col gap-4 border-t border-[var(--line)] pt-4">
+          <EditableField
+            label="한 줄 소개"
+            field="tagline"
+            value={team?.tagline ?? null}
+            editable={canEdit}
+            placeholder="우리 팀을 소개해 주세요"
           />
+          <EditableField
+            label="팀원 구성"
+            field="members_note"
+            value={team?.members_note ?? null}
+            editable={canEdit}
+            multiline
+            placeholder="예: 김철수(기획), 이영희(프론트), 박민수(백엔드)"
+          />
+          {canEdit && (
+            <p className="text-xs text-[var(--muted)]">
+              소개·팀원 구성은 9월 3일 전까지 수정할 수 있어요. 팀 이름은 운영진
+              등록값으로 고정됩니다.
+            </p>
+          )}
         </div>
-      )}
+      </div>
 
       <Link href="/submit" className="btn-primary">
         {project ? "제출물 수정" : "프로젝트 제출하기"}
