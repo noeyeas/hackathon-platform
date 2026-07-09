@@ -84,7 +84,7 @@ export function RemoteControl({
   return (
     <nav
       aria-label="바로가기"
-      className="fixed right-3 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-1.5 rounded-2xl border border-[var(--line)] bg-white/90 p-1.5 shadow-lg backdrop-blur sm:right-5"
+      className="remote-float fixed right-3 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-1.5 rounded-2xl border border-[var(--line)] bg-white/90 p-1.5 shadow-lg backdrop-blur sm:right-5"
     >
       {items.map((it) => {
         const active = path === it.href;
