@@ -20,6 +20,14 @@ const SCHEDULE = [
   { date: "9.18 – 9.19", label: "최종 발표 및 스프린트 (무박 2일)", place: "기념관 319호" },
 ];
 
+// 히어로 배경 위에 얹는 간결한 타임라인 (긴 라벨 대신 핵심 단계만)
+const HERO_TIMELINE = [
+  { date: "8.24", label: "팀 모집" },
+  { date: "9.7", label: "해커톤 시작" },
+  { date: "9.11", label: "중간 멘토링" },
+  { date: "9.18", label: "최종 발표" },
+];
+
 export default function Home() {
   return (
     <div className="flex flex-col gap-24">
@@ -62,6 +70,27 @@ export default function Home() {
               >
                 제출작 보기
               </Link>
+            </div>
+
+            {/* 타임라인 인포그래픽 */}
+            <div className="mt-8 w-full max-w-xl sm:mt-10">
+              <div className="relative flex justify-between">
+                <div className="absolute inset-x-4 top-[7px] h-px bg-white/25" />
+                {HERO_TIMELINE.map((s) => (
+                  <div
+                    key={s.label}
+                    className="relative flex flex-1 flex-col items-center gap-2 text-center"
+                  >
+                    <span className="h-3.5 w-3.5 rounded-full border-2 border-white bg-vote shadow-[0_0_0_4px_rgba(0,0,0,0.25)]" />
+                    <span className="text-xs font-bold tracking-tight sm:text-sm">
+                      {s.date}
+                    </span>
+                    <span className="text-[10px] leading-tight text-white/75 sm:text-xs">
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
