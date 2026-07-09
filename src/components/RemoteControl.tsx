@@ -149,13 +149,10 @@ export function RemoteControl({
   );
 }
 
-function PanelHead({ title, href }: { title: string; href: string }) {
+function PanelHead({ title }: { title: string }) {
   return (
-    <div className="mb-3 flex items-center justify-between">
+    <div className="mb-3">
       <h3 className="font-bold">{title}</h3>
-      <Link href={href} className="text-xs text-[var(--muted)] hover:text-ink">
-        전체 →
-      </Link>
     </div>
   );
 }
@@ -163,7 +160,7 @@ function PanelHead({ title, href }: { title: string; href: string }) {
 function NoticePanel({ notices }: { notices: Notice[] }) {
   return (
     <div>
-      <PanelHead title="📢 공지사항" href="/notice" />
+      <PanelHead title="📢 공지사항" />
       {notices.length === 0 ? (
         <p className="text-sm text-[var(--muted)]">아직 공지가 없습니다.</p>
       ) : (
@@ -192,7 +189,7 @@ function NoticePanel({ notices }: { notices: Notice[] }) {
 function SchedulePanel({ schedule }: { schedule: ScheduleItem[] }) {
   return (
     <div>
-      <PanelHead title="🗓️ 일정표" href="/schedule" />
+      <PanelHead title="🗓️ 일정표" />
       {schedule.length === 0 ? (
         <p className="text-sm text-[var(--muted)]">아직 일정이 없습니다.</p>
       ) : (
@@ -219,7 +216,7 @@ function SchedulePanel({ schedule }: { schedule: ScheduleItem[] }) {
 function DdayPanel({ milestones }: { milestones: Milestone[] }) {
   return (
     <div>
-      <PanelHead title="⏱️ D-day" href="/dday" />
+      <PanelHead title="⏱️ D-day" />
       {milestones.length === 0 ? (
         <p className="text-sm text-[var(--muted)]">등록된 마일스톤이 없습니다.</p>
       ) : (
