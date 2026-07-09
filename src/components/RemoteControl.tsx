@@ -108,7 +108,11 @@ export function RemoteControl({
             >
               {it.key === "dday" && dday ? (
                 <>
-                  <span className="text-sm font-extrabold leading-none tabular-nums">
+                  <span
+                    className={`text-sm font-extrabold leading-none tabular-nums ${
+                      active ? "text-white" : "text-vote"
+                    }`}
+                  >
                     {dday.text}
                   </span>
                   <span className="break-keep text-center text-[10px] leading-tight">
