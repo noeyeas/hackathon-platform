@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { ScoreCard } from "../judge/ScoreCard";
 import { saveTeamScores } from "./actions";
 
@@ -42,6 +43,9 @@ export default async function VotePage() {
       />
     );
   }
+
+  // 팀장 이메일로 등록된 팀에 자동 연결
+  await ensureLeaderMembership(user.id, user.email);
 
   const { data: membership } = await supabase
     .from("team_members")

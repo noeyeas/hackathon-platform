@@ -25,7 +25,7 @@ export default async function AdminTeamsPage() {
   const { data: teams } = await admin
     .from("teams")
     .select(
-      "id, name, tagline, invite_code, leader_code, status, team_members(is_leader, users(email, name))"
+      "id, name, tagline, leader_email, status, team_members(is_leader, users(email, name))"
     )
     .order("created_at", { ascending: true });
 
@@ -35,9 +35,9 @@ export default async function AdminTeamsPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-bold">팀 등록</h1>
       <p className="mt-1 text-[var(--muted)]">
-        구글폼으로 신청받아 선정한 팀을 등록하세요. 등록하면 <b>팀장 코드</b>가
-        발급됩니다. 팀을 대표하는 팀장에게 코드를 전달하면, 팀장이 합류해 팀
-        정보를 관리하고 프로젝트를 제출합니다.
+        구글폼으로 신청받아 선정한 팀을 등록하세요. <b>팀장 이메일</b>을 함께
+        입력하면, 그 이메일로 로그인한 팀장이 자동으로 연결되어 팀 정보를
+        관리하고 프로젝트를 제출합니다. (참가 코드 불필요)
       </p>
 
       {/* 팀 등록 */}
@@ -57,6 +57,13 @@ export default async function AdminTeamsPage() {
             required
             className="input"
             placeholder="예: 코드마법사"
+          />
+          <label className="label mt-3">팀장 이메일 *</label>
+          <input
+            name="leader_email"
+            type="email"
+            className="input"
+            placeholder="leader@example.com"
           />
           <label className="label mt-3">한 줄 소개 (선택)</label>
           <input
@@ -91,7 +98,7 @@ export default async function AdminTeamsPage() {
                   id={t.id}
                   name={t.name}
                   tagline={t.tagline}
-                  leaderCode={t.leader_code}
+                  leaderEmail={t.leader_email}
                   members={members}
                   locked={t.status === "locked"}
                 />

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { NavMenu } from "./NavMenu";
 
 const EVENT_ITEMS = [
@@ -20,6 +21,7 @@ export async function Nav() {
   } = await supabase.auth.getUser();
 
   let role: string | null = null;
+  let isLeader = false;
   if (user) {
     const { data } = await supabase
       .from("users")
@@ -27,6 +29,17 @@ export async function Nav() {
       .eq("id", user.id)
       .single();
     role = data?.role ?? null;
+
+    if (role === "participant") {
+      // 팀장 이메일로 등록된 팀에 자동 연결한 뒤 팀장 여부 확인
+      await ensureLeaderMembership(user.id, user.email);
+      const { data: m } = await supabase
+        .from("team_members")
+        .select("is_leader")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      isLeader = m?.is_leader ?? false;
+    }
   }
 
   return (
@@ -52,7 +65,7 @@ export async function Nav() {
           >
             결과
           </Link>
-          {role === "participant" && (
+          {isLeader && (
             <Link
               href="/vote"
               className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
@@ -80,12 +93,14 @@ export async function Nav() {
         <div className="ml-auto flex items-center gap-3 text-sm">
           {user ? (
             <>
-              <Link
-                href="/mypage"
-                className="text-[var(--muted)] hover:text-ink"
-              >
-                마이페이지
-              </Link>
+              {isLeader && (
+                <Link
+                  href="/mypage"
+                  className="text-[var(--muted)] hover:text-ink"
+                >
+                  마이페이지
+                </Link>
+              )}
               <form action="/auth/signout" method="post">
                 <button className="text-[var(--muted)] hover:text-ink">
                   로그아웃

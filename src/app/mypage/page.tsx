@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { ActionForm } from "@/components/ActionForm";
-import { joinTeam } from "../team/actions";
 import { EditableField } from "../team/EditableField";
 import { ProjectForm } from "../submit/ProjectForm";
 import { TeamName } from "@/components/TeamName";
 import { canEditTeam } from "@/lib/teamEdit";
 import { formatDateTime } from "@/lib/format";
+import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { NewCommentsBadge } from "./NewCommentsBadge";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +35,9 @@ export default async function MyPage() {
     .select("name, email, role")
     .eq("id", user.id)
     .single();
+
+  // 팀장 이메일로 등록된 팀에 자동 연결 (참가 코드 대체)
+  await ensureLeaderMembership(user.id, user.email);
 
   const { data: membership } = await supabase
     .from("team_members")
@@ -122,24 +124,15 @@ export default async function MyPage() {
         )}
       </div>
 
-      {/* 팀 미소속 — 팀장 코드로 합류 */}
+      {/* 팀 미연결 안내 */}
       {!membership && (
-        <div className="card mx-auto w-full max-w-md">
-          <h2 className="text-lg font-bold">팀장 코드로 합류</h2>
-          <p className="mb-4 mt-1 text-sm text-[var(--muted)]">
-            팀은 운영진이 선정·등록합니다. 팀을 대표하는 <b>팀장</b>이 운영진에게
-            받은 <b>팀장 코드</b>로 합류해 팀 정보를 관리하고 프로젝트를
-            제출합니다.
+        <div className="card mx-auto w-full max-w-md text-center">
+          <h2 className="text-lg font-bold">연결된 팀이 없습니다</h2>
+          <p className="mt-2 text-sm text-[var(--muted)]">
+            팀은 운영진이 선정·등록하며, 구글폼에 적어 주신 <b>팀장 이메일</b>로
+            로그인하면 자동으로 연결됩니다. 현재 계정({me?.email})으로 연결된
+            팀이 없어요. 이메일이 맞는지 운영진에게 문의해 주세요.
           </p>
-          <ActionForm action={joinTeam} submitLabel="팀 합류">
-            <label className="label">팀장 코드</label>
-            <input
-              name="leader_code"
-              required
-              className="input font-mono"
-              placeholder="a1b2c3d4"
-            />
-          </ActionForm>
         </div>
       )}
 
