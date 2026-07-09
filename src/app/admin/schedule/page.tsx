@@ -34,14 +34,15 @@ export default async function AdminSchedulePage() {
     .order("created_at", { ascending: true });
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-5xl">
       <h1 className="text-2xl font-bold">일정 · D-day 관리</h1>
       <p className="mt-1 text-[var(--muted)]">
         마일스톤(D-day)과 일정표는 홈 화면에 표시됩니다.
       </p>
 
+      <div className="mt-6 grid items-start gap-5 lg:grid-cols-2">
       {/* 마일스톤 */}
-      <div className="card mt-6">
+      <div className="card">
         <h2 className="mb-1 font-bold">D-day 마일스톤</h2>
         <p className="mb-4 text-sm text-[var(--muted)]">
           신청 마감, 본선 발표 등 중요한 날짜를 여러 개 추가할 수 있어요.
@@ -79,7 +80,7 @@ export default async function AdminSchedulePage() {
       </div>
 
       {/* 일정표 */}
-      <div className="card mt-6">
+      <div className="card">
         <h2 className="mb-1 font-bold">일정표</h2>
         <p className="mb-4 text-sm text-[var(--muted)]">
           몇월 몇일 몇시에 무엇을 하는지 추가하세요.
@@ -125,6 +126,7 @@ export default async function AdminSchedulePage() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
