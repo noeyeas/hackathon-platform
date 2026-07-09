@@ -8,8 +8,8 @@ const config: Config = {
         ink: "#0f1b2d",
         paper: "#f2f5f9",
         team: "#0e8f83",
-        admin: "#5b21b6",
-        vote: "#7c3aed",
+        admin: "#075985",
+        vote: "#0284c7",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
