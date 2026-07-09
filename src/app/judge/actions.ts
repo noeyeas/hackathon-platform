@@ -19,6 +19,14 @@ export async function saveScores(projectId: string, formData: FormData) {
   if (me?.role !== "judge" && me?.role !== "admin")
     return { error: "심사위원·운영진만 채점할 수 있습니다" };
 
+  // 온라인 평가 열림 여부 (운영진 토글) — 닫혀 있으면 심사·팀 평가 모두 저장 불가
+  const { data: settings } = await supabase
+    .from("event_settings")
+    .select("voting_open")
+    .single();
+  if (!settings?.voting_open)
+    return { error: "지금은 평가 기간이 아닙니다" };
+
   const { data: criteria } = await supabase.from("criteria").select("id, max_score");
   if (!criteria) return { error: "평가 기준을 불러오지 못했습니다" };
 

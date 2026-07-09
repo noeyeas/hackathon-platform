@@ -28,6 +28,12 @@ export default async function JudgePage() {
     );
   }
 
+  const { data: settings } = await supabase
+    .from("event_settings")
+    .select("voting_open")
+    .single();
+  const votingOpen = settings?.voting_open ?? false;
+
   const { data: criteria } = await supabase
     .from("criteria")
     .select("id, name, max_score, weight, description")
@@ -52,6 +58,13 @@ export default async function JudgePage() {
         모든 팀({projects?.length ?? 0})을 채점해 주세요. 채점 완료{" "}
         {doneCount}팀.
       </p>
+
+      {!votingOpen && (
+        <div className="mt-4 rounded-lg bg-vote/10 px-4 py-3 text-sm text-vote">
+          현재는 평가가 닫혀 있습니다. 운영진이 평가를 열면 채점을 저장할 수
+          있어요.
+        </div>
+      )}
 
       <div className="mt-6 flex flex-col gap-4">
         {projects?.map((p) => {
