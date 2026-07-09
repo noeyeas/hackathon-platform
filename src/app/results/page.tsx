@@ -19,6 +19,15 @@ export default async function ResultsPage() {
     .select("*")
     .returns<Ranking[]>();
 
+  // 심사위원 배점 기준 (관리자에서 관리) — 결과 페이지에서 펼쳐볼 수 있게 노출
+  const { data: criteria } = await supabase
+    .from("criteria")
+    .select("name, weight, max_score, description")
+    .order("sort")
+    .returns<
+      { name: string; weight: number; max_score: number; description: string | null }[]
+    >();
+
   // 팀별 팀원 구성 (팀 이름 hover 툴팁용)
   const { data: teamNotes } = await supabase
     .from("teams")
@@ -35,10 +44,39 @@ export default async function ResultsPage() {
         {showFinal ? "최종 결과 🏆" : "실시간 집계 현황"}
       </h1>
       <p className="mt-1 text-[var(--muted)]">
-        가중치 · 심사 {pct(weights.judge)} / 팀 {pct(weights.team)} / 주민{" "}
+        종합 산정 · 심사 {pct(weights.judge)} / 팀 {pct(weights.team)} / 주민{" "}
         {pct(weights.audience)}
         {!showFinal && " · 투표 종료 후 최종 순위가 확정됩니다."}
       </p>
+
+      {!!criteria?.length && (
+        <details className="group mt-4 rounded-2xl border border-[var(--line)] bg-white">
+          <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-semibold">
+            <span>심사기준 {criteria.length}가지 보기</span>
+            <span className="text-[var(--muted)] transition group-open:rotate-180">⌄</span>
+          </summary>
+          <ol className="flex flex-col border-t border-[var(--line)]">
+            {criteria.map((c, i) => (
+              <li
+                key={c.name}
+                className={`flex gap-3 px-4 py-3 ${
+                  i !== criteria.length - 1 ? "border-b border-[var(--line)]" : ""
+                }`}
+              >
+                <span className="mt-0.5 flex-none text-xs font-bold text-vote">
+                  {pct(c.weight / 100)}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{c.name}</p>
+                  {c.description && (
+                    <p className="mt-0.5 text-xs text-[var(--muted)]">{c.description}</p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-[var(--line)]">
         <table className="w-full min-w-[560px] bg-white text-sm">
@@ -56,7 +94,15 @@ export default async function ResultsPage() {
             {rankings?.map((r, i) => (
               <tr
                 key={r.project_id}
-                className="border-b border-[var(--line)] last:border-0"
+                className={`border-b border-[var(--line)] last:border-0 ${
+                  i === 0
+                    ? "border-l-4 border-l-amber-400 bg-amber-50"
+                    : i === 1
+                      ? "border-l-4 border-l-slate-400 bg-slate-50"
+                      : i === 2
+                        ? "border-l-4 border-l-orange-400 bg-orange-50"
+                        : ""
+                }`}
               >
                 <td className="px-4 py-3 font-bold">
                   {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
