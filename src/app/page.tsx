@@ -22,8 +22,8 @@ const SCHEDULE = [
 ];
 
 const INSTAGRAM = [
-  { label: "인공지능융합대학", handle: "@kw_aiconv", href: "https://www.instagram.com/kw_aiconv/" },
-  { label: "총학생회", handle: "@kwu_studentcouncil", href: "https://www.instagram.com/kwu_studentcouncil/" },
+  { label: "인공지능융합대학 하성", handle: "@kw_aiconv", href: "https://www.instagram.com/kw_aiconv/" },
+  { label: "총학생회 이음", handle: "@kwu_studentcouncil", href: "https://www.instagram.com/kwu_studentcouncil/" },
 ];
 
 // 어두운 배경에 어울리는 미니멀 아웃라인 소셜 버튼
@@ -233,9 +233,10 @@ export default function Home() {
               href="https://open.kakao.com/o/sJcelIai"
               target="_blank"
               rel="noreferrer"
-              className="btn w-full bg-[#FEE500] text-[#3C1E1E] hover:brightness-95"
+              className={socialBtn}
             >
-              💬 하성 1:1 오픈채팅 문의
+              <KakaoIcon />
+              하성 1:1 오픈채팅 문의
             </a>
 
             <p className="mt-2 text-sm text-white/70">
@@ -247,9 +248,11 @@ export default function Home() {
                 href={ig.href}
                 target="_blank"
                 rel="noreferrer"
-                className="btn w-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white hover:brightness-110"
+                className={socialBtn}
               >
-                📸 {ig.label}
+                <InstagramIcon />
+                <span>{ig.label}</span>
+                <span className="ml-auto text-xs text-white/50">{ig.handle}</span>
               </a>
             ))}
           </div>
