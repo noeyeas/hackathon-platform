@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm } from "@/components/ActionForm";
-import { formatDateTime, scheduleWhen } from "@/lib/format";
+import { scheduleWhen } from "@/lib/format";
 import { addMilestone, addScheduleItem } from "./actions";
-import { DeleteRow } from "./DeleteRow";
+import { MilestoneAdminRow } from "./MilestoneAdminRow";
 import { ScheduleAdminRow } from "./ScheduleAdminRow";
 
 export const dynamic = "force-dynamic";
@@ -67,12 +67,11 @@ export default async function AdminSchedulePage() {
         {milestones && milestones.length > 0 && (
           <div className="mt-4 flex flex-col gap-2 border-t border-[var(--line)] pt-4">
             {milestones.map((m) => (
-              <DeleteRow
+              <MilestoneAdminRow
                 key={m.id}
                 id={m.id}
-                kind="milestone"
-                left={m.label}
-                right={formatDateTime(m.target_at)}
+                label={m.label}
+                targetAt={m.target_at}
               />
             ))}
           </div>

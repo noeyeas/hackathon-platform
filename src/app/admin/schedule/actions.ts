@@ -42,6 +42,27 @@ export async function addMilestone(formData: FormData) {
   return { ok: true };
 }
 
+export async function updateMilestone(
+  id: string,
+  label: string,
+  targetAt: string
+) {
+  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  const l = label.trim();
+  const raw = targetAt.trim();
+  if (!l) return { error: "이름을 입력하세요" };
+  if (!raw) return { error: "날짜/시간을 선택하세요" };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("milestones")
+    .update({ label: l, target_at: new Date(raw).toISOString() })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  revalidate();
+  return { ok: true };
+}
+
 export async function deleteMilestone(id: string) {
   if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
