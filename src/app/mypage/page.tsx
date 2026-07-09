@@ -4,7 +4,6 @@ import { EditableField } from "../team/EditableField";
 import { ProjectForm } from "../submit/ProjectForm";
 import { TeamName } from "@/components/TeamName";
 import { canEditTeam } from "@/lib/teamEdit";
-import { formatDateTime } from "@/lib/format";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { NewCommentsDot } from "./NewCommentsDot";
 
@@ -65,17 +64,12 @@ export default async function MyPage() {
         .maybeSingle()
     : { data: null };
 
-  // 내 작품 반응 (조회·좋아요·댓글)
+  // 내 작품 반응 (조회·좋아요·댓글 수). 세부 댓글은 갤러리에서 확인.
   let likeCount = 0;
   let commentCount = 0;
-  let comments: {
-    id: string;
-    body: string;
-    created_at: string;
-    users: unknown;
-  }[] = [];
+  let latestCommentAt: string | null = null;
   if (project) {
-    const [{ count: lc }, { count: cc }, { data: cs }] = await Promise.all([
+    const [{ count: lc }, { count: cc }, { data: latest }] = await Promise.all([
       supabase
         .from("project_likes")
         .select("id", { count: "exact", head: true })
@@ -86,16 +80,16 @@ export default async function MyPage() {
         .eq("project_id", project.id),
       supabase
         .from("project_comments")
-        .select("id, body, created_at, users(name)")
+        .select("created_at")
         .eq("project_id", project.id)
         .order("created_at", { ascending: false })
-        .limit(5),
+        .limit(1)
+        .maybeSingle(),
     ]);
     likeCount = lc ?? 0;
     commentCount = cc ?? 0;
-    comments = cs ?? [];
+    latestCommentAt = latest?.created_at ?? null;
   }
-  const latestCommentAt = comments[0]?.created_at ?? null;
 
   const canEdit = isLeader && canEditTeam();
 
@@ -196,30 +190,12 @@ export default async function MyPage() {
                   <Stat icon="💬" label="댓글" value={commentCount} />
                 </div>
 
-                {comments.length > 0 ? (
-                  <ul className="mt-4 flex flex-col divide-y divide-[var(--line)]">
-                    {comments.map((c) => {
-                      const author = c.users as { name: string | null } | null;
-                      return (
-                        <li key={c.id} className="py-2.5">
-                          <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
-                            <span className="font-semibold text-ink">
-                              {author?.name ?? "익명"}
-                            </span>
-                            <span>{formatDateTime(c.created_at)}</span>
-                          </div>
-                          <p className="mt-0.5 line-clamp-2 text-sm">
-                            {c.body}
-                          </p>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p className="mt-4 text-sm text-[var(--muted)]">
-                    아직 댓글이 없습니다.
-                  </p>
-                )}
+                <Link
+                  href={`/gallery/${project.id}`}
+                  className="mt-4 block text-center text-sm text-[var(--muted)] hover:text-vote"
+                >
+                  갤러리에서 댓글 확인 →
+                </Link>
               </section>
             )}
           </div>
