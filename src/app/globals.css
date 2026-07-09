@@ -93,12 +93,20 @@ body {
   0%, 100% { box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.3), 0 0 6px 1px rgba(255, 255, 255, 0.5); }
   50% { box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.3), 0 0 16px 5px rgba(255, 255, 255, 0.95); }
 }
-.timeline-dot-active { animation: timeline-pulse 2.4s ease-in-out infinite; }
+.timeline-dot-active { animation: timeline-pulse 4.5s ease-in-out infinite; }
+
+/* 리모컨 둥실둥실 (수직 중앙 -50%를 유지한 채 위아래로 부유) */
+@keyframes remote-float {
+  0%, 100% { transform: translateY(calc(-50% - 6px)); }
+  50% { transform: translateY(calc(-50% + 6px)); }
+}
+.remote-float { animation: remote-float 4.5s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-item { opacity: 1; transform: none; transition: none; }
   .hero-in, .scroll-cue, .animate-marquee { animation: none; }
   .timeline-dot-active { animation: none; }
+  .remote-float { animation: none; }
   .btn { transition: none; }
 }
 
