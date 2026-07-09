@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 
 // 히어로 하단에 풀폭으로 고정되는 진행형 타임라인.
@@ -38,28 +37,32 @@ export function HeroTimeline() {
         <div className="relative flex justify-between">
           {NODES.map((n, i) => {
             const filled = i < done;
+            const active = i === done; // 현재 진행 중(다음) 단계
             return (
-              <Link
+              <div
                 key={n.label}
-                href="/schedule"
-                className="group relative flex flex-1 flex-col items-center gap-2 text-center outline-none"
+                className="relative flex flex-1 flex-col items-center gap-2 text-center"
               >
                 <span
-                  className={`h-3.5 w-3.5 rounded-full border-2 border-white shadow-[0_0_0_4px_rgba(0,0,0,0.3)] transition-colors ${
-                    filled ? "bg-white" : "bg-transparent group-hover:bg-white/40"
+                  className={`h-3.5 w-3.5 rounded-full border-2 border-white ${
+                    filled
+                      ? "bg-white timeline-dot-done"
+                      : active
+                        ? "bg-white/40 timeline-dot-active"
+                        : "bg-transparent shadow-[0_0_0_4px_rgba(0,0,0,0.3)]"
                   }`}
                 />
                 <span className="text-xs font-bold tracking-tight sm:text-sm">
                   {n.date}
                 </span>
                 <span
-                  className={`text-[10px] leading-tight transition-colors sm:text-xs ${
-                    filled ? "text-white" : "text-white/70 group-hover:text-white"
+                  className={`text-[10px] leading-tight sm:text-xs ${
+                    filled || active ? "text-white" : "text-white/70"
                   }`}
                 >
                   {n.label}
                 </span>
-              </Link>
+              </div>
             );
           })}
         </div>

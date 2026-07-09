@@ -85,9 +85,20 @@ body {
   animation: hero-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* 타임라인 노드 글로우 */
+.timeline-dot-done {
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.3), 0 0 10px 2px rgba(255, 255, 255, 0.75);
+}
+@keyframes timeline-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.3), 0 0 6px 1px rgba(255, 255, 255, 0.5); }
+  50% { box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.3), 0 0 16px 5px rgba(255, 255, 255, 0.95); }
+}
+.timeline-dot-active { animation: timeline-pulse 2.4s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal-item { opacity: 1; transform: none; transition: none; }
   .hero-in, .scroll-cue, .animate-marquee { animation: none; }
+  .timeline-dot-active { animation: none; }
   .btn { transition: none; }
 }
 
