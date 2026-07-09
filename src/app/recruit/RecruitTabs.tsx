@@ -25,9 +25,21 @@ export function RecruitTabs({
   isAdmin?: boolean;
 }) {
   const [tab, setTab] = useState<"team" | "individual">("team");
-  const posts = tab === "team" ? teamPosts : individualPosts;
-  const empty =
-    tab === "team"
+  const [query, setQuery] = useState("");
+  const allPosts = tab === "team" ? teamPosts : individualPosts;
+
+  const q = query.trim().toLowerCase();
+  const posts = q
+    ? allPosts.filter((p) =>
+        [p.title, p.body, ...(p.positions ?? [])]
+          .filter(Boolean)
+          .some((v) => (v as string).toLowerCase().includes(q))
+      )
+    : allPosts;
+
+  const empty = q
+    ? "검색 결과가 없습니다."
+    : tab === "team"
       ? "팀원을 모집하는 팀이 아직 없습니다."
       : "팀을 구하는 개인이 아직 없습니다.";
 
@@ -45,6 +57,21 @@ export function RecruitTabs({
           onClick={() => setTab("individual")}
           label="🙋 팀 구함"
           count={individualPosts.length}
+        />
+      </div>
+
+      {/* 검색 */}
+      <div className="relative mt-4">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted)]">
+          🔍
+        </span>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="제목·역할·소개로 검색"
+          className="input pl-9"
+          aria-label="모집 글 검색"
         />
       </div>
 
@@ -118,9 +145,6 @@ function PostCard({ p, isAdmin }: { p: Post; isAdmin: boolean }) {
             }`}
           >
             {isTeam ? "팀원 구함" : "팀 구함"}
-          </span>
-          <span className="text-sm font-semibold">
-            {isTeam ? team?.name : (p.author_name ?? "익명")}
           </span>
         </div>
         <div className="flex flex-none items-center gap-3">
