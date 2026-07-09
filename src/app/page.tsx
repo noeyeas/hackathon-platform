@@ -21,6 +21,42 @@ const SCHEDULE = [
   { date: "9.18 – 9.19", label: "최종 발표 및 스프린트 (무박 2일)", place: "기념관 319호" },
 ];
 
+const INSTAGRAM = [
+  { label: "인공지능융합대학", handle: "@kw_aiconv", href: "https://www.instagram.com/kw_aiconv/" },
+  { label: "총학생회", handle: "@kwu_studentcouncil", href: "https://www.instagram.com/kwu_studentcouncil/" },
+];
+
+// 어두운 배경에 어울리는 미니멀 아웃라인 소셜 버튼
+const socialBtn =
+  "flex w-full items-center gap-2.5 rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/90 transition hover:border-white/30 hover:bg-white/10";
+
+function KakaoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 flex-none" aria-hidden>
+      <path d="M12 3.5C6.75 3.5 2.5 6.86 2.5 11c0 2.66 1.78 5 4.47 6.33-.2.71-.72 2.6-.82 3-.13.51.19.5.39.37.16-.1 2.53-1.72 3.56-2.42.46.06.94.09 1.4.09 5.25 0 9.5-3.36 9.5-7.5S17.25 3.5 12 3.5z" />
+    </svg>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-4 w-4 flex-none"
+      aria-hidden
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+    </svg>
+  );
+}
+
 export default function Home() {
   return (
     <div className="flex flex-col gap-24">
@@ -111,14 +147,24 @@ export default function Home() {
             ))}
           </div>
           <div className="flex flex-col gap-3">
-            <div className="card">
-              <p className="text-sm text-[var(--muted)]">최종 발표 장소</p>
-              <p className="mt-1 text-lg font-bold">광운대학교 기념관 319호</p>
+            <div className="card flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-[var(--muted)]">최종 발표 장소</p>
+                <p className="mt-1 text-lg font-bold">광운대학교 기념관 319호</p>
+              </div>
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=%EA%B4%91%EC%9A%B4%EB%8C%80%ED%95%99%EA%B5%90%20%EC%A4%91%EC%95%99%EB%8F%84%EC%84%9C%EA%B4%80"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-ghost flex-none text-sm"
+              >
+                🧭 길찾기
+              </a>
             </div>
             <div className="overflow-hidden rounded-2xl border border-[var(--line)]">
               <iframe
                 title="약도"
-                src="https://www.google.com/maps?q=%EA%B4%91%EC%9A%B4%EB%8C%80%ED%95%99%EA%B5%90%20%EA%B8%B0%EB%85%90%EA%B4%80&z=16&output=embed"
+                src="https://www.google.com/maps?q=%EA%B4%91%EC%9A%B4%EB%8C%80%ED%95%99%EA%B5%90%20%EC%A4%91%EC%95%99%EB%8F%84%EC%84%9C%EA%B4%80&z=16&output=embed"
                 className="h-60 w-full"
                 loading="lazy"
               />
@@ -191,6 +237,21 @@ export default function Home() {
             >
               💬 하성 1:1 오픈채팅 문의
             </a>
+
+            <p className="mt-2 text-sm text-white/70">
+              소식은 인스타그램에서 확인하세요.
+            </p>
+            {INSTAGRAM.map((ig) => (
+              <a
+                key={ig.href}
+                href={ig.href}
+                target="_blank"
+                rel="noreferrer"
+                className="btn w-full bg-gradient-to-r from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white hover:brightness-110"
+              >
+                📸 {ig.label}
+              </a>
+            ))}
           </div>
         </div>
       </section>
