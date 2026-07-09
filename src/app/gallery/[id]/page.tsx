@@ -5,6 +5,7 @@ import { formatDateTime } from "@/lib/format";
 import { LikeButton } from "@/components/LikeButton";
 import { CommentForm, DeleteCommentButton } from "@/components/CommentBox";
 import { TeamName } from "@/components/TeamName";
+import { ViewPing } from "@/components/ViewPing";
 
 export const dynamic = "force-dynamic";
 
@@ -34,11 +35,8 @@ export default async function ProjectDetailPage({
 
   if (!p) notFound();
 
-  // 조회수 +1 (원자적) — 증가된 값을 표시
-  const { data: newViews } = await supabase.rpc("increment_project_view", {
-    pid: id,
-  });
-  const views = typeof newViews === "number" ? newViews : p.view_count;
+  // 조회수는 마운트 시 클라이언트에서 1회만 올린다(ViewPing). 여기서는 현재 값만 표시.
+  const views = p.view_count;
 
   const team = p.teams as unknown as {
     name: string;
@@ -91,6 +89,7 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl">
+      <ViewPing projectId={id} />
       <Link
         href="/gallery"
         className="text-sm text-[var(--muted)] hover:text-ink"

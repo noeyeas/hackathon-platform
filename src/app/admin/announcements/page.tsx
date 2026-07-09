@@ -73,7 +73,8 @@ export default async function AdminAnnouncementsPage() {
           <ActionForm
             action={createAnnouncement}
             submitLabel="공지 올리기"
-            successMessage="공지를 올렸습니다. 목록을 새로고침하세요."
+            successMessage="공지를 올렸습니다."
+            resetOnSuccess
           >
             <label className="label">제목 *</label>
             <input name="title" required className="input" placeholder="예: 점심 식사 안내" />

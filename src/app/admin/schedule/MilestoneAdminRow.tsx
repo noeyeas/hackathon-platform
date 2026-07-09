@@ -2,15 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateMilestone, deleteMilestone } from "./actions";
-
-// ISO(UTC) → datetime-local 입력값(로컬 시간) 문자열
-function toLocalInput(iso: string) {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
-  )}:${pad(d.getMinutes())}`;
-}
+import { toLocalInput } from "@/lib/format";
 
 export function MilestoneAdminRow({
   id,

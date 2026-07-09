@@ -68,7 +68,9 @@ export default async function TeamPage() {
       <div className="card">
         <div className="flex items-start justify-between">
           <h1 className="text-2xl font-bold">{team?.name}</h1>
-          <span className="chip border-team text-team">팀장</span>
+          {membership.is_leader && (
+            <span className="chip border-team text-team">팀장</span>
+          )}
         </div>
 
         <div className="mt-4 flex flex-col gap-4 border-t border-[var(--line)] pt-4">

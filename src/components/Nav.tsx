@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { NavMenu } from "./NavMenu";
+import { MobileMenu } from "./MobileMenu";
 
 const EVENT_ITEMS = [
   { href: "/notice", label: "공지" },
@@ -41,6 +42,19 @@ export async function Nav() {
       isLeader = m?.is_leader ?? false;
     }
   }
+
+  // 모바일 햄버거에 담을 링크 (데스크톱 nav 와 동일 구성)
+  const mobileItems: { href: string; label: string; accent?: "admin" }[] = [
+    ...LINKS,
+    ...EVENT_ITEMS,
+    { href: "/results", label: "결과" },
+    ...(isLeader ? [{ href: "/vote", label: "평가" }] : []),
+    ...(role === "judge" ? [{ href: "/judge", label: "심사" }] : []),
+    ...(isLeader ? [{ href: "/mypage", label: "마이페이지" }] : []),
+    ...(role === "admin"
+      ? [{ href: "/admin", label: "운영", accent: "admin" as const }]
+      : []),
+  ];
 
   return (
     <header className="sticky top-0 z-10 border-b border-[var(--line)] bg-white/90 backdrop-blur">
@@ -96,22 +110,26 @@ export async function Nav() {
               {isLeader && (
                 <Link
                   href="/mypage"
-                  className="text-[var(--muted)] hover:text-ink"
+                  className="text-[var(--muted)] hover:text-ink max-sm:hidden"
                 >
                   마이페이지
                 </Link>
               )}
-              <form action="/auth/signout" method="post">
+              <form action="/auth/signout" method="post" className="max-sm:hidden">
                 <button className="text-[var(--muted)] hover:text-ink">
                   로그아웃
                 </button>
               </form>
             </>
           ) : (
-            <Link href="/login" className="btn-primary !rounded-full">
+            <Link
+              href="/login"
+              className="btn-primary !rounded-full max-sm:hidden"
+            >
               로그인
             </Link>
           )}
+          <MobileMenu items={mobileItems} loggedIn={!!user} />
         </div>
       </div>
     </header>

@@ -48,6 +48,14 @@ export async function setLike(
   return { count: count ?? 0 };
 }
 
+// 조회수 +1 — 상세 페이지 마운트 시 클라이언트에서 1회만 호출.
+// (RSC 에서 렌더마다 올리면 router.refresh() 로 유령 조회가 누적되므로 분리)
+export async function pingView(projectId: string): Promise<void> {
+  if (!projectId) return;
+  const supabase = await createClient();
+  await supabase.rpc("increment_project_view", { pid: projectId });
+}
+
 // 댓글 작성 — 로그인 사용자 본인 명의로만 (RLS 로 강제)
 export async function addComment(
   projectId: string,

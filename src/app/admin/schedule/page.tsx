@@ -50,7 +50,8 @@ export default async function AdminSchedulePage() {
         <ActionForm
           action={addMilestone}
           submitLabel="마일스톤 추가"
-          successMessage="추가했습니다. 새로고침하세요."
+          successMessage="추가했습니다."
+          resetOnSuccess
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
@@ -87,7 +88,8 @@ export default async function AdminSchedulePage() {
         <ActionForm
           action={addScheduleItem}
           submitLabel="일정 추가"
-          successMessage="추가했습니다. 새로고침하세요."
+          successMessage="추가했습니다."
+          resetOnSuccess
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
