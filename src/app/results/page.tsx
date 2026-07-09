@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SCORE_WEIGHTS, type Ranking, type EventPhase } from "@/lib/types";
 
@@ -64,16 +65,13 @@ export default async function ResultsPage() {
                   {(() => {
                     const note = noteByTeam.get(r.team_id);
                     return (
-                      <div
-                        className={`font-semibold ${
-                          note
-                            ? "cursor-help decoration-dotted underline-offset-4 [text-decoration-line:underline]"
-                            : ""
-                        }`}
+                      <Link
+                        href={`/gallery/${r.project_id}`}
+                        className="font-semibold hover:text-vote hover:underline"
                         title={note ? `팀원 구성\n${note}` : undefined}
                       >
                         {r.team_name}
-                      </div>
+                      </Link>
                     );
                   })()}
                   <div className="text-xs text-[var(--muted)]">{r.title}</div>
