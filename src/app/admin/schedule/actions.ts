@@ -1,21 +1,8 @@
 "use server";
 
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-
-async function assertAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return false;
-  const { data } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  return data?.role === "admin";
-}
 
 function revalidate() {
   revalidatePath("/admin/schedule");
@@ -24,7 +11,7 @@ function revalidate() {
 
 // ---------- 마일스톤 (여러 D-day) ----------
 export async function addMilestone(formData: FormData) {
-  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const label = String(formData.get("label") ?? "").trim();
   const raw = String(formData.get("target_at") ?? "").trim();
   const sort = Number(formData.get("sort") ?? 0);
@@ -47,7 +34,7 @@ export async function updateMilestone(
   label: string,
   targetAt: string
 ) {
-  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const l = label.trim();
   const raw = targetAt.trim();
   if (!l) return { error: "이름을 입력하세요" };
@@ -64,7 +51,7 @@ export async function updateMilestone(
 }
 
 export async function deleteMilestone(id: string) {
-  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
   const { error } = await admin.from("milestones").delete().eq("id", id);
   if (error) return { error: error.message };
@@ -74,7 +61,7 @@ export async function deleteMilestone(id: string) {
 
 // ---------- 일정 항목 (실제 날짜+시간) ----------
 export async function addScheduleItem(formData: FormData) {
-  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const raw = String(formData.get("starts_at") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();
   if (!title) return { error: "일정 내용을 입력하세요" };
@@ -98,7 +85,7 @@ export async function addScheduleItem(formData: FormData) {
 
 // 일정 항목 상세(세부 일정) 수정
 export async function updateScheduleDetail(id: string, detail: string) {
-  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
   const { error } = await admin
     .from("schedule_items")
@@ -110,7 +97,7 @@ export async function updateScheduleDetail(id: string, detail: string) {
 }
 
 export async function deleteScheduleItem(id: string) {
-  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
   const { error } = await admin.from("schedule_items").delete().eq("id", id);
   if (error) return { error: error.message };

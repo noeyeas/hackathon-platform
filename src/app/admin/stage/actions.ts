@@ -1,21 +1,8 @@
 "use server";
 
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-
-async function assertAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return false;
-  const { data } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  return data?.role === "admin";
-}
 
 // 발표 순서대로 정렬된 project id 목록
 async function orderedProjectIds() {
@@ -29,7 +16,7 @@ async function orderedProjectIds() {
 }
 
 export async function setPresenting(projectId: string | null) {
-  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
   const { error } = await admin
     .from("event_settings")
@@ -43,7 +30,7 @@ export async function setPresenting(projectId: string | null) {
 
 // 이전/다음 발표 팀으로 이동
 export async function movePresenting(dir: "next" | "prev") {
-  if (!(await assertAdmin())) return { error: "운영진만 가능합니다" };
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
   const ids = await orderedProjectIds();
   if (!ids.length) return { error: "제출작이 없습니다" };
