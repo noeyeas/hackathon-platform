@@ -37,18 +37,26 @@ export default async function AdminAnnouncementsPage() {
         {/* 왼쪽: 기존 공지 목록 */}
         <div className="flex flex-col gap-3">
           {list?.map((a) => (
-            <div key={a.id} className="card flex items-start justify-between !p-4">
-              <div>
-                <div className="flex items-center gap-2">
+            <div key={a.id} className="card flex items-start justify-between gap-2 !p-4">
+              {a.body ? (
+                <details className="group min-w-0 flex-1">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
+                    {a.pinned && <span className="chip border-vote text-vote">고정</span>}
+                    <h3 className="font-semibold">{a.title}</h3>
+                    <span className="ml-auto flex-none text-[var(--muted)] transition group-open:rotate-180">
+                      ⌄
+                    </span>
+                  </summary>
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--muted)]">
+                    {a.body}
+                  </p>
+                </details>
+              ) : (
+                <div className="flex min-w-0 flex-1 items-center gap-2">
                   {a.pinned && <span className="chip border-vote text-vote">고정</span>}
                   <h3 className="font-semibold">{a.title}</h3>
                 </div>
-                {a.body && (
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-[var(--muted)]">
-                    {a.body}
-                  </p>
-                )}
-              </div>
+              )}
               <DeleteButton id={a.id} />
             </div>
           ))}
