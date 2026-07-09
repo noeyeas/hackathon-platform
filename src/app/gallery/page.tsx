@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { TeamName } from "@/components/TeamName";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export default async function GalleryPage() {
   const { data } = await supabase
     .from("projects")
     .select(
-      "id, title, description, view_count, teams(name), project_likes(count)"
+      "id, title, description, view_count, teams(name, members_note), project_likes(count)"
     );
 
   // 방문(세션)당 고정된 무작위 순서 — 시드는 쿠키, 같은 시드면 항상 같은 순서.
@@ -55,7 +56,10 @@ export default async function GalleryPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((p) => {
-            const team = p.teams as unknown as { name: string } | null;
+            const team = p.teams as unknown as {
+              name: string;
+              members_note: string | null;
+            } | null;
             const likeCount =
               (p.project_likes as unknown as { count: number }[])?.[0]?.count ??
               0;
@@ -65,7 +69,11 @@ export default async function GalleryPage() {
                 href={`/gallery/${p.id}`}
                 className="card flex flex-col transition hover:-translate-y-1 hover:shadow-md"
               >
-                <span className="chip mb-2 w-fit">{team?.name}</span>
+                <TeamName
+                  name={team?.name ?? ""}
+                  membersNote={team?.members_note}
+                  className="mb-2"
+                />
                 <h3 className="font-bold">{p.title}</h3>
                 <p className="mt-1 line-clamp-3 text-sm text-[var(--muted)]">
                   {p.description ?? "설명 없음"}

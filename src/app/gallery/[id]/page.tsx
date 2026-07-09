@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDateTime } from "@/lib/format";
 import { LikeButton } from "@/components/LikeButton";
 import { CommentForm, DeleteCommentButton } from "@/components/CommentBox";
+import { TeamName } from "@/components/TeamName";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export default async function ProjectDetailPage({
   const { data: p } = await supabase
     .from("projects")
     .select(
-      "id, title, description, repo_url, demo_url, video_url, deck_url, view_count, teams(name, tagline), project_likes(count)"
+      "id, title, description, repo_url, demo_url, video_url, deck_url, view_count, teams(name, tagline, members_note), project_likes(count)"
     )
     .eq("id", id)
     .single();
@@ -42,6 +43,7 @@ export default async function ProjectDetailPage({
   const team = p.teams as unknown as {
     name: string;
     tagline: string | null;
+    members_note: string | null;
   } | null;
   const likeCount =
     (p.project_likes as unknown as { count: number }[])?.[0]?.count ?? 0;
@@ -88,7 +90,9 @@ export default async function ProjectDetailPage({
       </Link>
 
       <div className="mt-4 flex flex-col gap-2">
-        {team?.name && <span className="chip w-fit">{team.name}</span>}
+        {team?.name && (
+          <TeamName name={team.name} membersNote={team.members_note} />
+        )}
         <h1 className="text-3xl font-bold">{p.title}</h1>
         {team?.tagline && (
           <p className="text-[var(--muted)]">{team.tagline}</p>

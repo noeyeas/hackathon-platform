@@ -18,6 +18,14 @@ export default async function ResultsPage() {
     .select("*")
     .returns<Ranking[]>();
 
+  // 팀별 팀원 구성 (팀 이름 hover 툴팁용)
+  const { data: teamNotes } = await supabase
+    .from("teams")
+    .select("id, members_note");
+  const noteByTeam = new Map(
+    (teamNotes ?? []).map((t) => [t.id as string, t.members_note as string | null])
+  );
+
   const showFinal = phase === "closed";
 
   return (
@@ -53,7 +61,21 @@ export default async function ResultsPage() {
                   {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="font-semibold">{r.team_name}</div>
+                  {(() => {
+                    const note = noteByTeam.get(r.team_id);
+                    return (
+                      <div
+                        className={`font-semibold ${
+                          note
+                            ? "cursor-help decoration-dotted underline-offset-4 [text-decoration-line:underline]"
+                            : ""
+                        }`}
+                        title={note ? `팀원 구성\n${note}` : undefined}
+                      >
+                        {r.team_name}
+                      </div>
+                    );
+                  })()}
                   <div className="text-xs text-[var(--muted)]">{r.title}</div>
                 </td>
                 <td className="px-4 py-3 text-right tabular-nums">
