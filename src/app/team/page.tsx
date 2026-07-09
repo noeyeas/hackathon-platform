@@ -86,16 +86,26 @@ export default async function TeamPage() {
           </div>
           <span className="chip border-team text-team">팀장</span>
         </div>
-        <p className="mt-4 text-sm text-[var(--muted)]">
-          팀을 대표해 팀 정보를 관리하고 프로젝트를 제출합니다.
-        </p>
+        {team?.members_note ? (
+          <div className="mt-4 rounded-lg bg-gray-50 p-4">
+            <p className="text-xs font-semibold text-[var(--muted)]">팀원 구성</p>
+            <p className="mt-1 whitespace-pre-wrap text-sm">
+              {team.members_note}
+            </p>
+          </div>
+        ) : (
+          <p className="mt-4 text-sm text-[var(--muted)]">
+            팀을 대표해 팀 정보를 관리하고 프로젝트를 제출합니다.
+          </p>
+        )}
       </div>
 
       {canEdit && (
         <div className="card">
           <h2 className="mb-1 font-bold">팀 정보 수정</h2>
           <p className="mb-4 text-sm text-[var(--muted)]">
-            팀 이름·소개는 9월 3일 전까지 수정할 수 있어요.
+            소개·팀원 구성은 9월 3일 전까지 수정할 수 있어요. 팀 이름은 운영진이
+            등록한 값으로 고정됩니다.
           </p>
           <ActionForm
             action={updateTeamInfo}
@@ -104,10 +114,9 @@ export default async function TeamPage() {
           >
             <label className="label">팀 이름</label>
             <input
-              name="name"
-              required
-              defaultValue={team?.name ?? ""}
-              className="input"
+              value={team?.name ?? ""}
+              disabled
+              className="input bg-gray-50 text-[var(--muted)]"
             />
             <label className="label mt-3">한 줄 소개</label>
             <input
@@ -115,6 +124,14 @@ export default async function TeamPage() {
               defaultValue={team?.tagline ?? ""}
               className="input"
               placeholder="우리 팀을 소개해 주세요"
+            />
+            <label className="label mt-3">팀원 구성 (선택)</label>
+            <textarea
+              name="members_note"
+              rows={3}
+              defaultValue={team?.members_note ?? ""}
+              className="input"
+              placeholder="예: 김철수(기획), 이영희(프론트), 박민수(백엔드)"
             />
           </ActionForm>
         </div>

@@ -65,7 +65,7 @@ export async function joinTeam(formData: FormData) {
   return { ok: true };
 }
 
-// 팀 이름·한줄설명 수정 (팀장, 마감 전)
+// 팀 소개·팀원 구성 수정 (팀장, 마감 전). 팀 이름은 운영진 등록값으로 고정.
 export async function updateTeamInfo(formData: FormData) {
   const supabase = await createClient();
   const res = await requireLeaderTeam(supabase);
@@ -73,13 +73,15 @@ export async function updateTeamInfo(formData: FormData) {
   if (!canEditTeam())
     return { error: "수정 기간이 종료되었습니다 (9월 3일 마감)" };
 
-  const name = String(formData.get("name") ?? "").trim();
   const tagline = String(formData.get("tagline") ?? "").trim();
-  if (!name) return { error: "팀 이름을 입력하세요" };
+  const membersNote = String(formData.get("members_note") ?? "").trim();
 
   const { error } = await supabase
     .from("teams")
-    .update({ name, tagline: tagline || null })
+    .update({
+      tagline: tagline || null,
+      members_note: membersNote || null,
+    })
     .eq("id", res.teamId);
   if (error) return { error: error.message };
 
