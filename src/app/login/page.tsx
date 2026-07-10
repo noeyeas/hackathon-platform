@@ -7,6 +7,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const siteUrl =
@@ -26,11 +27,18 @@ export default function LoginPage() {
   }
 
   async function signInWithGoogle() {
+    setGoogleLoading(true);
+    setError(null);
     const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: callbackUrl() },
     });
+    // 성공 시 리다이렉트되므로 여기 도달하면 대개 실패
+    if (error) {
+      setError(error.message);
+      setGoogleLoading(false);
+    }
   }
 
   async function signInWithEmail(e: React.FormEvent) {
@@ -57,8 +65,12 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <button onClick={signInWithGoogle} className="btn-ghost w-full">
-          Google 계정으로 계속하기
+        <button
+          onClick={signInWithGoogle}
+          disabled={googleLoading}
+          className="btn-primary w-full"
+        >
+          {googleLoading ? "이동 중..." : "Google 계정으로 계속하기"}
         </button>
 
         <div className="flex items-center gap-3 text-xs text-[var(--muted)]">
@@ -81,7 +93,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <button disabled={loading} className="btn-primary w-full">
+            <button disabled={loading} className="btn-ghost w-full">
               {loading ? "전송 중..." : "로그인 링크 받기"}
             </button>
           </form>

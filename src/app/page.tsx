@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { LogoMarquee } from "@/components/LogoMarquee";
 import { HeroTimeline } from "@/components/HeroTimeline";
 import { Reveal } from "@/components/Reveal";
@@ -63,9 +64,13 @@ export default function Home() {
       {/* ===== 히어로 + 하단 마퀴 ===== */}
       <div>
         <section className="bleed relative -mt-8 flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-5 text-center sm:min-h-[640px]">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('/campus.jpg')" }}
+          <Image
+            src="/campus.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/55 to-black/70" />
 
