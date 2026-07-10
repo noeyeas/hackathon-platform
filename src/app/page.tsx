@@ -7,8 +7,9 @@ import { RevealGroup } from "@/components/RevealGroup";
 import { getTimeline } from "@/lib/remoteData";
 import { formatMonthDay } from "@/lib/format";
 
-// TODO: 실제 구글 신청 폼 링크로 교체하세요
-const APPLY_FORM_URL = "#";
+// 구글 신청 폼 주소. 채우면 아래 ApplyButton 이 자동으로 활성 링크가 되고,
+// 비워두면 "준비 중" 비활성 버튼으로 표시된다.
+const APPLY_FORM_URL = "";
 
 const THEMES = [
   { icon: "♻️", t: "탄소 중립과 ESG", en: "Carbon Neutral", d: "탄소 배출 저감·자원 순환·친환경 생활을 유도하는 플랫폼으로 일상 속 ESG 실현", tint: "#edf9f1", ring: "#cfeed7", chip: "#d7f1e0", accent: "#2f9e5f" },
@@ -64,6 +65,40 @@ const KAKAO_OPENCHAT = "https://open.kakao.com/o/sJcelIai";
 // 어두운 배경에 어울리는 미니멀 아웃라인 소셜 버튼
 const socialBtn =
   "flex w-full items-center gap-2.5 rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/90 transition hover:border-white/30 hover:bg-white/10";
+
+// 신청 폼 CTA. APPLY_FORM_URL 이 있으면 링크, 없으면 "준비 중" 비활성 버튼.
+function ApplyButton({
+  className,
+  label,
+  pendingLabel,
+}: {
+  className: string;
+  label: string;
+  pendingLabel: string;
+}) {
+  if (APPLY_FORM_URL) {
+    return (
+      <a
+        href={APPLY_FORM_URL}
+        target="_blank"
+        rel="noreferrer"
+        className={className}
+      >
+        {label}
+      </a>
+    );
+  }
+  return (
+    <button
+      type="button"
+      disabled
+      title="신청 폼이 곧 열립니다"
+      className={`${className} disabled:cursor-not-allowed`}
+    >
+      {pendingLabel}
+    </button>
+  );
+}
 
 function KakaoIcon() {
   return (
@@ -131,9 +166,11 @@ export default async function Home() {
               기술을 통해 월계동의 내일을 그리다
             </p>
             <div className="mt-2 flex flex-wrap justify-center gap-3">
-              <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary !rounded-full">
-                참가 신청하기
-              </a>
+              <ApplyButton
+                className="btn-primary !rounded-full"
+                label="참가 신청하기"
+                pendingLabel="참가 신청 준비 중"
+              />
               <Link
                 href="/gallery"
                 className="btn inline-flex !rounded-full border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
@@ -197,9 +234,11 @@ export default async function Home() {
           <div className="card h-full">
             <h3 className="mb-3 font-bold">모집 기간</h3>
             <p className="text-2xl font-bold">8.24 – 9.2</p>
-            <a href={APPLY_FORM_URL} target="_blank" rel="noreferrer" className="btn-primary mt-3 w-full">
-              신청 폼 열기
-            </a>
+            <ApplyButton
+              className="btn-primary mt-3 w-full"
+              label="신청 폼 열기"
+              pendingLabel="신청 폼 준비 중"
+            />
           </div>
         </RevealGroup>
       </Section>
