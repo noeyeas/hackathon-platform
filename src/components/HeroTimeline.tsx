@@ -60,7 +60,7 @@ export function HeroTimeline() {
                 className="relative flex flex-1 flex-col items-center gap-2 text-center"
               >
                 {active && dday !== null && (
-                  <span className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-vote px-2 py-0.5 text-[11px] font-extrabold tabular-nums text-white shadow-lg">
+                  <span className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-white/30 bg-white/15 px-2 py-0.5 text-[11px] font-extrabold tabular-nums text-white shadow-lg backdrop-blur-sm">
                     {dday <= 0 ? "D-DAY" : `D-${dday}`}
                   </span>
                 )}
