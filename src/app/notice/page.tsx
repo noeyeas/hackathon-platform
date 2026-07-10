@@ -11,15 +11,26 @@ export default async function NoticePage() {
     .order("pinned", { ascending: false })
     .order("created_at", { ascending: false });
 
+  const items = list ?? [];
+
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold">공지사항</h1>
-      <p className="mt-1 text-[var(--muted)]">
-        제목을 누르면 내용을 볼 수 있습니다.
-      </p>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">공지사항</h1>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            제목을 누르면 자세한 내용을 볼 수 있어요.
+          </p>
+        </div>
+        {items.length > 0 && (
+          <span className="shrink-0 rounded-full bg-vote/10 px-3 py-1 text-sm font-semibold text-vote">
+            전체 {items.length}
+          </span>
+        )}
+      </div>
 
       <div className="mt-6">
-        <NoticeList list={list ?? []} />
+        <NoticeList list={items} />
       </div>
     </div>
   );
