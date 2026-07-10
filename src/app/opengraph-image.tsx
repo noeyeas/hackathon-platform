@@ -26,7 +26,7 @@ export default async function OpengraphImage() {
           justifyContent: "space-between",
           padding: "72px 80px",
           background:
-            "linear-gradient(135deg, #0f1b2d 0%, #123049 58%, #0284c7 165%)",
+            "linear-gradient(135deg, #0f1b2d 0%, #123049 58%, #8A1601 165%)",
           color: "white",
           fontFamily: "Pretendard",
         }}
@@ -37,7 +37,7 @@ export default async function OpengraphImage() {
             style={{
               width: 44,
               height: 6,
-              background: "#38bdf8",
+              background: "#D64A2E",
               borderRadius: 999,
             }}
           />
@@ -46,7 +46,7 @@ export default async function OpengraphImage() {
               fontSize: 30,
               fontWeight: 600,
               letterSpacing: 2,
-              color: "#7dd3fc",
+              color: "#EC8365",
             }}
           >
             월계동 지역사회 해커톤
@@ -73,7 +73,7 @@ export default async function OpengraphImage() {
               fontSize: 96,
               lineHeight: 1.05,
               letterSpacing: -2,
-              color: "#38bdf8",
+              color: "#D64A2E",
             }}
           >
             HACKATHON

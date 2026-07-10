@@ -9,7 +9,7 @@ const config: Config = {
         paper: "#f2f5f9",
         team: "#0e8f83",
         admin: "#075985",
-        vote: "#0284c7",
+        vote: "#8A1601",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

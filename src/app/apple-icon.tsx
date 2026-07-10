@@ -20,8 +20,8 @@ export default async function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0f1b2d 0%, #123049 70%, #0284c7 170%)",
-          color: "#38bdf8",
+          background: "linear-gradient(135deg, #0f1b2d 0%, #123049 70%, #8A1601 170%)",
+          color: "#D64A2E",
           fontFamily: "Archivo",
           fontSize: 118,
         }}
