@@ -4,11 +4,21 @@ import { useEffect, useState } from "react";
 
 // 히어로 하단에 풀폭으로 고정되는 진행형 타임라인.
 // 지난 단계는 채우고(흰색), 다가올 단계는 비운다. 각 노드는 일정 페이지로 이동.
-const NODES = [
+const NODES: {
+  date: string;
+  label: string;
+  at: string;
+  place?: string;
+}[] = [
   { date: "9.2", label: "팀 모집 마감", at: "2026-09-02" },
   { date: "9.7", label: "해커톤 시작", at: "2026-09-07" },
   { date: "9.11", label: "중간 멘토링", at: "2026-09-11" },
-  { date: "9.18 – 9.19", label: "최종 발표", at: "2026-09-18" },
+  {
+    date: "9.18 – 9.19",
+    label: "최종 발표",
+    at: "2026-09-18",
+    place: "광운대 기념관 319호",
+  },
 ];
 
 export function HeroTimeline() {
@@ -62,6 +72,11 @@ export function HeroTimeline() {
                 >
                   {n.label}
                 </span>
+                {n.place && (
+                  <span className="text-[10px] leading-tight text-white/80">
+                    📍 {n.place}
+                  </span>
+                )}
               </div>
             );
           })}

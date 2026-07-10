@@ -15,13 +15,6 @@ const THEMES = [
   { icon: "🚦", t: "교통 문제", en: "Mobility", d: "상습 정체·주차난·대중교통 접근성을 데이터와 기술로 개선", tint: "#fdeef2", ring: "#f6d7e0", chip: "#f9dce4", accent: "#d05579" },
 ];
 
-const SCHEDULE = [
-  { date: "8.24 – 9.2", label: "참가 팀 모집" },
-  { date: "9.7", label: "해커톤 시작" },
-  { date: "9.11", label: "중간 보고서 및 멘토링" },
-  { date: "9.18 – 9.19", label: "최종 발표 및 스프린트 (무박 2일)", place: "기념관 319호" },
-];
-
 const INSTAGRAM = [
   { label: "인공지능융합대학 하성", handle: "@kw_aiconv", href: "https://www.instagram.com/kw_aiconv/" },
   { label: "총학생회 이음", handle: "@kwu_studentcouncil", href: "https://www.instagram.com/kwu_studentcouncil/" },
@@ -132,12 +125,6 @@ export default function Home() {
                 참가 신청하기
               </a>
               <Link
-                href="/schedule"
-                className="btn inline-flex !rounded-full border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
-              >
-                일정 보기
-              </Link>
-              <Link
                 href="/gallery"
                 className="btn inline-flex !rounded-full border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20"
               >
@@ -175,56 +162,6 @@ export default function Home() {
             </div>
           ))}
         </RevealGroup>
-      </Section>
-
-      {/* ===== 일정 & 장소 ===== */}
-      <Section eyebrow="Schedule & Venue" title="일정 및 장소">
-        <Reveal>
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="flex flex-col gap-3">
-            {SCHEDULE.map((s) => (
-              <div
-                key={s.label}
-                className="card flex items-start gap-4 transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <span className="w-24 flex-none text-sm font-bold text-vote">
-                  {s.date}
-                </span>
-                <div>
-                  <p className="text-sm font-semibold">{s.label}</p>
-                  {s.place && (
-                    <p className="mt-0.5 text-xs text-[var(--muted)]">📍 {s.place}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col gap-3">
-            <div className="card flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm text-[var(--muted)]">최종 발표 장소</p>
-                <p className="mt-1 text-lg font-bold">광운대학교 기념관 319호</p>
-              </div>
-              <a
-                href="https://www.google.com/maps/dir/?api=1&destination=%EA%B4%91%EC%9A%B4%EB%8C%80%ED%95%99%EA%B5%90%20%EC%A4%91%EC%95%99%EB%8F%84%EC%84%9C%EA%B4%80"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-ghost flex-none text-sm"
-              >
-                🧭 길찾기
-              </a>
-            </div>
-            <div className="overflow-hidden rounded-2xl border border-[var(--line)]">
-              <iframe
-                title="약도"
-                src="https://www.google.com/maps?q=%EA%B4%91%EC%9A%B4%EB%8C%80%ED%95%99%EA%B5%90%20%EC%A4%91%EC%95%99%EB%8F%84%EC%84%9C%EA%B4%80&z=16&output=embed"
-                className="h-60 w-full"
-                loading="lazy"
-              />
-            </div>
-          </div>
-        </div>
-        </Reveal>
       </Section>
 
       {/* ===== 참가 안내 ===== */}
