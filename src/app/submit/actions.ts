@@ -1,10 +1,8 @@
 "use server";
 
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { safeError } from "@/lib/actionError";
-
-const MAX_PDF_BYTES = 20 * 1024 * 1024; // 20MB
 
 export async function saveProject(formData: FormData) {
   const supabase = await createClient();
@@ -22,38 +20,6 @@ export async function saveProject(formData: FormData) {
   if (!membership.is_leader)
     return { error: "프로젝트 제출은 팀장만 할 수 있습니다" };
 
-  // 기존 제출물 (새 파일을 안 올리면 참고자료 링크 보존)
-  const { data: existing } = await supabase
-    .from("projects")
-    .select("deck_url")
-    .eq("team_id", membership.team_id)
-    .maybeSingle();
-  let deckUrl: string | null = existing?.deck_url ?? null;
-
-  // 참고자료 PDF 업로드 (새 파일이 있을 때만 교체)
-  const deckFile = formData.get("deck_file");
-  if (deckFile instanceof File && deckFile.size > 0) {
-    if (deckFile.type !== "application/pdf") {
-      return { error: "참고자료는 PDF 파일만 업로드할 수 있습니다" };
-    }
-    if (deckFile.size > MAX_PDF_BYTES) {
-      return { error: "참고자료 파일은 20MB 이하만 가능합니다" };
-    }
-    const admin = createAdminClient();
-    const path = `${membership.team_id}/${crypto.randomUUID()}.pdf`;
-    const { error: upErr } = await admin.storage
-      .from("decks")
-      .upload(path, deckFile, { contentType: "application/pdf", upsert: true });
-    if (upErr)
-      return {
-        error: safeError(
-          upErr,
-          "참고자료 업로드에 실패했어요. 잠시 후 다시 시도해 주세요."
-        ),
-      };
-    deckUrl = admin.storage.from("decks").getPublicUrl(path).data.publicUrl;
-  }
-
   const payload = {
     team_id: membership.team_id,
     title: String(formData.get("title") ?? "").trim(),
@@ -61,7 +27,8 @@ export async function saveProject(formData: FormData) {
     repo_url: String(formData.get("repo_url") ?? "").trim(),
     demo_url: String(formData.get("demo_url") ?? "").trim() || null,
     video_url: String(formData.get("video_url") ?? "").trim() || null,
-    deck_url: deckUrl,
+    // 참고자료: 구글 드라이브·Notion 등 링크로 받는다 (기존 업로드 링크도 그대로 유효)
+    deck_url: String(formData.get("deck_url") ?? "").trim() || null,
   };
   if (!payload.title) return { error: "프로젝트 제목을 입력하세요" };
   if (!payload.repo_url) return { error: "GitHub 저장소 링크를 입력하세요" };
@@ -75,6 +42,8 @@ export async function saveProject(formData: FormData) {
     return { error: "데모 링크는 http(s):// 로 시작해야 합니다" };
   if (payload.video_url && !isHttp(payload.video_url))
     return { error: "영상 링크는 http(s):// 로 시작해야 합니다" };
+  if (payload.deck_url && !isHttp(payload.deck_url))
+    return { error: "참고자료 링크는 http(s):// 로 시작해야 합니다" };
 
   // 팀당 1개 — upsert (team_id UNIQUE)
   const { error } = await supabase
