@@ -29,9 +29,11 @@ export default async function MyPage() {
     );
   }
 
+  // 이메일은 인증 세션(user.email)에서 가져온다. public.users 의 email 컬럼은
+  // 일반 클라이언트 SELECT 가 막혀 있어(0025) 여기서 select 하면 안 된다.
   const { data: me } = await supabase
     .from("users")
-    .select("name, email, role")
+    .select("name, role")
     .eq("id", user.id)
     .single();
 
@@ -102,7 +104,7 @@ export default async function MyPage() {
       <div>
         <h1 className="text-2xl font-bold">마이페이지</h1>
         <p className="mt-1 text-[var(--muted)]">
-          {me?.name ?? me?.email}님, 환영합니다.
+          {me?.name ?? user.email}님, 환영합니다.
         </p>
       </div>
 
@@ -112,7 +114,7 @@ export default async function MyPage() {
           <h2 className="text-lg font-bold">연결된 팀이 없습니다</h2>
           <p className="mt-2 text-sm text-[var(--muted)]">
             팀은 운영진이 선정·등록하며, 구글폼에 적어 주신 <b>팀장 이메일</b>로
-            로그인하면 자동으로 연결됩니다. 현재 계정({me?.email})으로 연결된
+            로그인하면 자동으로 연결됩니다. 현재 계정({user.email})으로 연결된
             팀이 없어요. 이메일이 맞는지 운영진에게 문의해 주세요.
           </p>
         </div>
