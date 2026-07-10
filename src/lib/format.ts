@@ -31,6 +31,12 @@ export function ddayCount(targetIso: string, nowMs: number): number {
   return Math.round((tMid - nMid) / 86400000);
 }
 
+// href 안전 가드 — http/https 만 통과, 그 외(javascript:, data: 등)는 무력화.
+// 저장 시 검증을 우회한 과거 데이터에 대한 렌더 측 방어.
+export function safeUrl(url: string | null | undefined): string {
+  return url && /^https?:\/\//i.test(url) ? url : "#";
+}
+
 // datetime-local input 값으로 변환 (YYYY-MM-DDTHH:mm)
 export function toLocalInput(iso: string | null | undefined): string {
   if (!iso) return "";

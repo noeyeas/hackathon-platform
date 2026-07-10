@@ -59,6 +59,16 @@ export async function saveProject(formData: FormData) {
   if (!payload.title) return { error: "프로젝트 제목을 입력하세요" };
   if (!payload.repo_url) return { error: "GitHub 저장소 링크를 입력하세요" };
 
+  // URL 스킴 검증 — javascript:/data: 등 저장형 XSS 차단 (http/https 만 허용).
+  // 클라이언트 type="url" 은 서버 액션 직접 호출로 우회되므로 서버에서 재검증.
+  const isHttp = (u: string) => /^https?:\/\//i.test(u);
+  if (!isHttp(payload.repo_url))
+    return { error: "GitHub 링크는 http(s):// 로 시작해야 합니다" };
+  if (payload.demo_url && !isHttp(payload.demo_url))
+    return { error: "데모 링크는 http(s):// 로 시작해야 합니다" };
+  if (payload.video_url && !isHttp(payload.video_url))
+    return { error: "영상 링크는 http(s):// 로 시작해야 합니다" };
+
   // 팀당 1개 — upsert (team_id UNIQUE)
   const { error } = await supabase
     .from("projects")

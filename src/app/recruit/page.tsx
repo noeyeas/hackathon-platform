@@ -46,7 +46,7 @@ export default async function RecruitPage() {
   const { data: posts } = await supabase
     .from("recruit_posts")
     .select(
-      "id, title, body, positions, is_open, kind, team_id, author_id, author_name, contact, teams(name, invite_code, status)"
+      "id, title, body, positions, is_open, kind, team_id, author_id, author_name, contact, teams(name, status)"
     )
     .order("created_at", { ascending: false });
 
@@ -63,7 +63,6 @@ export default async function RecruitPage() {
     team:
       (p.teams as {
         name: string;
-        invite_code: string;
         status: string;
       } | null) ?? null,
   });

@@ -50,7 +50,7 @@ export default async function TeamPage() {
   // 팀 상세
   const { data: team } = await supabase
     .from("teams")
-    .select("*")
+    .select("id, name, tagline, members_note, status")
     .eq("id", membership.team_id)
     .single();
 

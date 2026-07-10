@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, safeUrl } from "@/lib/format";
 import { LikeButton } from "@/components/LikeButton";
 import { CommentForm, DeleteCommentButton } from "@/components/CommentBox";
 import { TeamName } from "@/components/TeamName";
@@ -161,7 +161,7 @@ export default async function ProjectDetailPage({
             {links.map((l) => (
               <a
                 key={l.label}
-                href={l.url!}
+                href={safeUrl(l.url)}
                 target="_blank"
                 rel="noreferrer"
                 className="chip hover:border-vote hover:text-vote"

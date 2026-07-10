@@ -12,7 +12,7 @@ type Post = {
   kind: string;
   author_name: string | null;
   contact: string | null;
-  team: { name: string; invite_code: string; status: string } | null;
+  team: { name: string; status: string } | null;
 };
 
 export function RecruitTabs({
