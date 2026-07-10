@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { TeamName } from "@/components/TeamName";
+import { EmptyState } from "@/components/EmptyState";
 
 export const dynamic = "force-dynamic";
 
@@ -40,9 +41,11 @@ export default async function GalleryPage() {
       </div>
 
       {!projects?.length ? (
-        <div className="card text-center text-[var(--muted)]">
-          아직 제출된 작품이 없습니다.
-        </div>
+        <EmptyState
+          icon="🖼️"
+          title="아직 제출된 작품이 없습니다."
+          desc="제출이 시작되면 이곳에 작품이 올라옵니다."
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((p) => {

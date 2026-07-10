@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EmptyState } from "@/components/EmptyState";
 
 type Announcement = {
   id: string;
@@ -42,15 +43,11 @@ export default function NoticeList({ list }: { list: Announcement[] }) {
 
   if (!list.length) {
     return (
-      <div className="card flex flex-col items-center gap-2 py-12 text-center">
-        <span aria-hidden className="text-3xl">
-          📭
-        </span>
-        <p className="font-medium text-ink">아직 등록된 공지가 없습니다.</p>
-        <p className="text-sm text-[var(--muted)]">
-          새로운 소식이 올라오면 이곳에 표시됩니다.
-        </p>
-      </div>
+      <EmptyState
+        icon="📭"
+        title="아직 등록된 공지가 없습니다."
+        desc="새로운 소식이 올라오면 이곳에 표시됩니다."
+      />
     );
   }
 

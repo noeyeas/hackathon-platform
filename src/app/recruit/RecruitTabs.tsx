@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteRecruitPost } from "./actions";
 import { useToast } from "@/components/Toast";
+import { EmptyState } from "@/components/EmptyState";
 
 type Post = {
   id: string;
@@ -39,10 +40,18 @@ export function RecruitTabs({
     : allPosts;
 
   const empty = q
-    ? "검색 결과가 없습니다."
+    ? { icon: "🔍", title: "검색 결과가 없습니다.", desc: "다른 키워드로 찾아보세요." }
     : tab === "team"
-      ? "팀원을 모집하는 팀이 아직 없습니다."
-      : "팀을 구하는 개인이 아직 없습니다.";
+      ? {
+          icon: "🧑‍🤝‍🧑",
+          title: "팀원을 모집하는 팀이 아직 없습니다.",
+          desc: "곧 새로운 모집 글이 올라옵니다.",
+        }
+      : {
+          icon: "🙋",
+          title: "팀을 구하는 개인이 아직 없습니다.",
+          desc: "곧 새로운 참가 글이 올라옵니다.",
+        };
 
   return (
     <div className="mt-6">
@@ -78,9 +87,7 @@ export function RecruitTabs({
 
       <div className="mt-4 flex flex-col gap-3">
         {posts.length === 0 ? (
-          <p className="card text-center text-sm text-[var(--muted)]">
-            {empty}
-          </p>
+          <EmptyState icon={empty.icon} title={empty.title} desc={empty.desc} />
         ) : (
           posts.map((p) => <PostCard key={p.id} p={p} isAdmin={isAdmin} />)
         )}
