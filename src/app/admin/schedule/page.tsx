@@ -29,7 +29,7 @@ export default async function AdminSchedulePage() {
 
   const { data: items } = await supabase
     .from("schedule_items")
-    .select("id, time_label, starts_at, title, detail")
+    .select("id, time_label, starts_at, ends_at, title, detail")
     .order("starts_at", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
 
@@ -121,6 +121,8 @@ export default async function AdminSchedulePage() {
                 key={it.id}
                 id={it.id}
                 when={scheduleWhen(it.time_label, it.starts_at)}
+                startsAt={it.starts_at}
+                endsAt={it.ends_at}
                 title={it.title}
                 detail={it.detail}
               />
