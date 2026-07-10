@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Dday } from "./Dday";
-import { scheduleWhen } from "@/lib/format";
+import { scheduleWhen, ddayCount } from "@/lib/format";
 
 type Notice = {
   id: string;
@@ -52,7 +52,7 @@ export function RemoteControl({
       .filter((x) => x.diff > 0)
       .sort((a, b) => a.diff - b.diff)[0];
     if (!next) return { text: "종료", label: null };
-    const d = Math.ceil(next.diff / 86400000);
+    const d = ddayCount(next.m.target_at, now);
     return { text: d === 0 ? "D-DAY" : `D-${d}`, label: next.m.label };
   })();
 

@@ -20,6 +20,17 @@ export function scheduleWhen(
   return "—";
 }
 
+// 캘린더 날짜 기준 D-day 숫자 (같은 날=0=D-DAY, 내일=1=D-1, 어제=-1).
+// 시간 차(ms)를 ceil 하면 당일 오전에도 D-1 로 보이는 오프바이원이 생기므로
+// 양쪽을 자정으로 내려 '며칠 남았는지'를 날짜 단위로 센다.
+export function ddayCount(targetIso: string, nowMs: number): number {
+  const t = new Date(targetIso);
+  const n = new Date(nowMs);
+  const tMid = new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
+  const nMid = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
+  return Math.round((tMid - nMid) / 86400000);
+}
+
 // datetime-local input 값으로 변환 (YYYY-MM-DDTHH:mm)
 export function toLocalInput(iso: string | null | undefined): string {
   if (!iso) return "";

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ddayCount } from "@/lib/format";
 
 // 특정 마일스톤까지 D-day + 실시간 카운트다운
 export function Dday({
@@ -22,7 +23,7 @@ export function Dday({
   const diff = now === null ? 0 : target - now;
   const past = now !== null && diff <= 0;
 
-  const dday = Math.ceil(diff / 86400000);
+  const dday = now === null ? 0 : ddayCount(targetAt, now);
   const s = Math.max(0, Math.floor(diff / 1000));
   const days = Math.floor(s / 86400);
   const hours = Math.floor((s % 86400) / 3600);
