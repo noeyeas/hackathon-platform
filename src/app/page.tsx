@@ -248,52 +248,48 @@ export default function Home() {
         </RevealGroup>
       </Section>
 
-      {/* ===== FAQ ===== */}
-      <Section eyebrow="FAQ" title="자주 묻는 질문" desc="문의 전에 여기서 먼저 확인해 보세요.">
-        <RevealGroup className="flex flex-col gap-2">
-          {FAQ.map((f) => (
-            <details
-              key={f.q}
-              className="group card !p-0 transition hover:shadow-md"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold">
-                <span>{f.q}</span>
-                <span
-                  className="flex-none text-[var(--muted)] transition-transform group-open:rotate-180"
-                  aria-hidden
-                >
-                  ⌄
-                </span>
-              </summary>
-              <p className="border-t border-[var(--line)] p-4 text-sm leading-relaxed text-[var(--muted)]">
-                {f.a}
-              </p>
-            </details>
-          ))}
-        </RevealGroup>
-        <Reveal>
-          <p className="mt-2 text-sm text-[var(--muted)]">
-            여기서 답을 못 찾으셨나요?{" "}
-            <a
-              href={KAKAO_OPENCHAT}
-              target="_blank"
-              rel="noreferrer"
-              className="font-semibold text-vote hover:underline"
-            >
-              카카오톡 오픈채팅으로 문의하기 →
-            </a>
-          </p>
-        </Reveal>
-      </Section>
-
-      {/* ===== 문의 (풀 블리드 다크) ===== */}
+      {/* ===== FAQ + 문의 (풀 블리드 다크) ===== */}
       <Reveal>
       <section className="bleed relative overflow-hidden bg-ink px-5 py-16 text-white">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
           style={{ backgroundImage: "url('/campus.jpg')" }}
         />
-        <div className="relative mx-auto grid max-w-5xl gap-10 sm:grid-cols-2">
+        <div className="relative mx-auto flex max-w-5xl flex-col gap-14">
+          {/* FAQ */}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-vote">
+              FAQ
+            </p>
+            <h2 className="mt-1 text-3xl font-bold">자주 묻는 질문</h2>
+            <p className="mt-2 text-sm text-white/60">
+              문의 전에 여기서 먼저 확인해 보세요.
+            </p>
+            <div className="mt-6 flex flex-col gap-2">
+              {FAQ.map((f) => (
+                <details
+                  key={f.q}
+                  className="group rounded-2xl border border-white/15 bg-white/5 transition hover:border-white/25"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold">
+                    <span>{f.q}</span>
+                    <span
+                      className="flex-none text-white/50 transition-transform group-open:rotate-180"
+                      aria-hidden
+                    >
+                      ⌄
+                    </span>
+                  </summary>
+                  <p className="border-t border-white/10 p-4 text-sm leading-relaxed text-white/70">
+                    {f.a}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+
+          {/* 문의 */}
+          <div className="grid gap-10 sm:grid-cols-2">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-vote">
               Contact
@@ -312,7 +308,7 @@ export default function Home() {
               궁금한 점은 카카오톡으로 편하게 문의하세요.
             </p>
             <a
-              href="https://open.kakao.com/o/sJcelIai"
+              href={KAKAO_OPENCHAT}
               target="_blank"
               rel="noreferrer"
               className={socialBtn}
@@ -337,6 +333,7 @@ export default function Home() {
                 <span className="ml-auto text-xs text-white/50">{ig.handle}</span>
               </a>
             ))}
+          </div>
           </div>
         </div>
       </section>
