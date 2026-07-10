@@ -38,6 +38,10 @@ export async function setWeights(formData: FormData) {
   const judge = Number(formData.get("judge") ?? 50) / 100;
   const team = Number(formData.get("team") ?? 25) / 100;
   const audience = Number(formData.get("audience") ?? 25) / 100;
+  // 비숫자 입력(NaN)이 검증(NaN>0.01 === false)을 통과해 weights가 null로
+  // 저장되면 rankings 뷰의 종합점수가 전부 NULL이 된다. 사전 차단.
+  if (![judge, team, audience].every(Number.isFinite))
+    return { error: "비율은 숫자로만 입력해 주세요" };
   const sum = judge + team + audience;
   if (Math.abs(sum - 1) > 0.01)
     return { error: `비율 합이 100%가 되어야 합니다 (현재 ${Math.round(sum * 100)}%)` };
