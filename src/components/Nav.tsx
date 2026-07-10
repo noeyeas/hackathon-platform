@@ -1,15 +1,9 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
-import { NavMenu } from "./NavMenu";
 import { MobileMenu } from "./MobileMenu";
 
-const EVENT_ITEMS = [
-  { href: "/notice", label: "공지" },
-  { href: "/schedule", label: "일정" },
-  { href: "/dday", label: "D-day" },
-];
-
+// 공지/일정/D-day 는 우측 부유 리모컨(RemoteControl)에 있으므로 상단바에서는 생략.
 const LINKS = [
   { href: "/recruit", label: "모집" },
   { href: "/gallery", label: "갤러리" },
@@ -71,7 +65,6 @@ export async function Nav() {
               {l.label}
             </Link>
           ))}
-          <NavMenu label="대회" items={EVENT_ITEMS} />
           <Link
             href="/results"
             className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
