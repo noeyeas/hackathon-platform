@@ -1,12 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    serverActions: {
-      // PDF 참고자료 업로드 허용 (기본 1MB → 25MB)
-      bodySizeLimit: "25mb",
-    },
-  },
+  // 참고자료가 링크 방식으로 전환되어 대용량 업로드가 없다.
+  // 서버 액션 바디 한도는 기본값(1MB)으로 충분.
 };
 
 export default nextConfig;
