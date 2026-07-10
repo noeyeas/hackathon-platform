@@ -45,8 +45,6 @@ export async function Nav() {
   // 모바일 햄버거 링크.
   const mobileItems: { href: string; label: string; accent?: "admin" }[] = [
     { href: "/notice", label: "공지" },
-    { href: "/schedule", label: "일정" },
-    { href: "/dday", label: "D-day" },
     ...LINKS,
     { href: "/results", label: "결과" },
     ...(isLeader ? [{ href: "/vote", label: "평가" }] : []),
