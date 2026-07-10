@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { addComment, deleteComment } from "@/app/gallery/actions";
+import { useToast } from "@/components/Toast";
 
 // 댓글 입력폼 (로그인 사용자에게만 노출)
 export function CommentForm({ projectId }: { projectId: string }) {
@@ -65,6 +66,7 @@ export function DeleteCommentButton({
 }) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const { toast, node } = useToast();
 
   function remove() {
     if (pending) return;
@@ -72,7 +74,7 @@ export function DeleteCommentButton({
     startTransition(async () => {
       const res = await deleteComment(commentId, projectId);
       if (res?.error) {
-        alert(res.error);
+        toast(res.error);
         return;
       }
       router.refresh();
@@ -80,13 +82,16 @@ export function DeleteCommentButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={remove}
-      disabled={pending}
-      className="text-xs text-[var(--muted)] hover:text-red-500 disabled:opacity-50"
-    >
-      삭제
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={remove}
+        disabled={pending}
+        className="text-xs text-[var(--muted)] hover:text-red-500 disabled:opacity-50"
+      >
+        삭제
+      </button>
+      {node}
+    </>
   );
 }

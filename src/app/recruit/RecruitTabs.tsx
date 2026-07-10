@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteRecruitPost } from "./actions";
+import { useToast } from "@/components/Toast";
 
 type Post = {
   id: string;
@@ -121,6 +122,7 @@ function PostCard({ p, isAdmin }: { p: Post; isAdmin: boolean }) {
   const team = p.team;
   const [pending, startTransition] = useTransition();
   const router = useRouter();
+  const { toast, node } = useToast();
 
   function remove() {
     if (pending) return;
@@ -128,7 +130,7 @@ function PostCard({ p, isAdmin }: { p: Post; isAdmin: boolean }) {
     startTransition(async () => {
       const res = await deleteRecruitPost(p.id);
       if (res?.error) {
-        alert(res.error);
+        toast(res.error);
         return;
       }
       router.refresh();
@@ -137,6 +139,7 @@ function PostCard({ p, isAdmin }: { p: Post; isAdmin: boolean }) {
 
   return (
     <div className="card">
+      {node}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span
