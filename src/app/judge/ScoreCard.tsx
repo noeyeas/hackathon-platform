@@ -58,14 +58,25 @@ export function ScoreCard({
     <div className="card !p-0">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between p-4 text-left"
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-3 p-4 text-left"
       >
-        <div>
+        <div className="min-w-0">
           <p className="text-xs text-[var(--muted)]">{teamName}</p>
           <p className="font-semibold">{title}</p>
         </div>
-        <span className={`chip ${saved ? "border-team text-team" : ""}`}>
-          {saved ? "✓ 채점됨" : "미채점"}
+        <span className="flex flex-none items-center gap-2">
+          <span className={`chip ${saved ? "border-team text-team" : ""}`}>
+            {saved ? "✓ 채점됨" : "미채점"}
+          </span>
+          <span
+            className={`text-[var(--muted)] transition-transform ${
+              open ? "rotate-180" : ""
+            }`}
+            aria-hidden
+          >
+            ⌄
+          </span>
         </span>
       </button>
 
