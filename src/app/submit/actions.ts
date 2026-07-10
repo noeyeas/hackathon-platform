@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { safeError } from "@/lib/actionError";
 
 const MAX_PDF_BYTES = 20 * 1024 * 1024; // 20MB
 
@@ -43,7 +44,13 @@ export async function saveProject(formData: FormData) {
     const { error: upErr } = await admin.storage
       .from("decks")
       .upload(path, deckFile, { contentType: "application/pdf", upsert: true });
-    if (upErr) return { error: `업로드 실패: ${upErr.message}` };
+    if (upErr)
+      return {
+        error: safeError(
+          upErr,
+          "참고자료 업로드에 실패했어요. 잠시 후 다시 시도해 주세요."
+        ),
+      };
     deckUrl = admin.storage.from("decks").getPublicUrl(path).data.publicUrl;
   }
 
@@ -73,7 +80,8 @@ export async function saveProject(formData: FormData) {
   const { error } = await supabase
     .from("projects")
     .upsert(payload, { onConflict: "team_id" });
-  if (error) return { error: error.message };
+  if (error)
+    return { error: safeError(error, "프로젝트 저장에 실패했어요. 잠시 후 다시 시도해 주세요.") };
 
   revalidatePath("/submit");
   revalidatePath("/gallery");

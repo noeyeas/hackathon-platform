@@ -3,6 +3,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { safeError } from "@/lib/actionError";
 
 // 좋아요(응원) 등록/취소 — want=true 면 등록, false 면 취소. 멱등.
 // 로그인 사용자 본인(user:<uid>)만 가능. 익명 응원은 허용하지 않는다.
@@ -29,14 +30,16 @@ export async function setLike(
         { project_id: projectId, liker_key: likerKey },
         { onConflict: "project_id,liker_key", ignoreDuplicates: true }
       );
-    if (error) return { error: error.message };
+    if (error)
+      return { error: safeError(error, "응원 등록에 실패했어요. 잠시 후 다시 시도해 주세요.") };
   } else {
     const { error } = await admin
       .from("project_likes")
       .delete()
       .eq("project_id", projectId)
       .eq("liker_key", likerKey);
-    if (error) return { error: error.message };
+    if (error)
+      return { error: safeError(error, "응원 취소에 실패했어요. 잠시 후 다시 시도해 주세요.") };
   }
 
   const { count } = await admin
@@ -92,7 +95,8 @@ export async function addComment(
     user_id: user.id,
     body: text,
   });
-  if (error) return { error: error.message };
+  if (error)
+    return { error: safeError(error, "댓글 등록에 실패했어요. 잠시 후 다시 시도해 주세요.") };
 
   revalidatePath(`/gallery/${projectId}`);
   return { ok: true };
@@ -113,7 +117,8 @@ export async function deleteComment(
     .from("project_comments")
     .delete()
     .eq("id", commentId);
-  if (error) return { error: error.message };
+  if (error)
+    return { error: safeError(error, "댓글 삭제에 실패했어요. 잠시 후 다시 시도해 주세요.") };
 
   revalidatePath(`/gallery/${projectId}`);
   return { ok: true };

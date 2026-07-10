@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { canEditTeam } from "@/lib/teamEdit";
+import { safeError } from "@/lib/actionError";
 
 // 로그인 팀장 확인. 성공 시 team_id 반환.
 async function requireLeaderTeam(
@@ -45,7 +46,8 @@ export async function updateTeamField(field: string, value: string) {
     .from("teams")
     .update({ [field]: v || null })
     .eq("id", res.teamId);
-  if (error) return { error: error.message };
+  if (error)
+    return { error: safeError(error, "저장에 실패했어요. 잠시 후 다시 시도해 주세요.") };
 
   revalidatePath("/mypage");
   revalidatePath("/team");

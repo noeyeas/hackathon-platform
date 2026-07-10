@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { safeError } from "@/lib/actionError";
 
 // 팀이 다른 팀(project)을 기준별로 채점 (심사와 동일 방식)
 export async function saveTeamScores(projectId: string, formData: FormData) {
@@ -57,7 +58,8 @@ export async function saveTeamScores(projectId: string, formData: FormData) {
   const { error } = await admin
     .from("team_scores")
     .upsert(rows, { onConflict: "project_id,voter_team_id,criteria_id" });
-  if (error) return { error: error.message };
+  if (error)
+    return { error: safeError(error, "점수 저장에 실패했어요. 잠시 후 다시 시도해 주세요.") };
 
   revalidatePath("/vote");
   return { ok: true };

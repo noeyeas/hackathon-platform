@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { safeError } from "@/lib/actionError";
 
 async function myTeamId() {
   const supabase = await createClient();
@@ -58,7 +59,8 @@ export async function createRecruitPost(formData: FormData) {
   }
 
   const { error } = await supabase.from("recruit_posts").insert(payload);
-  if (error) return { error: error.message };
+  if (error)
+    return { error: safeError(error, "모집 글 등록에 실패했어요. 잠시 후 다시 시도해 주세요.") };
 
   revalidatePath("/recruit");
   return { ok: true };
@@ -87,7 +89,8 @@ export async function editRecruitPost(id: string, formData: FormData) {
       contact: contact || null,
     })
     .eq("id", id);
-  if (error) return { error: error.message };
+  if (error)
+    return { error: safeError(error, "모집 글 수정에 실패했어요. 잠시 후 다시 시도해 주세요.") };
 
   revalidatePath("/recruit");
   return { ok: true };
@@ -100,7 +103,8 @@ export async function toggleRecruitPost(id: string, isOpen: boolean) {
     .from("recruit_posts")
     .update({ is_open: isOpen })
     .eq("id", id);
-  if (error) return { error: error.message };
+  if (error)
+    return { error: safeError(error, "상태 변경에 실패했어요. 잠시 후 다시 시도해 주세요.") };
   revalidatePath("/recruit");
   return { ok: true };
 }
@@ -118,7 +122,8 @@ export async function deleteRecruitPost(id: string) {
   const client = me?.role === "admin" ? createAdminClient() : supabase;
 
   const { error } = await client.from("recruit_posts").delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error)
+    return { error: safeError(error, "모집 글 삭제에 실패했어요. 잠시 후 다시 시도해 주세요.") };
   revalidatePath("/recruit");
   return { ok: true };
 }
