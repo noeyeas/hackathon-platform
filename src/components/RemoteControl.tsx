@@ -36,6 +36,8 @@ export function RemoteControl({
   const [hover, setHover] = useState<string | null>(null);
   const [unread, setUnread] = useState(false);
   const [now, setNow] = useState<number | null>(null);
+  // 모바일 하단 탭바에서 열려 있는 시트(key). 데스크톱 hover 와 별개.
+  const [sheet, setSheet] = useState<string | null>(null);
 
   // 리모컨 D-day 숫자 (1분마다 갱신)
   useEffect(() => {
@@ -82,9 +84,11 @@ export function RemoteControl({
   ];
 
   return (
+    <>
+    {/* 데스크톱: 우측 부유 리모컨 (모바일에선 숨김, 기존 동작 그대로) */}
     <nav
       aria-label="바로가기"
-      className="remote-float fixed right-3 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-1.5 rounded-2xl border border-[var(--line)] bg-white/90 p-1.5 shadow-lg backdrop-blur sm:right-5"
+      className="remote-float fixed right-3 top-1/2 z-30 hidden -translate-y-1/2 flex-col gap-1.5 rounded-2xl border border-[var(--line)] bg-white/90 p-1.5 shadow-lg backdrop-blur sm:right-5 sm:flex"
     >
       {items.map((it) => {
         const active = path === it.href;
@@ -146,6 +150,74 @@ export function RemoteControl({
         );
       })}
     </nav>
+
+    {/* 모바일: 하단 고정 탭바 + 탭하면 위로 열리는 시트 (데스크톱에선 숨김) */}
+    <div className="sm:hidden">
+      {sheet && (
+        <button
+          aria-label="닫기"
+          className="fixed inset-0 z-30 bg-black/20"
+          onClick={() => setSheet(null)}
+        />
+      )}
+      <div className="fixed inset-x-0 bottom-0 z-40">
+        {sheet && (
+          <div className="mx-2 mb-1 max-h-[60vh] overflow-y-auto rounded-2xl border border-[var(--line)] bg-white p-4 shadow-xl">
+            {sheet === "notice" && <NoticePanel notices={notices} />}
+            {sheet === "schedule" && <SchedulePanel schedule={schedule} />}
+            {sheet === "dday" && <DdayPanel milestones={milestones} />}
+            <Link
+              href={
+                sheet === "notice"
+                  ? "/notice"
+                  : sheet === "schedule"
+                    ? "/schedule"
+                    : "/dday"
+              }
+              onClick={() => setSheet(null)}
+              className="mt-3 block rounded-lg bg-gray-100 py-2 text-center text-sm font-semibold text-ink"
+            >
+              전체 보기
+            </Link>
+          </div>
+        )}
+        <nav
+          aria-label="바로가기"
+          className="flex border-t border-[var(--line)] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+        >
+          {items.map((it) => {
+            const open = sheet === it.key;
+            return (
+              <button
+                key={it.key}
+                onClick={() => {
+                  setSheet(open ? null : it.key);
+                  if (!open && it.key === "notice") markRead();
+                }}
+                className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-semibold transition-colors ${
+                  open ? "text-vote" : "text-[var(--muted)]"
+                }`}
+              >
+                <span className="relative">
+                  {it.key === "dday" && dday ? (
+                    <span className="text-sm font-extrabold leading-none tabular-nums text-vote">
+                      {dday.text}
+                    </span>
+                  ) : (
+                    <span className="text-lg leading-none">{it.icon}</span>
+                  )}
+                  {it.badge && (
+                    <span className="absolute -right-2 -top-1 h-2 w-2 rounded-full bg-red-500" />
+                  )}
+                </span>
+                <span>{it.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+    </div>
+    </>
   );
 }
 

@@ -37,7 +37,9 @@ export default async function RootLayout({
     <html lang="ko" className={`${pretendard.variable} ${archivo.variable}`}>
       <body>
         <Nav />
-        <main className="mx-auto w-full max-w-5xl px-5 py-8">{children}</main>
+        <main className="mx-auto w-full max-w-5xl px-5 py-8 max-sm:pb-24">
+          {children}
+        </main>
         <RemoteControl
           notices={notices}
           schedule={schedule}

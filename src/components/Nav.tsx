@@ -43,10 +43,9 @@ export async function Nav() {
     }
   }
 
-  // 모바일 햄버거에 담을 링크 (데스크톱 nav 와 동일 구성)
+  // 모바일 햄버거 링크. 공지/일정/D-day 는 하단 탭바(RemoteControl)에 있으므로 제외.
   const mobileItems: { href: string; label: string; accent?: "admin" }[] = [
     ...LINKS,
-    ...EVENT_ITEMS,
     { href: "/results", label: "결과" },
     ...(isLeader ? [{ href: "/vote", label: "평가" }] : []),
     ...(role === "judge" ? [{ href: "/judge", label: "심사" }] : []),
