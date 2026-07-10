@@ -9,10 +9,10 @@ import { RevealGroup } from "@/components/RevealGroup";
 const APPLY_FORM_URL = "#";
 
 const THEMES = [
-  { icon: "♻️", t: "탄소 중립과 ESG", en: "Carbon Neutral", d: "탄소 배출 저감·자원 순환·친환경 생활을 유도하는 플랫폼으로 일상 속 ESG 실현" },
-  { icon: "🏪", t: "시장 상권 활성화", en: "Local Commerce", d: "소상공인과 주민을 디지털로 연결해 골목상권·전통시장의 경쟁력 강화" },
-  { icon: "📚", t: "교육 문제 해결·지원", en: "Education", d: "교육 격차 해소, 청소년·주민 맞춤 교육 인프라 및 멘토링 매칭" },
-  { icon: "🚦", t: "교통 문제", en: "Mobility", d: "상습 정체·주차난·대중교통 접근성을 데이터와 기술로 개선" },
+  { icon: "♻️", t: "탄소 중립과 ESG", en: "Carbon Neutral", d: "탄소 배출 저감·자원 순환·친환경 생활을 유도하는 플랫폼으로 일상 속 ESG 실현", tint: "#edf9f1", ring: "#cfeed7", chip: "#d7f1e0", accent: "#2f9e5f" },
+  { icon: "🏪", t: "시장 상권 활성화", en: "Local Commerce", d: "소상공인과 주민을 디지털로 연결해 골목상권·전통시장의 경쟁력 강화", tint: "#fdf5e9", ring: "#f4e3c4", chip: "#f9e8cd", accent: "#c58a1c" },
+  { icon: "📚", t: "교육 문제 해결·지원", en: "Education", d: "교육 격차 해소, 청소년·주민 맞춤 교육 인프라 및 멘토링 매칭", tint: "#eef3fd", ring: "#d5e2f7", chip: "#dce8fb", accent: "#3b78d4" },
+  { icon: "🚦", t: "교통 문제", en: "Mobility", d: "상습 정체·주차난·대중교통 접근성을 데이터와 기술로 개선", tint: "#fdeef2", ring: "#f6d7e0", chip: "#f9dce4", accent: "#d05579" },
 ];
 
 const SCHEDULE = [
@@ -156,9 +156,18 @@ export default function Home() {
       <Section eyebrow="Theme" title="해커톤 주제" desc="월계동 지역사회 문제 해결 및 발전을 위한 웹/애플리케이션 개발">
         <RevealGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {THEMES.map((t) => (
-            <div key={t.t} className="card flex h-full flex-col gap-2 transition hover:-translate-y-1 hover:shadow-md">
-              <span className="text-3xl">{t.icon}</span>
-              <p className="text-xs uppercase tracking-wider text-vote">
+            <div
+              key={t.t}
+              className="card flex h-full flex-col gap-2 transition hover:-translate-y-1 hover:shadow-md"
+              style={{ backgroundColor: t.tint, borderColor: t.ring }}
+            >
+              <span
+                className="flex h-11 w-11 items-center justify-center rounded-xl text-2xl"
+                style={{ backgroundColor: t.chip }}
+              >
+                {t.icon}
+              </span>
+              <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: t.accent }}>
                 {t.en}
               </p>
               <h3 className="font-bold">{t.t}</h3>
