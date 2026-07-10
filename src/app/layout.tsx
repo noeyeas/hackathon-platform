@@ -19,16 +19,6 @@ const archivo = localFont({
   weight: "400",
 });
 
-// 코드/모노스페이스 폰트: D2Coding (한글 전체 지원)
-const d2coding = localFont({
-  src: [
-    { path: "./fonts/D2Coding.woff2", weight: "400", style: "normal" },
-    { path: "./fonts/D2Coding-Bold.woff2", weight: "700", style: "normal" },
-  ],
-  variable: "--font-mono",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
   // 상대 경로 이미지(og:image)를 절대 URL로 변환하는 기준. 공유 미리보기 필수.
   metadataBase: new URL("https://hackathon-platform-seven.vercel.app"),
@@ -57,10 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="ko"
-      className={`${pretendard.variable} ${archivo.variable} ${d2coding.variable}`}
-    >
+    <html lang="ko" className={`${pretendard.variable} ${archivo.variable}`}>
       <body>
         <Nav />
         <main className="mx-auto w-full max-w-5xl px-5 py-8 max-sm:pb-24">

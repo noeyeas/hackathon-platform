@@ -15,14 +15,9 @@
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-mono), var(--font-sans), system-ui, -apple-system,
-    "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI",
+    "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
   overflow-x: clip;
-}
-
-/* 코드/모노스페이스 요소는 D2Coding 사용 */
-code, pre, kbd, samp {
-  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /* 라이트 테마에 맞춘 은은한 스크롤바 (Firefox) */
