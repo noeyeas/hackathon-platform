@@ -18,6 +18,21 @@ export async function setPhase(phase: EventPhase) {
   return { ok: true };
 }
 
+// 결과(순위·점수) 공개 여부. 공개 = phase 'closed', 비공개 = 'voting'.
+export async function setResultsPublic(open: boolean) {
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("event_settings")
+    .update({ phase: open ? "closed" : "voting" })
+    .eq("id", 1);
+  if (error) return { error: error.message };
+  revalidatePath("/results");
+  revalidatePath("/admin/scoring");
+  revalidatePath("/");
+  return { ok: true };
+}
+
 export async function setWeights(formData: FormData) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const judge = Number(formData.get("judge") ?? 50) / 100;

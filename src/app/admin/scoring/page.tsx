@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { type Ranking } from "@/lib/types";
 import { VotingControls } from "../voting/VotingControls";
+import { ResultsToggle } from "./ResultsToggle";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +63,7 @@ export default async function ScoringProgressPage() {
     { data: teamScores },
     { data: rankings },
   ] = await Promise.all([
-    admin.from("event_settings").select("voting_open").single(),
+    admin.from("event_settings").select("voting_open, phase").single(),
     admin.from("criteria").select("id"),
     admin
       .from("projects")
@@ -143,6 +144,9 @@ export default async function ScoringProgressPage() {
           rows={voteRows}
         />
       </div>
+
+      {/* 결과 공개 ON/OFF */}
+      <ResultsToggle initialOpen={settings?.phase === "closed"} />
 
       {/* 심사위원 진행 현황 */}
       <Section
