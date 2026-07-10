@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const READ_KEY = "notice_read_at";
@@ -9,6 +10,7 @@ const READ_KEY = "notice_read_at";
 // 클릭하면(공지 페이지로 이동) 읽음 처리한다.
 export function NoticeNavLink({ latestAt }: { latestAt: string | null }) {
   const [unread, setUnread] = useState(false);
+  const active = usePathname() === "/notice";
 
   useEffect(() => {
     if (!latestAt) return setUnread(false);
@@ -25,7 +27,12 @@ export function NoticeNavLink({ latestAt }: { latestAt: string | null }) {
     <Link
       href="/notice"
       onClick={markRead}
-      className="relative rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
+      aria-current={active ? "page" : undefined}
+      className={`relative rounded-lg px-3 py-1.5 transition ${
+        active
+          ? "bg-gray-100 font-medium text-ink"
+          : "text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
+      }`}
     >
       공지
       {unread && (

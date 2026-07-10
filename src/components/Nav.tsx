@@ -4,6 +4,7 @@ import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { getRemoteData } from "@/lib/remoteData";
 import { MobileMenu } from "./MobileMenu";
 import { NoticeNavLink } from "./NoticeNavLink";
+import { NavLink } from "./NavLink";
 
 const LINKS = [
   { href: "/recruit", label: "모집" },
@@ -64,45 +65,27 @@ export async function Nav() {
         <nav className="hidden items-center gap-1 text-sm sm:flex">
           <NoticeNavLink latestAt={latestNoticeAt} />
           {LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
-            >
-              {l.label}
-            </Link>
+            <NavLink key={l.href} href={l.href} label={l.label} />
           ))}
-          <Link
-            href="/results"
-            className="rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
-          >
-            결과
-          </Link>
+          <NavLink href="/results" label="결과" />
           {role === "admin" && (
-            <Link
-              href="/admin"
-              className="rounded-lg px-3 py-1.5 font-medium text-admin hover:bg-gray-100"
-            >
-              운영
-            </Link>
+            <NavLink href="/admin" label="운영" tone="admin" />
           )}
         </nav>
         <div className="ml-auto flex items-center gap-3 text-sm">
           {isLeader && (
-            <Link
+            <NavLink
               href="/vote"
-              className="hidden rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink sm:inline-flex"
-            >
-              평가
-            </Link>
+              label="평가"
+              className="hidden sm:inline-flex"
+            />
           )}
           {role === "judge" && (
-            <Link
+            <NavLink
               href="/judge"
-              className="hidden rounded-lg px-3 py-1.5 text-[var(--muted)] hover:bg-gray-100 hover:text-ink sm:inline-flex"
-            >
-              심사
-            </Link>
+              label="심사"
+              className="hidden sm:inline-flex"
+            />
           )}
           {user ? (
             <>

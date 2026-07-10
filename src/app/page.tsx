@@ -268,12 +268,18 @@ export default async function Home() {
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold">
                     <span>{f.q}</span>
-                    <span
-                      className="flex-none text-white/50 transition-transform group-open:rotate-180"
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="h-4 w-4 flex-none text-white/50 transition-transform duration-200 group-open:rotate-180"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       aria-hidden
                     >
-                      ⌄
-                    </span>
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
                   </summary>
                   <p className="border-t border-white/10 p-4 text-sm leading-relaxed text-white/70">
                     {f.a}
