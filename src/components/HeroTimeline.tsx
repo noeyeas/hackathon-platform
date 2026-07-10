@@ -1,43 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ddayCount } from "@/lib/format";
 
-// 히어로 하단에 풀폭으로 고정되는 진행형 타임라인.
-// 지난 단계는 채우고(흰색), 다가올 단계는 비운다. 각 노드는 일정 페이지로 이동.
-const NODES: {
-  date: string;
+export type TimelineNode = {
+  date: string; // 표시용 (예: "9.18")
   label: string;
-  at: string;
-  place?: string;
-}[] = [
-  { date: "9.2", label: "팀 모집 마감", at: "2026-09-02" },
-  { date: "9.7", label: "해커톤 시작", at: "2026-09-07" },
-  { date: "9.11", label: "중간 멘토링", at: "2026-09-11" },
-  {
-    date: "9.18 – 9.19",
-    label: "최종 발표",
-    at: "2026-09-18",
-    place: "광운대 기념관 319호",
-  },
-];
+  at: string; // ISO — 진행도·D-day 계산용
+  place?: string | null;
+};
 
-export function HeroTimeline() {
+// 히어로 하단에 풀폭으로 고정되는 진행형 타임라인 (운영진이 마일스톤으로 관리).
+// 지난 단계는 채우고(흰색), 다가올 단계는 비운다.
+export function HeroTimeline({ nodes }: { nodes: TimelineNode[] }) {
   // SSR 시 0 → 마운트 후 실제 진행도 반영 (하이드레이션 불일치 방지)
   const [done, setDone] = useState(0);
   const [dday, setDday] = useState<number | null>(null);
   useEffect(() => {
     const now = Date.now();
-    const past = NODES.filter((n) => now >= new Date(n.at).getTime()).length;
+    const past = nodes.filter((n) => now >= new Date(n.at).getTime()).length;
     setDone(past);
-    const next = NODES[past];
-    setDday(
-      next ? Math.ceil((new Date(next.at).getTime() - now) / 86400000) : null
-    );
-  }, []);
+    const next = nodes[past];
+    setDday(next ? ddayCount(next.at, now) : null);
+  }, [nodes]);
 
-  const last = NODES.length - 1;
+  if (nodes.length === 0) return null;
+
+  const last = nodes.length - 1;
   // 노드 중심 사이 구간(첫 노드~끝 노드)을 기준으로 채워진 비율
-  const frac = done <= 0 ? 0 : Math.min(done - 1, last) / last;
+  const frac = done <= 0 ? 0 : Math.min(done - 1, last) / Math.max(last, 1);
 
   return (
     <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-5 pb-6 pt-12 text-white">
@@ -51,12 +42,12 @@ export function HeroTimeline() {
         />
 
         <div className="relative flex justify-between">
-          {NODES.map((n, i) => {
+          {nodes.map((n, i) => {
             const filled = i < done;
             const active = i === done; // 현재 진행 중(다음) 단계
             return (
               <div
-                key={n.label}
+                key={`${n.label}-${i}`}
                 className="relative flex flex-1 flex-col items-center gap-2 text-center"
               >
                 {active && dday !== null && (

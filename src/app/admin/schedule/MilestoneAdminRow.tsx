@@ -8,23 +8,27 @@ export function MilestoneAdminRow({
   id,
   label,
   targetAt,
+  place,
 }: {
   id: string;
   label: string;
   targetAt: string;
+  place: string | null;
 }) {
   const [labelText, setLabelText] = useState(label);
   const [dateText, setDateText] = useState(() => toLocalInput(targetAt));
+  const [placeText, setPlaceText] = useState(place ?? "");
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const base = toLocalInput(targetAt);
-  const dirty = labelText !== label || dateText !== base;
+  const dirty =
+    labelText !== label || dateText !== base || placeText !== (place ?? "");
 
   function save() {
     setSaved(false);
     startTransition(async () => {
-      const res = await updateMilestone(id, labelText, dateText);
+      const res = await updateMilestone(id, labelText, dateText, placeText);
       if (!res?.error) setSaved(true);
     });
   }
@@ -55,6 +59,15 @@ export function MilestoneAdminRow({
             setSaved(false);
           }}
           className="input text-sm"
+        />
+        <input
+          value={placeText}
+          onChange={(e) => {
+            setPlaceText(e.target.value);
+            setSaved(false);
+          }}
+          className="input min-w-[7rem] flex-1 text-sm"
+          placeholder="장소 (선택 · 예: 기념관 319호)"
         />
       </div>
       <div className="mt-1.5 flex items-center gap-2">

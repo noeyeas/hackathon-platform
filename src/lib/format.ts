@@ -22,6 +22,15 @@ export function scheduleWhen(
   return "—";
 }
 
+// KST 기준 "M.D" 라벨 (예: "9.18"). 홈 타임라인 노드 날짜 표시용.
+export function formatMonthDay(iso: string): string {
+  const ymd = new Date(iso).toLocaleDateString("en-CA", {
+    timeZone: "Asia/Seoul",
+  }); // "YYYY-MM-DD"
+  const [, m, d] = ymd.split("-");
+  return `${Number(m)}.${Number(d)}`;
+}
+
 // 캘린더 날짜 기준 D-day 숫자 (같은 날=0=D-DAY, 내일=1=D-1, 어제=-1).
 // 시간 차(ms)를 ceil 하면 당일 오전에도 D-1 로 보이는 오프바이원이 생기므로
 // 양쪽을 '자정'으로 내려 날짜 단위로 센다. 뷰어 지역과 무관하게 KST 기준

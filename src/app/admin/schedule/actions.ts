@@ -15,6 +15,7 @@ export async function addMilestone(formData: FormData) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const label = String(formData.get("label") ?? "").trim();
   const raw = String(formData.get("target_at") ?? "").trim();
+  const place = String(formData.get("place") ?? "").trim() || null;
   const sort = Number(formData.get("sort") ?? 0);
   if (!label) return { error: "이름을 입력하세요 (예: 신청 마감)" };
   if (!raw) return { error: "날짜/시간을 선택하세요" };
@@ -23,6 +24,7 @@ export async function addMilestone(formData: FormData) {
   const { error } = await admin.from("milestones").insert({
     label,
     target_at: new Date(raw).toISOString(),
+    place,
     sort,
   });
   if (error) return { error: error.message };
@@ -33,7 +35,8 @@ export async function addMilestone(formData: FormData) {
 export async function updateMilestone(
   id: string,
   label: string,
-  targetAt: string
+  targetAt: string,
+  place: string
 ) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const l = label.trim();
@@ -44,7 +47,11 @@ export async function updateMilestone(
   const admin = createAdminClient();
   const { error } = await admin
     .from("milestones")
-    .update({ label: l, target_at: new Date(raw).toISOString() })
+    .update({
+      label: l,
+      target_at: new Date(raw).toISOString(),
+      place: place.trim() || null,
+    })
     .eq("id", id);
   if (error) return { error: error.message };
   revalidate();

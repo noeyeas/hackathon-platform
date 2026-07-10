@@ -18,3 +18,22 @@ export const getRemoteData = unstable_cache(
   ["remote-data"],
   { tags: ["remote-data"], revalidate: 60 }
 );
+
+// 홈 히어로 타임라인 노드 = 마일스톤(라벨·날짜·장소), 날짜 오름차순.
+// 운영진이 마일스톤을 수정하면 revalidateTag("remote-data")로 갱신된다.
+export const getTimeline = unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("milestones")
+      .select("label, target_at, place")
+      .order("target_at", { ascending: true });
+    return (data ?? []) as {
+      label: string;
+      target_at: string;
+      place: string | null;
+    }[];
+  },
+  ["timeline"],
+  { tags: ["remote-data"], revalidate: 60 }
+);

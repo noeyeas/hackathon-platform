@@ -68,8 +68,8 @@ export default async function AdminPage() {
         />
         <AdminLink
           href="/admin/schedule"
-          title="일정 · D-day"
-          desc="대회 날짜·일정표 관리"
+          title="홈 타임라인"
+          desc="타임라인 단계·D-day·장소 관리"
         />
       </div>
     </div>

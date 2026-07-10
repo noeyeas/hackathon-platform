@@ -4,6 +4,8 @@ import { LogoMarquee } from "@/components/LogoMarquee";
 import { HeroTimeline } from "@/components/HeroTimeline";
 import { Reveal } from "@/components/Reveal";
 import { RevealGroup } from "@/components/RevealGroup";
+import { getTimeline } from "@/lib/remoteData";
+import { formatMonthDay } from "@/lib/format";
 
 // TODO: 실제 구글 신청 폼 링크로 교체하세요
 const APPLY_FORM_URL = "#";
@@ -90,7 +92,15 @@ function InstagramIcon() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  const timeline = await getTimeline();
+  const timelineNodes = timeline.map((m) => ({
+    date: formatMonthDay(m.target_at),
+    label: m.label,
+    at: m.target_at,
+    place: m.place,
+  }));
+
   return (
     <div className="flex flex-col gap-24">
       {/* ===== 히어로 + 하단 마퀴 ===== */}
@@ -133,7 +143,7 @@ export default function Home() {
             </div>
           </div>
 
-          <HeroTimeline />
+          <HeroTimeline nodes={timelineNodes} />
         </section>
 
         <LogoMarquee />

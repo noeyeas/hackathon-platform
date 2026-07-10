@@ -1,10 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ActionForm } from "@/components/ActionForm";
-import { scheduleWhen } from "@/lib/format";
-import { addMilestone, addScheduleItem } from "./actions";
+import { addMilestone } from "./actions";
 import { MilestoneAdminRow } from "./MilestoneAdminRow";
-import { ScheduleAdminRow } from "./ScheduleAdminRow";
 
 export const dynamic = "force-dynamic";
 
@@ -24,43 +22,55 @@ export default async function AdminSchedulePage() {
 
   const { data: milestones } = await supabase
     .from("milestones")
-    .select("id, label, target_at, sort")
+    .select("id, label, target_at, place, sort")
     .order("target_at", { ascending: true });
 
-  const { data: items } = await supabase
-    .from("schedule_items")
-    .select("id, time_label, starts_at, ends_at, title, detail")
-    .order("starts_at", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: true });
-
   return (
-    <div className="mx-auto max-w-5xl">
-      <h1 className="text-2xl font-bold">일정 · D-day 관리</h1>
+    <div className="mx-auto max-w-2xl">
+      <h1 className="text-2xl font-bold">홈 타임라인 관리</h1>
       <p className="mt-1 text-[var(--muted)]">
-        마일스톤(D-day)과 일정표는 홈 화면에 표시됩니다.
+        여기서 추가·수정한 단계가 <b>홈 히어로 타임라인</b>에 날짜순으로 그대로
+        표시됩니다. 가장 가까운 다음 단계에 D-day가 자동으로 붙어요.
       </p>
 
-      <div className="mt-6 grid items-start gap-5 lg:grid-cols-2">
-      {/* 마일스톤 */}
-      <div className="card">
-        <h2 className="mb-1 font-bold">D-day 마일스톤</h2>
+      <div className="card mt-6">
+        <h2 className="mb-1 font-bold">단계 추가</h2>
         <p className="mb-4 text-sm text-[var(--muted)]">
-          신청 마감, 본선 발표 등 중요한 날짜를 여러 개 추가할 수 있어요.
+          신청 마감·해커톤 시작·최종 발표 등 주요 시점을 추가하세요. 장소는
+          선택이며, 입력하면 해당 노드 아래에 📍로 표시됩니다.
         </p>
         <ActionForm
           action={addMilestone}
-          submitLabel="마일스톤 추가"
+          submitLabel="단계 추가"
           successMessage="추가했습니다."
           resetOnSuccess
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="label">이름 *</label>
-              <input name="label" required className="input" placeholder="예: 신청 마감" />
+              <input
+                name="label"
+                required
+                className="input"
+                placeholder="예: 최종 발표"
+              />
             </div>
             <div>
               <label className="label">날짜/시간 *</label>
-              <input name="target_at" type="datetime-local" required className="input" />
+              <input
+                name="target_at"
+                type="datetime-local"
+                required
+                className="input"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="label">장소 (선택)</label>
+              <input
+                name="place"
+                className="input"
+                placeholder="예: 광운대 기념관 319호"
+              />
             </div>
           </div>
         </ActionForm>
@@ -73,63 +83,11 @@ export default async function AdminSchedulePage() {
                 id={m.id}
                 label={m.label}
                 targetAt={m.target_at}
+                place={m.place}
               />
             ))}
           </div>
         )}
-      </div>
-
-      {/* 일정표 */}
-      <div className="card">
-        <h2 className="mb-1 font-bold">일정표</h2>
-        <p className="mb-4 text-sm text-[var(--muted)]">
-          몇월 몇일 몇시에 무엇을 하는지 추가하세요.
-        </p>
-        <ActionForm
-          action={addScheduleItem}
-          submitLabel="일정 추가"
-          successMessage="추가했습니다."
-          resetOnSuccess
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="label">시작 날짜/시간 *</label>
-              <input name="starts_at" type="datetime-local" required className="input" />
-            </div>
-            <div>
-              <label className="label">종료일 (선택 · 기간이면)</label>
-              <input name="ends_at" type="datetime-local" className="input" />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="label">내용 *</label>
-              <input name="title" required className="input" placeholder="개회식 & 오리엔테이션" />
-            </div>
-          </div>
-          <label className="label mt-3">상세 일정 (선택)</label>
-          <textarea
-            name="detail"
-            rows={2}
-            className="input resize-none"
-            placeholder="여러 줄 입력 가능. 공개 일정표에서 토글로 펼쳐 보여요."
-          />
-        </ActionForm>
-
-        {items && items.length > 0 && (
-          <div className="mt-4 flex flex-col gap-2 border-t border-[var(--line)] pt-4">
-            {items.map((it) => (
-              <ScheduleAdminRow
-                key={it.id}
-                id={it.id}
-                when={scheduleWhen(it.time_label, it.starts_at)}
-                startsAt={it.starts_at}
-                endsAt={it.ends_at}
-                title={it.title}
-                detail={it.detail}
-              />
-            ))}
-          </div>
-        )}
-      </div>
       </div>
     </div>
   );
