@@ -210,7 +210,11 @@ export function RemoteControl({
                     <span className="absolute -right-2 -top-1 h-2 w-2 rounded-full bg-red-500" />
                   )}
                 </span>
-                <span>{it.label}</span>
+                <span className="w-full truncate px-0.5 text-center">
+                  {it.key === "dday" && dday
+                    ? (dday.label ?? it.label)
+                    : it.label}
+                </span>
               </button>
             );
           })}
