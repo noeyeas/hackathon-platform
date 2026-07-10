@@ -41,7 +41,9 @@ export default function NoticeList({ list }: { list: Announcement[] }) {
               )}
               <span className="flex-1 truncate font-bold">{a.title}</span>
               <span className="hidden shrink-0 font-mono text-xs text-[var(--muted)] sm:inline">
-                {new Date(a.created_at).toLocaleDateString("ko-KR")}
+                {new Date(a.created_at).toLocaleDateString("ko-KR", {
+                  timeZone: "Asia/Seoul",
+                })}
               </span>
               <span
                 className={`shrink-0 text-[var(--muted)] transition-transform ${
@@ -60,7 +62,9 @@ export default function NoticeList({ list }: { list: Announcement[] }) {
                   <p className="text-sm text-[var(--muted)]">내용이 없습니다.</p>
                 )}
                 <p className="mt-3 font-mono text-xs text-[var(--muted)]">
-                  {new Date(a.created_at).toLocaleString("ko-KR")}
+                  {new Date(a.created_at).toLocaleString("ko-KR", {
+                    timeZone: "Asia/Seoul",
+                  })}
                 </p>
               </div>
             )}

@@ -28,8 +28,13 @@ export async function updateTeamField(field: string, value: string) {
   const supabase = await createClient();
   const res = await requireLeaderTeam(supabase);
   if ("error" in res) return { error: res.error };
-  if (!canEditTeam())
-    return { error: "수정 기간이 종료되었습니다 (9월 3일 마감)" };
+
+  const { data: settings } = await supabase
+    .from("event_settings")
+    .select("team_edit_deadline")
+    .single();
+  if (!canEditTeam(settings?.team_edit_deadline))
+    return { error: "수정 기간이 종료되었습니다" };
 
   const allowed = ["tagline", "members_note"];
   if (!allowed.includes(field))

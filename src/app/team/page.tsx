@@ -60,8 +60,13 @@ export default async function TeamPage() {
     .eq("team_id", membership.team_id)
     .maybeSingle();
 
-  // 팀장이 마감(9/3) 전이면 팀 정보를 수정할 수 있다.
-  const canEdit = membership.is_leader && canEditTeam();
+  // 팀장이 마감(event_settings.team_edit_deadline) 전이면 팀 정보를 수정할 수 있다.
+  const { data: settings } = await supabase
+    .from("event_settings")
+    .select("team_edit_deadline")
+    .single();
+  const canEdit =
+    membership.is_leader && canEditTeam(settings?.team_edit_deadline);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">

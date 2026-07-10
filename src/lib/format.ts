@@ -1,6 +1,8 @@
 // 일정/마일스톤 표시용 날짜 포맷 (예: "7월 12일 (토) 오후 2:00")
+// 오프라인 한국 행사이므로 뷰어 지역과 무관하게 항상 KST 로 표기.
 export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
     month: "long",
     day: "numeric",
     weekday: "short",
@@ -22,13 +24,17 @@ export function scheduleWhen(
 
 // 캘린더 날짜 기준 D-day 숫자 (같은 날=0=D-DAY, 내일=1=D-1, 어제=-1).
 // 시간 차(ms)를 ceil 하면 당일 오전에도 D-1 로 보이는 오프바이원이 생기므로
-// 양쪽을 자정으로 내려 '며칠 남았는지'를 날짜 단위로 센다.
+// 양쪽을 '자정'으로 내려 날짜 단위로 센다. 뷰어 지역과 무관하게 KST 기준
+// 달력 날짜를 써서 모든 참가자가 같은 D-day 를 본다.
 export function ddayCount(targetIso: string, nowMs: number): number {
-  const t = new Date(targetIso);
-  const n = new Date(nowMs);
-  const tMid = new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
-  const nMid = new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime();
-  return Math.round((tMid - nMid) / 86400000);
+  // en-CA 로케일은 "YYYY-MM-DD" 를 주므로 KST 달력 날짜를 안정적으로 얻는다.
+  const kstMidnight = (d: Date) =>
+    Date.parse(
+      d.toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" }) + "T00:00:00Z"
+    );
+  return Math.round(
+    (kstMidnight(new Date(targetIso)) - kstMidnight(new Date(nowMs))) / 86400000
+  );
 }
 
 // href 안전 가드 — http/https 만 통과, 그 외(javascript:, data: 등)는 무력화.

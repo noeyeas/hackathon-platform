@@ -91,7 +91,11 @@ export default async function MyPage() {
     latestCommentAt = latest?.created_at ?? null;
   }
 
-  const canEdit = isLeader && canEditTeam();
+  const { data: editSettings } = await supabase
+    .from("event_settings")
+    .select("team_edit_deadline")
+    .single();
+  const canEdit = isLeader && canEditTeam(editSettings?.team_edit_deadline);
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5">

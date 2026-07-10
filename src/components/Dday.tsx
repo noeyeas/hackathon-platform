@@ -32,6 +32,7 @@ export function Dday({
   const pad = (n: number) => String(n).padStart(2, "0");
 
   const dateLabel = new Date(targetAt).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
     month: "long",
     day: "numeric",
     weekday: "short",
