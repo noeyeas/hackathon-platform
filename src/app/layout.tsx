@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
-import { RemoteControl } from "@/components/RemoteControl";
-import { getRemoteData } from "@/lib/remoteData";
 
 // 본문 기본 폰트: Pretendard (한글+라틴 통일, 기기별 편차 제거)
 const pretendard = localFont({
@@ -43,13 +41,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { notices, schedule, milestones } = await getRemoteData();
-
   return (
     <html lang="ko" className={`${pretendard.variable} ${archivo.variable}`}>
       <body>
@@ -57,11 +53,6 @@ export default async function RootLayout({
         <main className="mx-auto w-full max-w-5xl px-5 py-8 max-sm:pb-24">
           {children}
         </main>
-        <RemoteControl
-          notices={notices}
-          schedule={schedule}
-          milestones={milestones}
-        />
       </body>
     </html>
   );

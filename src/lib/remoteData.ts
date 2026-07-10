@@ -1,8 +1,8 @@
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/server";
 
-// 리모컨(RemoteControl)용 공용 데이터: 공지·일정·마일스톤.
-// 모든 페이지 레이아웃에서 매 전환마다 조회되므로 60초간 캐싱한다.
+// 공용 데이터: 공지·일정·마일스톤 (상단 내비 '공지' 배지 등에서 사용).
+// 매 페이지 전환마다 조회되므로 60초간 캐싱한다.
 // 운영진이 내용을 바꾸면 revalidateTag("remote-data")로 즉시 갱신.
 export const getRemoteData = unstable_cache(
   async () => {

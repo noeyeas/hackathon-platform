@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
+import { getRemoteData } from "@/lib/remoteData";
 import { MobileMenu } from "./MobileMenu";
+import { NoticeNavLink } from "./NoticeNavLink";
 
-// 공지/일정/D-day 는 우측 부유 리모컨(RemoteControl)에 있으므로 상단바에서는 생략.
 const LINKS = [
   { href: "/recruit", label: "모집" },
   { href: "/gallery", label: "갤러리" },
@@ -37,8 +38,15 @@ export async function Nav() {
     }
   }
 
-  // 모바일 햄버거 링크. 공지/일정/D-day 는 하단 탭바(RemoteControl)에 있으므로 제외.
+  // 새 공지 표시용 최신 공지 시각 (60초 캐시)
+  const { notices } = await getRemoteData();
+  const latestNoticeAt = notices[0]?.created_at ?? null;
+
+  // 모바일 햄버거 링크.
   const mobileItems: { href: string; label: string; accent?: "admin" }[] = [
+    { href: "/notice", label: "공지" },
+    { href: "/schedule", label: "일정" },
+    { href: "/dday", label: "D-day" },
     ...LINKS,
     { href: "/results", label: "결과" },
     ...(isLeader ? [{ href: "/vote", label: "평가" }] : []),
@@ -56,6 +64,7 @@ export async function Nav() {
           🏆 해커톤
         </Link>
         <nav className="hidden items-center gap-1 text-sm sm:flex">
+          <NoticeNavLink latestAt={latestNoticeAt} />
           {LINKS.map((l) => (
             <Link
               key={l.href}
