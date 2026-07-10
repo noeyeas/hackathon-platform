@@ -2,11 +2,12 @@
 
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
 function revalidate() {
   revalidatePath("/admin/schedule");
   revalidatePath("/");
+  updateTag("remote-data");
 }
 
 // ---------- 마일스톤 (여러 D-day) ----------

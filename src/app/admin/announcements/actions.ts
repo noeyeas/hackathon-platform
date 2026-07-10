@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
 export async function createAnnouncement(formData: FormData) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
@@ -20,6 +20,7 @@ export async function createAnnouncement(formData: FormData) {
   revalidatePath("/admin/announcements");
   revalidatePath("/notice");
   revalidatePath("/");
+  updateTag("remote-data");
   return { ok: true };
 }
 
@@ -32,5 +33,6 @@ export async function deleteAnnouncement(id: string) {
   revalidatePath("/admin/announcements");
   revalidatePath("/notice");
   revalidatePath("/");
+  updateTag("remote-data");
   return { ok: true };
 }

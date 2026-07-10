@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { RemoteControl } from "@/components/RemoteControl";
-import { createClient } from "@/lib/supabase/server";
+import { getRemoteData } from "@/lib/remoteData";
 
 // 본문 기본 폰트: Pretendard (한글+라틴 통일, 기기별 편차 제거)
 const pretendard = localFont({
@@ -31,24 +31,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const [{ data: notices }, { data: schedule }, { data: milestones }] =
-    await Promise.all([
-      supabase
-        .from("announcements")
-        .select("id, title, body, pinned, created_at")
-        .order("created_at", { ascending: false })
-        .limit(10),
-      supabase
-        .from("schedule_items")
-        .select("id, time_label, starts_at, title")
-        .order("starts_at", { ascending: true, nullsFirst: false })
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("milestones")
-        .select("id, label, target_at")
-        .order("target_at", { ascending: true }),
-    ]);
+  const { notices, schedule, milestones } = await getRemoteData();
 
   return (
     <html lang="ko" className={`${pretendard.variable} ${archivo.variable}`}>
@@ -56,9 +39,9 @@ export default async function RootLayout({
         <Nav />
         <main className="mx-auto w-full max-w-5xl px-5 py-8">{children}</main>
         <RemoteControl
-          notices={notices ?? []}
-          schedule={schedule ?? []}
-          milestones={milestones ?? []}
+          notices={notices}
+          schedule={schedule}
+          milestones={milestones}
         />
       </body>
     </html>
