@@ -24,9 +24,15 @@ const NODES: {
 export function HeroTimeline() {
   // SSR 시 0 → 마운트 후 실제 진행도 반영 (하이드레이션 불일치 방지)
   const [done, setDone] = useState(0);
+  const [dday, setDday] = useState<number | null>(null);
   useEffect(() => {
     const now = Date.now();
-    setDone(NODES.filter((n) => now >= new Date(n.at).getTime()).length);
+    const past = NODES.filter((n) => now >= new Date(n.at).getTime()).length;
+    setDone(past);
+    const next = NODES[past];
+    setDday(
+      next ? Math.ceil((new Date(next.at).getTime() - now) / 86400000) : null
+    );
   }, []);
 
   const last = NODES.length - 1;
@@ -53,6 +59,11 @@ export function HeroTimeline() {
                 key={n.label}
                 className="relative flex flex-1 flex-col items-center gap-2 text-center"
               >
+                {active && dday !== null && (
+                  <span className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-vote px-2 py-0.5 text-[11px] font-extrabold tabular-nums text-white shadow-lg">
+                    {dday <= 0 ? "D-DAY" : `D-${dday}`}
+                  </span>
+                )}
                 <span
                   className={`h-3.5 w-3.5 rounded-full border-2 border-white ${
                     filled
