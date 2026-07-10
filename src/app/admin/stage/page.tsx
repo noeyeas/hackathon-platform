@@ -41,7 +41,7 @@ export default async function AdminStagePage() {
     <div className="mx-auto max-w-2xl">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">발표 진행 제어</h1>
-        <Link href="/stage" target="_blank" className="btn-ghost">
+        <Link href="/stage" target="_blank" rel="noopener" className="btn-ghost">
           공개 화면 열기 ↗
         </Link>
       </div>

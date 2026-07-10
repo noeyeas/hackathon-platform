@@ -27,6 +27,45 @@ const INSTAGRAM = [
   { label: "총학생회 이음", handle: "@kwu_studentcouncil", href: "https://www.instagram.com/kwu_studentcouncil/" },
 ];
 
+// 오픈채팅 문의 전에 스스로 해결하도록 — 답변은 모두 사이트 내 확정 정보 기반(지어낸 답 없음).
+// 운영진은 문구만 수정하면 되고, 새 질문 추가 시 아래 배열에 한 줄 넣으면 됩니다.
+const FAQ = [
+  {
+    q: "신청은 어떻게 하나요?",
+    a: "위의 ‘참가 신청하기’ 버튼에서 구글 신청 폼을 작성하면 됩니다. 신청은 팀장이 팀을 대표해서 진행하고, 폼에 적은 팀장 이메일로 로그인하면 이 사이트의 팀 페이지가 자동으로 연결됩니다.",
+  },
+  {
+    q: "팀은 몇 명으로 구성해야 하나요?",
+    a: "팀당 최소 2인 ~ 최대 4인입니다. 개인 신청은 받지 않으며, 전공 다양성과 4인 구성에는 가산점이 있습니다.",
+  },
+  {
+    q: "참가비가 있나요? 돌려받을 수 있나요?",
+    a: "인당 10,000원입니다. 행사에 끝까지 참여하면 종료 후 전액 환불해 드립니다.",
+  },
+  {
+    q: "몇 팀을 뽑고, 선정 기준은 무엇인가요?",
+    a: "총 30팀을 선정합니다. 신청이 초과되면 전공 다양성과 인원수(4명) 가산점을 기준으로 선정합니다.",
+  },
+  {
+    q: "어떤 주제로 개발하나요?",
+    a: "월계동 지역사회 문제를 해결하는 웹/애플리케이션을 만듭니다. 탄소 중립·ESG, 시장 상권 활성화, 교육 문제 해결, 교통 문제 개선 — 4개 분야 중에서 정하면 됩니다.",
+  },
+  {
+    q: "무엇을 제출해야 하나요?",
+    a: "팀당 프로젝트 1개를 제출합니다. 프로젝트 제목과 GitHub 저장소는 필수이고, 데모 링크·데모 영상·참고자료(PDF)는 선택입니다. 마감 전까지는 언제든 수정할 수 있습니다.",
+  },
+  {
+    q: "순위는 어떻게 정해지나요?",
+    a: "심사위원 평가 50%, 참가 팀 간 상호 평가 25%, 주민 투표 25%를 합산해 종합 순위를 정합니다. 공정성을 위해 실시간 순위·점수는 대회가 끝난 뒤에 공개됩니다.",
+  },
+  {
+    q: "전체 일정과 장소가 어떻게 되나요?",
+    a: "모집 8.24–9.2 → 9.7 해커톤 시작 → 9.11 중간 보고·멘토링 → 9.18–9.19 최종 발표 및 스프린트(무박 2일) 순으로 진행합니다. 최종 발표는 광운대학교 기념관 319호에서 열립니다.",
+  },
+];
+
+const KAKAO_OPENCHAT = "https://open.kakao.com/o/sJcelIai";
+
 // 어두운 배경에 어울리는 미니멀 아웃라인 소셜 버튼
 const socialBtn =
   "flex w-full items-center gap-2.5 rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/90 transition hover:border-white/30 hover:bg-white/10";
@@ -207,6 +246,44 @@ export default function Home() {
             </a>
           </div>
         </RevealGroup>
+      </Section>
+
+      {/* ===== FAQ ===== */}
+      <Section eyebrow="FAQ" title="자주 묻는 질문" desc="문의 전에 여기서 먼저 확인해 보세요.">
+        <RevealGroup className="flex flex-col gap-2">
+          {FAQ.map((f) => (
+            <details
+              key={f.q}
+              className="group card !p-0 transition hover:shadow-md"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold">
+                <span>{f.q}</span>
+                <span
+                  className="flex-none text-[var(--muted)] transition-transform group-open:rotate-180"
+                  aria-hidden
+                >
+                  ⌄
+                </span>
+              </summary>
+              <p className="border-t border-[var(--line)] p-4 text-sm leading-relaxed text-[var(--muted)]">
+                {f.a}
+              </p>
+            </details>
+          ))}
+        </RevealGroup>
+        <Reveal>
+          <p className="mt-2 text-sm text-[var(--muted)]">
+            여기서 답을 못 찾으셨나요?{" "}
+            <a
+              href={KAKAO_OPENCHAT}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-vote hover:underline"
+            >
+              카카오톡 오픈채팅으로 문의하기 →
+            </a>
+          </p>
+        </Reveal>
       </Section>
 
       {/* ===== 문의 (풀 블리드 다크) ===== */}

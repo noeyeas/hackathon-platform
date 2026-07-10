@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  /* 라이트 전용 디자인. OS 다크모드가 폼 컨트롤/색을 강제 반전시키지 않도록 고정 */
+  color-scheme: light;
   --bg: #f4f5f8;
   --surface: #ffffff;
   --ink: #1b1e26;
@@ -16,6 +18,28 @@ body {
   font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI",
     "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
   overflow-x: clip;
+}
+
+/* 라이트 테마에 맞춘 은은한 스크롤바 (Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c3c9d4 transparent;
+}
+/* WebKit(Chrome/Safari/Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #c3c9d4;
+  border: 2px solid var(--bg);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a7afbe;
 }
 
 /* 컨테이너를 벗어나 화면 가로 전체 폭으로 확장 */
