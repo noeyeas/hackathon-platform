@@ -6,6 +6,7 @@ import { LikeButton } from "@/components/LikeButton";
 import { CommentForm, DeleteCommentButton } from "@/components/CommentBox";
 import { TeamName } from "@/components/TeamName";
 import { ViewPing } from "@/components/ViewPing";
+import { ShareButton } from "@/components/ShareButton";
 
 export const dynamic = "force-dynamic";
 
@@ -90,12 +91,15 @@ export default async function ProjectDetailPage({
   return (
     <div className="mx-auto max-w-3xl">
       <ViewPing projectId={id} />
-      <Link
-        href="/gallery"
-        className="text-sm text-[var(--muted)] hover:text-ink"
-      >
-        ← 갤러리로
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href="/gallery"
+          className="text-sm text-[var(--muted)] hover:text-ink"
+        >
+          ← 갤러리로
+        </Link>
+        <ShareButton title={p.title} />
+      </div>
 
       <div className="mt-4 flex flex-col gap-2">
         {team?.name && (
