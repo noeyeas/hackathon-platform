@@ -13,34 +13,44 @@ const LINKS = [
 
 export async function Nav() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+
+  // 세션 확인과 공지 조회(60초 캐시)는 서로 무관 — 병렬로 처리한다.
+  const [
+    {
+      data: { user },
+    },
+    { notices },
+  ] = await Promise.all([supabase.auth.getUser(), getRemoteData()]);
 
   let role: string | null = null;
   let isLeader = false;
   if (user) {
-    const { data } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    role = data?.role ?? null;
+    // 역할과 팀 소속도 서로 무관하므로 한 번에 조회한다.
+    const [{ data: me }, { data: m }] = await Promise.all([
+      supabase.from("users").select("role").eq("id", user.id).single(),
+      supabase
+        .from("team_members")
+        .select("is_leader")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
+    role = me?.role ?? null;
+    isLeader = m?.is_leader ?? false;
 
-    if (role === "participant") {
-      // 팀장 이메일로 등록된 팀에 자동 연결한 뒤 팀장 여부 확인
+    // 자동 연결은 '아직 팀이 없는 참가자'에게만 필요하다.
+    // 이미 연결된 사용자(대부분)는 추가 조회 없이 넘어간다.
+    if (!m && role === "participant") {
       await ensureLeaderMembership(user.id, user.email);
-      const { data: m } = await supabase
+      const { data: linked } = await supabase
         .from("team_members")
         .select("is_leader")
         .eq("user_id", user.id)
         .maybeSingle();
-      isLeader = m?.is_leader ?? false;
+      isLeader = linked?.is_leader ?? false;
     }
   }
 
-  // 새 공지 표시용 최신 공지 시각 (60초 캐시)
-  const { notices } = await getRemoteData();
+  // 새 공지 표시용 최신 공지 시각
   const latestNoticeAt = notices[0]?.created_at ?? null;
 
   // 모바일 햄버거 링크.

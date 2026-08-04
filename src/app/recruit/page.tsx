@@ -21,34 +21,37 @@ type Row = {
 
 export default async function RecruitPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+
+  // 모집글 목록은 로그인 여부와 무관 — 세션 확인과 병렬로 가져온다.
+  const [
+    {
+      data: { user },
+    },
+    { data: posts },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from("recruit_posts")
+      .select(
+        "id, title, body, positions, is_open, kind, team_id, author_id, author_name, contact, teams(name, status)"
+      )
+      .order("created_at", { ascending: false }),
+  ]);
 
   let myTeamId: string | null = null;
   let isAdmin = false;
   if (user) {
-    const { data } = await supabase
-      .from("team_members")
-      .select("team_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const [{ data }, { data: me }] = await Promise.all([
+      supabase
+        .from("team_members")
+        .select("team_id")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+      supabase.from("users").select("role").eq("id", user.id).single(),
+    ]);
     myTeamId = data?.team_id ?? null;
-
-    const { data: me } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .single();
     isAdmin = me?.role === "admin";
   }
-
-  const { data: posts } = await supabase
-    .from("recruit_posts")
-    .select(
-      "id, title, body, positions, is_open, kind, team_id, author_id, author_name, contact, teams(name, status)"
-    )
-    .order("created_at", { ascending: false });
 
   const all = (posts ?? []) as Row[];
 

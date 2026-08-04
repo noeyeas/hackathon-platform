@@ -24,15 +24,20 @@ export default async function TeamPage() {
     );
   }
 
-  // 팀장 이메일로 등록된 팀에 자동 연결
-  await ensureLeaderMembership(user.id, user.email);
+  // 내 팀 조회. 소속이 없을 때만 팀장 이메일 자동 연결을 시도한다.
+  // (이미 연결된 사용자는 조회 1회로 끝나 페이지가 빨리 뜬다)
+  const selectMembership = () =>
+    supabase
+      .from("team_members")
+      .select("team_id, is_leader")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-  // 내 팀 조회
-  const { data: membership } = await supabase
-    .from("team_members")
-    .select("team_id, is_leader")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  let { data: membership } = await selectMembership();
+  if (!membership) {
+    await ensureLeaderMembership(user.id, user.email);
+    ({ data: membership } = await selectMembership());
+  }
 
   if (!membership) {
     return (
@@ -47,24 +52,22 @@ export default async function TeamPage() {
     );
   }
 
-  // 팀 상세
-  const { data: team } = await supabase
-    .from("teams")
-    .select("id, name, tagline, members_note, status")
-    .eq("id", membership.team_id)
-    .single();
-
-  const { data: project } = await supabase
-    .from("projects")
-    .select("id, title")
-    .eq("team_id", membership.team_id)
-    .maybeSingle();
-
-  // 팀장이 마감(event_settings.team_edit_deadline) 전이면 팀 정보를 수정할 수 있다.
-  const { data: settings } = await supabase
-    .from("event_settings")
-    .select("team_edit_deadline")
-    .single();
+  // 팀 상세 · 제출작 · 수정 마감 설정은 서로 무관 — 한 번에 조회한다.
+  const [{ data: team }, { data: project }, { data: settings }] =
+    await Promise.all([
+      supabase
+        .from("teams")
+        .select("id, name, tagline, members_note, status")
+        .eq("id", membership.team_id)
+        .single(),
+      supabase
+        .from("projects")
+        .select("id, title")
+        .eq("team_id", membership.team_id)
+        .maybeSingle(),
+      // 팀장이 마감(event_settings.team_edit_deadline) 전이면 팀 정보를 수정할 수 있다.
+      supabase.from("event_settings").select("team_edit_deadline").single(),
+    ]);
   const canEdit =
     membership.is_leader && canEditTeam(settings?.team_edit_deadline);
 

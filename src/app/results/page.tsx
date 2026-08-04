@@ -7,10 +7,34 @@ export const dynamic = "force-dynamic";
 export default async function ResultsPage() {
   const supabase = await createClient();
 
-  const { data: settings } = await supabase
-    .from("event_settings")
-    .select("phase, weights")
-    .single();
+  // 서로 무관한 조회는 한 번에 — 직렬 왕복을 줄여 페이지 전환을 빠르게 한다.
+  const [
+    { data: settings },
+    {
+      data: { user },
+    },
+    { data: criteria },
+    { data: teamNotes },
+  ] = await Promise.all([
+    supabase.from("event_settings").select("phase, weights").single(),
+    supabase.auth.getUser(),
+    // 심사위원 배점 기준 (관리자에서 관리) — 결과 페이지에서 펼쳐볼 수 있게 노출
+    supabase
+      .from("criteria")
+      .select("name, weight, max_score, description")
+      .order("sort")
+      .returns<
+        {
+          name: string;
+          weight: number;
+          max_score: number;
+          description: string | null;
+        }[]
+      >(),
+    // 팀별 팀원 구성 (팀 이름 hover 툴팁용)
+    supabase.from("teams").select("id, members_note"),
+  ]);
+
   const phase = (settings?.phase ?? "signup") as EventPhase;
   // 집계 뷰(rankings)와 동일하게 event_settings.weights 를 사용 — 표시/계산 일치
   const weights =
@@ -19,9 +43,6 @@ export default async function ResultsPage() {
   const showFinal = phase === "closed";
 
   // 실시간 순위는 종료 전 비공개. 운영진은 종료 전에도 미리보기 허용.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   let isAdmin = false;
   if (user) {
     const { data: me } = await supabase
@@ -42,19 +63,6 @@ export default async function ResultsPage() {
         .returns<Ranking[]>()
     : { data: null as Ranking[] | null };
 
-  // 심사위원 배점 기준 (관리자에서 관리) — 결과 페이지에서 펼쳐볼 수 있게 노출
-  const { data: criteria } = await supabase
-    .from("criteria")
-    .select("name, weight, max_score, description")
-    .order("sort")
-    .returns<
-      { name: string; weight: number; max_score: number; description: string | null }[]
-    >();
-
-  // 팀별 팀원 구성 (팀 이름 hover 툴팁용)
-  const { data: teamNotes } = await supabase
-    .from("teams")
-    .select("id, members_note");
   const noteByTeam = new Map(
     (teamNotes ?? []).map((t) => [t.id as string, t.members_note as string | null])
   );

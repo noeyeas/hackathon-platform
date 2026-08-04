@@ -31,40 +31,45 @@ export default async function MyPage() {
 
   // 이메일은 인증 세션(user.email)에서 가져온다. public.users 의 email 컬럼은
   // 일반 클라이언트 SELECT 가 막혀 있어(0025) 여기서 select 하면 안 된다.
-  const { data: me } = await supabase
-    .from("users")
-    .select("name, role")
-    .eq("id", user.id)
-    .single();
+  const selectMembership = () =>
+    supabase
+      .from("team_members")
+      .select("team_id, is_leader")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-  // 팀장 이메일로 등록된 팀에 자동 연결 (참가 코드 대체)
-  await ensureLeaderMembership(user.id, user.email);
+  let [{ data: me }, { data: membership }, { data: editSettings }] =
+    await Promise.all([
+      supabase.from("users").select("name, role").eq("id", user.id).single(),
+      selectMembership(),
+      supabase.from("event_settings").select("team_edit_deadline").single(),
+    ]);
 
-  const { data: membership } = await supabase
-    .from("team_members")
-    .select("team_id, is_leader")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // 팀장 이메일로 등록된 팀에 자동 연결 (참가 코드 대체).
+  // 아직 소속이 없을 때만 시도한다 — 이미 연결된 사용자에겐 불필요한 조회다.
+  if (!membership) {
+    await ensureLeaderMembership(user.id, user.email);
+    ({ data: membership } = await selectMembership());
+  }
 
   const isLeader = membership?.is_leader ?? false;
 
-  const { data: team } = membership
-    ? await supabase
-        .from("teams")
-        .select("name, tagline, members_note, status")
-        .eq("id", membership.team_id)
-        .single()
-    : { data: null };
-
-  const { data: project } = membership
-    ? await supabase
-        .from("projects")
-        .select(
-          "id, title, description, repo_url, demo_url, video_url, deck_url, view_count"
-        )
-        .eq("team_id", membership.team_id)
-        .maybeSingle()
-    : { data: null };
+  const [{ data: team }, { data: project }] = membership
+    ? await Promise.all([
+        supabase
+          .from("teams")
+          .select("name, tagline, members_note, status")
+          .eq("id", membership.team_id)
+          .single(),
+        supabase
+          .from("projects")
+          .select(
+            "id, title, description, repo_url, demo_url, video_url, deck_url, view_count"
+          )
+          .eq("team_id", membership.team_id)
+          .maybeSingle(),
+      ])
+    : [{ data: null }, { data: null }];
 
   // 내 작품 반응 (조회·좋아요·댓글 수). 세부 댓글은 갤러리에서 확인.
   let likeCount = 0;
@@ -93,10 +98,6 @@ export default async function MyPage() {
     latestCommentAt = latest?.created_at ?? null;
   }
 
-  const { data: editSettings } = await supabase
-    .from("event_settings")
-    .select("team_edit_deadline")
-    .single();
   const canEdit = isLeader && canEditTeam(editSettings?.team_edit_deadline);
 
   return (
