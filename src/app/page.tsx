@@ -9,7 +9,7 @@ import { formatMonthDayRange } from "@/lib/format";
 
 // 구글 신청 폼 주소. 채우면 아래 ApplyButton 이 자동으로 활성 링크가 되고,
 // 비워두면 "준비 중" 비활성 버튼으로 표시된다.
-const APPLY_FORM_URL = "";
+const APPLY_FORM_URL = "https://forms.gle/KDkrR7bC9GgssgAa7";
 
 const THEMES = [
   { icon: "♻️", t: "탄소 중립과 ESG", en: "Carbon Neutral", d: "탄소 배출 저감·자원 순환·친환경 생활을 유도하는 플랫폼으로 일상 속 ESG 실현", tint: "#edf9f1", ring: "#cfeed7", chip: "#d7f1e0", accent: "#2f9e5f" },
