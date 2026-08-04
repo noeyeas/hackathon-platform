@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { AutoRefresh } from "./AutoRefresh";
+import { AutoRefresh } from "@/components/AutoRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +30,8 @@ export default async function StagePage() {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[#14161c] text-white">
-      <AutoRefresh seconds={4} />
+      {/* 발표 화면 — 현재 발표 팀이 바뀌면 바로 따라가야 하므로 짧게 잡는다 */}
+      <AutoRefresh intervalMs={4000} />
 
       {/* 상단 */}
       <div className="flex items-center justify-between px-10 py-6">
