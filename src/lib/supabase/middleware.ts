@@ -50,7 +50,23 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+  // getUser() 는 매 요청 Auth 서버로 왕복한다. getClaims() 는 대신
+  // JWKS(ES256 공개키)로 서명을 로컬 검증하므로 네트워크를 타지 않는다.
+  // JWKS 는 auth-js 의 모듈 전역 캐시에 담겨 인스턴스당 1회만 받아온다.
+  //
+  // 세션 갱신은 그대로 유지된다 — getClaims() 는 내부에서 getSession() 을
+  // 먼저 호출하고, 액세스 토큰이 만료됐으면 refresh 후 위 setAll 로 새
+  // 쿠키를 내려보낸다. 토큰이 HS256 이면 자동으로 getUser() 로 폴백한다.
+  //
+  // 손상된 쿠키(base64url 이지만 JSON 이 아닌 값 등)에는 getClaims() 가
+  // AuthError 가 아닌 예외를 그대로 던진다. 미들웨어는 모든 요청을 지나므로
+  // 여기서 막지 않으면 사이트 전체가 500 이 된다. 실패하면 세션 갱신만
+  // 건너뛰고, 페이지의 getUser() 가 비로그인으로 처리한다(RLS 로 보호됨).
+  try {
+    await supabase.auth.getClaims();
+  } catch {
+    // 갱신 실패 — 비로그인으로 계속 진행
+  }
 
   // 새로 발급한 시드는 브라우저에도 저장(세션 쿠키)
   if (newGallerySeed) {
