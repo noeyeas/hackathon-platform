@@ -31,6 +31,21 @@ export function formatMonthDay(iso: string): string {
   return `${Number(m)}.${Number(d)}`;
 }
 
+// 기간 라벨 (예: "9.18~19", 달을 넘기면 "9.30~10.1").
+// ends_at 이 없거나 시작일과 같은 날이면 단일 날짜로 표시한다.
+export function formatMonthDayRange(
+  startIso: string,
+  endIso: string | null | undefined
+): string {
+  const start = formatMonthDay(startIso);
+  if (!endIso) return start;
+  const end = formatMonthDay(endIso);
+  if (end === start) return start;
+  const [startMonth] = start.split(".");
+  const [endMonth, endDay] = end.split(".");
+  return startMonth === endMonth ? `${start}~${endDay}` : `${start}~${end}`;
+}
+
 // 캘린더 날짜 기준 D-day 숫자 (같은 날=0=D-DAY, 내일=1=D-1, 어제=-1).
 // 시간 차(ms)를 ceil 하면 당일 오전에도 D-1 로 보이는 오프바이원이 생기므로
 // 양쪽을 '자정'으로 내려 날짜 단위로 센다. 뷰어 지역과 무관하게 KST 기준

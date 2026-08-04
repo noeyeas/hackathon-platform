@@ -26,11 +26,12 @@ export const getTimeline = unstable_cache(
     const supabase = createPublicClient();
     const { data } = await supabase
       .from("milestones")
-      .select("label, target_at, place")
+      .select("label, target_at, ends_at, place")
       .order("target_at", { ascending: true });
     return (data ?? []) as {
       label: string;
       target_at: string;
+      ends_at: string | null;
       place: string | null;
     }[];
   },

@@ -5,7 +5,7 @@ import { HeroTimeline } from "@/components/HeroTimeline";
 import { Reveal } from "@/components/Reveal";
 import { RevealGroup } from "@/components/RevealGroup";
 import { getTimeline } from "@/lib/remoteData";
-import { formatMonthDay } from "@/lib/format";
+import { formatMonthDayRange } from "@/lib/format";
 
 // 구글 신청 폼 주소. 채우면 아래 ApplyButton 이 자동으로 활성 링크가 되고,
 // 비워두면 "준비 중" 비활성 버튼으로 표시된다.
@@ -130,7 +130,7 @@ function InstagramIcon() {
 export default async function Home() {
   const timeline = await getTimeline();
   const timelineNodes = timeline.map((m) => ({
-    date: formatMonthDay(m.target_at),
+    date: formatMonthDayRange(m.target_at, m.ends_at),
     label: m.label,
     at: m.target_at,
     place: m.place,

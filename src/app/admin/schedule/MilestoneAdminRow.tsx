@@ -8,27 +8,40 @@ export function MilestoneAdminRow({
   id,
   label,
   targetAt,
+  endsAt,
   place,
 }: {
   id: string;
   label: string;
   targetAt: string;
+  endsAt: string | null;
   place: string | null;
 }) {
   const [labelText, setLabelText] = useState(label);
   const [dateText, setDateText] = useState(() => toLocalInput(targetAt));
+  const [endText, setEndText] = useState(() => toLocalInput(endsAt));
   const [placeText, setPlaceText] = useState(place ?? "");
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const base = toLocalInput(targetAt);
+  const baseEnd = toLocalInput(endsAt);
   const dirty =
-    labelText !== label || dateText !== base || placeText !== (place ?? "");
+    labelText !== label ||
+    dateText !== base ||
+    endText !== baseEnd ||
+    placeText !== (place ?? "");
 
   function save() {
     setSaved(false);
     startTransition(async () => {
-      const res = await updateMilestone(id, labelText, dateText, placeText);
+      const res = await updateMilestone(
+        id,
+        labelText,
+        dateText,
+        placeText,
+        endText
+      );
       if (!res?.error) setSaved(true);
     });
   }
@@ -56,6 +69,17 @@ export function MilestoneAdminRow({
           suppressHydrationWarning
           onChange={(e) => {
             setDateText(e.target.value);
+            setSaved(false);
+          }}
+          className="input text-sm"
+        />
+        <input
+          type="datetime-local"
+          value={endText}
+          suppressHydrationWarning
+          title="종료 (선택) — 여러 날에 걸치면 입력"
+          onChange={(e) => {
+            setEndText(e.target.value);
             setSaved(false);
           }}
           className="input text-sm"

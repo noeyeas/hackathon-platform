@@ -16,14 +16,18 @@ export async function addMilestone(formData: FormData) {
   const label = String(formData.get("label") ?? "").trim();
   const raw = String(formData.get("target_at") ?? "").trim();
   const place = String(formData.get("place") ?? "").trim() || null;
+  const endRaw = String(formData.get("ends_at") ?? "").trim();
   const sort = Number(formData.get("sort") ?? 0);
   if (!label) return { error: "이름을 입력하세요 (예: 신청 마감)" };
   if (!raw) return { error: "날짜/시간을 선택하세요" };
+  if (endRaw && new Date(endRaw) < new Date(raw))
+    return { error: "종료가 시작보다 빠릅니다" };
 
   const admin = createAdminClient();
   const { error } = await admin.from("milestones").insert({
     label,
     target_at: new Date(raw).toISOString(),
+    ends_at: endRaw ? new Date(endRaw).toISOString() : null,
     place,
     sort,
   });
@@ -36,13 +40,17 @@ export async function updateMilestone(
   id: string,
   label: string,
   targetAt: string,
-  place: string
+  place: string,
+  endsAt: string
 ) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const l = label.trim();
   const raw = targetAt.trim();
+  const endRaw = endsAt.trim();
   if (!l) return { error: "이름을 입력하세요" };
   if (!raw) return { error: "날짜/시간을 선택하세요" };
+  if (endRaw && new Date(endRaw) < new Date(raw))
+    return { error: "종료가 시작보다 빠릅니다" };
 
   const admin = createAdminClient();
   const { error } = await admin
@@ -50,6 +58,7 @@ export async function updateMilestone(
     .update({
       label: l,
       target_at: new Date(raw).toISOString(),
+      ends_at: endRaw ? new Date(endRaw).toISOString() : null,
       place: place.trim() || null,
     })
     .eq("id", id);

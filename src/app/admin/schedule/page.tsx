@@ -22,7 +22,7 @@ export default async function AdminSchedulePage() {
 
   const { data: milestones } = await supabase
     .from("milestones")
-    .select("id, label, target_at, place, sort")
+    .select("id, label, target_at, ends_at, place, sort")
     .order("target_at", { ascending: true });
 
   return (
@@ -64,6 +64,13 @@ export default async function AdminSchedulePage() {
                 className="input"
               />
             </div>
+            <div>
+              <label className="label">종료 (선택)</label>
+              <input name="ends_at" type="datetime-local" className="input" />
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                여러 날에 걸치면 입력하세요. 타임라인에 9.18~19 처럼 표시됩니다.
+              </p>
+            </div>
             <div className="sm:col-span-2">
               <label className="label">장소 (선택)</label>
               <input
@@ -83,6 +90,7 @@ export default async function AdminSchedulePage() {
                 id={m.id}
                 label={m.label}
                 targetAt={m.target_at}
+                endsAt={m.ends_at}
                 place={m.place}
               />
             ))}
