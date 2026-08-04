@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import NoticeList from "./NoticeList";
+import { AutoRefresh } from "@/components/AutoRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,8 @@ export default async function NoticePage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      {/* 현장에서 새 공지를 새로고침 없이 받아보도록 60초마다 갱신 */}
+      <AutoRefresh intervalMs={60000} />
       <div className="flex items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink">공지사항</h1>

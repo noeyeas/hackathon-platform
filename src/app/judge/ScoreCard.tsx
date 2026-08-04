@@ -2,6 +2,59 @@
 
 import { useState, useTransition } from "react";
 
+// 점수 입력. 0~max 척도(10 이하)는 큰 탭 버튼으로 제공해 모바일 오조작을 줄인다.
+// 폼 제출값은 hidden input(name)에 담기고, 큰 척도는 숫자 입력으로 대체한다.
+function ScoreScale({
+  name,
+  max,
+  defaultValue,
+}: {
+  name: string;
+  max: number;
+  defaultValue: number | "";
+}) {
+  const [val, setVal] = useState<number | "">(defaultValue);
+
+  if (max > 10) {
+    return (
+      <input
+        name={name}
+        type="number"
+        inputMode="numeric"
+        min={0}
+        max={max}
+        defaultValue={defaultValue}
+        className="input w-24 text-right"
+        required
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      <input type="hidden" name={name} value={val} />
+      {Array.from({ length: max + 1 }, (_, n) => {
+        const selected = val === n;
+        return (
+          <button
+            key={n}
+            type="button"
+            onClick={() => setVal(n)}
+            aria-pressed={selected}
+            className={`h-11 min-w-11 rounded-lg border text-base font-semibold tabular-nums transition ${
+              selected
+                ? "border-vote bg-vote text-white shadow-sm"
+                : "border-[var(--line)] bg-white text-ink hover:border-vote/50 active:scale-95"
+            }`}
+          >
+            {n}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 type Criterion = {
   id: string;
   name: string;
@@ -44,6 +97,11 @@ export function ScoreCard({
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     setError(null);
+    // 모든 기준을 채점했는지 확인 (버튼식 입력은 hidden 이라 브라우저 required 가 안 걸림)
+    if (criteria.some((c) => !fd.get(`c_${c.id}`))) {
+      setError("모든 항목을 채점해 주세요.");
+      return;
+    }
     startTransition(async () => {
       const res = await action(projectId, fd);
       if (res?.error) setError(res.error);
@@ -69,14 +127,20 @@ export function ScoreCard({
           <span className={`chip ${saved ? "border-team text-team" : ""}`}>
             {saved ? "✓ 채점됨" : "미채점"}
           </span>
-          <span
-            className={`text-[var(--muted)] transition-transform ${
+          <svg
+            viewBox="0 0 24 24"
+            className={`h-4 w-4 text-[var(--muted)] transition-transform duration-200 ${
               open ? "rotate-180" : ""
             }`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             aria-hidden
           >
-            ⌄
-          </span>
+            <path d="M6 9l6 6 6-6" />
+          </svg>
         </span>
       </button>
 
@@ -88,34 +152,28 @@ export function ScoreCard({
                 key={c.id}
                 className="rounded-lg border border-[var(--line)] p-3"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <label className="text-sm font-semibold">
-                      {c.name}{" "}
-                      <span className="text-xs font-bold text-vote">
-                        {c.weight}%
-                      </span>
-                    </label>
-                    {c.description && (
-                      <p className="mt-1 text-xs text-[var(--muted)]">
-                        {c.description}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex-none text-right">
-                    <input
-                      name={`c_${c.id}`}
-                      type="number"
-                      min={0}
-                      max={c.max_score}
-                      defaultValue={scoreOf(c.id)}
-                      className="input w-20 text-right"
-                      required
-                    />
-                    <p className="mt-0.5 text-[10px] text-[var(--muted)]">
-                      / {c.max_score}점
-                    </p>
-                  </div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <label className="text-sm font-semibold">
+                    {c.name}{" "}
+                    <span className="text-xs font-bold text-vote">
+                      {c.weight}%
+                    </span>
+                  </label>
+                  <span className="flex-none text-[10px] text-[var(--muted)]">
+                    최대 {c.max_score}점
+                  </span>
+                </div>
+                {c.description && (
+                  <p className="mt-1 text-xs text-[var(--muted)]">
+                    {c.description}
+                  </p>
+                )}
+                <div className="mt-2.5">
+                  <ScoreScale
+                    name={`c_${c.id}`}
+                    max={c.max_score}
+                    defaultValue={scoreOf(c.id)}
+                  />
                 </div>
               </div>
             ))}

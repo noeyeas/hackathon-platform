@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScoreCard } from "./ScoreCard";
 import { saveScores } from "./actions";
+import { ScoreProgress } from "@/components/ScoreProgress";
 
 export const dynamic = "force-dynamic";
 
@@ -55,9 +56,10 @@ export default async function JudgePage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-bold">심사 채점</h1>
       <p className="mt-1 text-[var(--muted)]">
-        모든 팀({projects?.length ?? 0})을 채점해 주세요. 채점 완료{" "}
-        {doneCount}팀.
+        모든 팀을 심사 기준으로 채점해 주세요.
       </p>
+
+      <ScoreProgress done={doneCount} total={projects?.length ?? 0} />
 
       {!votingOpen && (
         <div className="mt-4 rounded-lg bg-vote/10 px-4 py-3 text-sm text-vote">

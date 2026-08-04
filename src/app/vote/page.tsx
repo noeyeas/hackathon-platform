@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { ScoreCard } from "../judge/ScoreCard";
 import { saveTeamScores } from "./actions";
+import { ScoreProgress } from "@/components/ScoreProgress";
 
 export const dynamic = "force-dynamic";
 
@@ -101,9 +102,10 @@ export default async function VotePage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-bold">팀별 채점</h1>
       <p className="mt-1 text-[var(--muted)]">
-        다른 팀({projects?.length ?? 0})을 심사 기준으로 채점해 주세요. 완료{" "}
-        {doneCount}팀.
+        자기 팀을 제외한 다른 팀을 심사 기준으로 채점해 주세요.
       </p>
+
+      {teamId && <ScoreProgress done={doneCount} total={projects?.length ?? 0} />}
 
       {isAdmin && !teamId && (
         <div className="mt-4 rounded-lg bg-admin/10 px-4 py-3 text-sm text-admin">

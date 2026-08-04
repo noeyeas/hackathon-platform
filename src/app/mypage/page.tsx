@@ -205,6 +205,17 @@ export default async function MyPage() {
               </span>
             </div>
 
+            <div
+              className={`mt-3 flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium ${
+                project ? "bg-team/10 text-team" : "bg-vote/10 text-vote"
+              }`}
+            >
+              <span aria-hidden>{project ? "✅" : "📌"}</span>
+              {project
+                ? "제출 완료 — 마감 전까지 언제든 수정할 수 있어요."
+                : "아직 제출하지 않았어요. 마감 전에 꼭 제출해 주세요."}
+            </div>
+
             {isLeader ? (
               <div className="mt-4">
                 <ProjectForm project={project} />
