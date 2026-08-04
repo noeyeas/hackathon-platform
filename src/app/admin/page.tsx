@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { PHASE_LABEL, type EventPhase } from "@/lib/types";
-import { completedByVoter } from "@/lib/scoring";
+import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +31,7 @@ export default async function AdminPage() {
   const [
     { data: settings },
     { count: teamCount },
-    { count: projectCount },
+    { data: projectTeams, count: projectCount },
     { data: criteria },
     { data: judges },
     { data: judgeScores },
@@ -39,7 +39,7 @@ export default async function AdminPage() {
   ] = await Promise.all([
     admin.from("event_settings").select("phase").single(),
     admin.from("teams").select("id", { count: "exact", head: true }),
-    admin.from("projects").select("id", { count: "exact", head: true }),
+    admin.from("projects").select("team_id", { count: "exact" }),
     admin.from("criteria").select("id"),
     admin.from("users").select("id", { count: "exact" }).eq("role", "judge"),
     admin.from("judge_scores").select("judge_id, project_id, criteria_id"),
@@ -57,12 +57,16 @@ export default async function AdminPage() {
     (s) => submitted > 0 && s.size >= submitted
   ).length;
 
-  // 팀 평가 완료 = 자기 팀 제외 나머지(submitted-1)를 모두 평가한 팀 수
-  const teamTarget = Math.max(0, submitted - 1);
+  // 팀 평가 완료 = 자기 팀을 뺀 나머지 제출작을 모두 평가한 팀 수.
+  // 목표치는 팀마다 다르다 — 제출하지 않은 팀은 뺄 자기 몫이 없어 1개 더 평가한다.
+  const submittedTeamIds = new Set(
+    (projectTeams ?? []).map((p) => p.team_id as string)
+  );
   const teamDone = completedByVoter(teamScores, "voter_team_id", criteriaCount);
-  const teamComplete = [...teamDone.values()].filter(
-    (s) => teamTarget > 0 && s.size >= teamTarget
-  ).length;
+  const teamComplete = [...teamDone].filter(([votingTeamId, done]) => {
+    const target = teamVoteTarget(submitted, submittedTeamIds.has(votingTeamId));
+    return target > 0 && done.size >= target;
+  }).length;
 
   return (
     <div className="flex flex-col gap-6">
@@ -89,9 +93,9 @@ export default async function AdminPage() {
         />
         <Stat
           label="팀 평가 완료"
-          value={`${teamComplete} / ${submitted}`}
+          value={`${teamComplete} / ${teams}`}
           sub="전 팀 평가한 팀"
-          tone={submitted > 0 && teamComplete >= submitted ? "done" : "pending"}
+          tone={teams > 0 && teamComplete >= teams ? "done" : "pending"}
         />
       </div>
 

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ScoreCard } from "./ScoreCard";
 import { saveScores } from "./actions";
 import { ScoreProgress } from "@/components/ScoreProgress";
+import { completedCount } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,8 @@ export default async function JudgePage() {
     .select("project_id, criteria_id, score, comment")
     .eq("judge_id", user.id);
 
-  const doneCount = new Set(myScores?.map((s) => s.project_id)).size;
+  // 완료 = 모든 기준을 채운 대상만. 운영 대시보드와 같은 규칙을 쓴다.
+  const doneCount = completedCount(myScores, criteria?.length ?? 0);
 
   return (
     <div className="mx-auto max-w-2xl">

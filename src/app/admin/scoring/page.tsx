@@ -4,7 +4,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { type Ranking } from "@/lib/types";
 import { VotingControls } from "../voting/VotingControls";
 import { ResultsToggle } from "./ResultsToggle";
-import { completedByVoter } from "@/lib/scoring";
+import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +31,7 @@ export default async function ScoringProgressPage() {
     { data: judgeScores },
     { data: teamScores },
     { data: rankings },
+    { data: allTeams },
   ] = await Promise.all([
     admin.from("event_settings").select("voting_open, phase").single(),
     admin.from("criteria").select("id"),
@@ -42,12 +43,14 @@ export default async function ScoringProgressPage() {
     admin.from("judge_scores").select("judge_id, project_id, criteria_id"),
     admin.from("team_scores").select("voter_team_id, project_id, criteria_id"),
     admin.from("rankings").select("*").returns<Ranking[]>(),
+    // 제출하지 않은 팀도 다른 팀을 평가하므로 전체 팀을 가져온다
+    admin.from("teams").select("id, name").order("name"),
   ]);
 
   const criteriaCount = criteria?.length ?? 0;
   const projectList = projects ?? [];
-  const teamCount = projectList.length;
-  const teamTarget = Math.max(0, teamCount - 1); // 팀은 자기 팀 제외 나머지 평가
+  const submittedCount = projectList.length;
+  const submittedTeamIds = new Set(projectList.map((p) => p.team_id));
 
   const judgeDone = completedByVoter(judgeScores, "judge_id", criteriaCount);
   const teamDone = completedByVoter(teamScores, "voter_team_id", criteriaCount);
@@ -57,22 +60,23 @@ export default async function ScoringProgressPage() {
     return {
       key: j.id,
       name: j.name || j.email || "이름 없음",
-      done: Math.min(done, teamCount),
-      total: teamCount,
-      complete: teamCount > 0 && done >= teamCount,
+      done: Math.min(done, submittedCount),
+      total: submittedCount,
+      complete: submittedCount > 0 && done >= submittedCount,
     };
   });
 
-  const teamRows = projectList.map((p) => {
-    const teamName =
-      (p.teams as unknown as { name: string } | null)?.name ?? "이름 없음";
-    const done = teamDone.get(p.team_id)?.size ?? 0;
+  // 평가 주체는 제출작이 아니라 팀 — 미제출 팀도 다른 팀을 평가하므로 전체 팀으로 행을 만든다.
+  // 목표치도 팀마다 다르다(미제출 팀은 뺄 자기 몫이 없어 1개 더).
+  const teamRows = (allTeams ?? []).map((t) => {
+    const target = teamVoteTarget(submittedCount, submittedTeamIds.has(t.id));
+    const done = teamDone.get(t.id)?.size ?? 0;
     return {
-      key: p.id,
-      name: teamName,
-      done: Math.min(done, teamTarget),
-      total: teamTarget,
-      complete: teamTarget > 0 && done >= teamTarget,
+      key: t.id,
+      name: t.name || "이름 없음",
+      done: Math.min(done, target),
+      total: target,
+      complete: target > 0 && done >= target,
     };
   });
 
@@ -123,7 +127,7 @@ export default async function ScoringProgressPage() {
         summaryRight={`완료 ${judgeComplete}/${judgeRows.length}명`}
       >
         <p className="mb-3 text-xs text-[var(--muted)]">
-          심사위원별로 전체 {teamCount}팀 중 몇 팀을 채점했는지 표시합니다.
+          심사위원별로 전체 {submittedCount}팀 중 몇 팀을 채점했는지 표시합니다.
         </p>
         {judgeRows.length > 0 ? (
           <ul className="flex flex-col divide-y divide-[var(--line)]">
@@ -150,7 +154,7 @@ export default async function ScoringProgressPage() {
         summaryRight={`완료 ${teamCompleteCount}/${teamRows.length}팀`}
       >
         <p className="mb-3 text-xs text-[var(--muted)]">
-          각 팀이 자기 팀을 제외한 {teamTarget}팀을 모두 평가했는지 표시합니다.
+          각 팀이 자기 팀을 제외한 나머지 팀을 모두 평가했는지 표시합니다.
         </p>
         {teamRows.length > 0 ? (
           <ul className="flex flex-col divide-y divide-[var(--line)]">
@@ -166,7 +170,7 @@ export default async function ScoringProgressPage() {
           </ul>
         ) : (
           <p className="text-sm text-[var(--muted)]">
-            제출한 참여 팀이 없습니다.
+            등록된 팀이 없습니다.
           </p>
         )}
       </Section>

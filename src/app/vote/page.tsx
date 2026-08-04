@@ -4,6 +4,7 @@ import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { ScoreCard } from "../judge/ScoreCard";
 import { saveTeamScores } from "./actions";
 import { ScoreProgress } from "@/components/ScoreProgress";
+import { completedCount } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
@@ -96,7 +97,8 @@ export default async function VotePage() {
         .eq("voter_team_id", teamId)
     : { data: [] as { project_id: string; criteria_id: string; score: number }[] };
 
-  const doneCount = new Set(myScores?.map((s) => s.project_id)).size;
+  // 완료 = 모든 기준을 채운 대상만. 운영 대시보드와 같은 규칙을 쓴다.
+  const doneCount = completedCount(myScores, criteria?.length ?? 0);
 
   return (
     <div className="mx-auto max-w-2xl">
