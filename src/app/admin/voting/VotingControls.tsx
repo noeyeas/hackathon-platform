@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { setVotingOpen, setAudienceVotes } from "./actions";
+import { setVotingOpen, setAudienceVotesBulk } from "./actions";
 
 type Row = {
   id: string;
@@ -60,10 +60,10 @@ export function VotingControls({
       <div className="card">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-bold">주민 투표 수기 입력</h2>
+            <h2 className="font-bold">주민 스티커 집계 입력</h2>
             <p className="mt-1 text-sm text-[var(--muted)]">
-              오프라인에서 집계한 팀별 득표수를 입력하세요. 저장 즉시 집계에
-              반영됩니다.
+              팀별로 센 스티커 수를 입력하세요. 아래 합계를 실제로 나눠준
+              스티커 수와 맞춰보면 오타를 잡을 수 있습니다.
             </p>
           </div>
           <button
@@ -81,52 +81,120 @@ export function VotingControls({
               제출된 팀이 없습니다.
             </p>
           ) : (
-            <div className="mt-4 flex flex-col gap-2">
-              {rows.map((r) => (
-                <AudienceRow key={r.id} row={r} />
-              ))}
-            </div>
+            <AudienceTally rows={rows} />
           ))}
       </div>
     </div>
   );
 }
 
-function AudienceRow({ row }: { row: Row }) {
-  const [value, setValue] = useState(String(row.audience));
+// 스티커 집계 입력. 줄마다 저장 버튼을 누르던 방식은 현장에서 한 팀을 빠뜨리기
+// 쉬워서, 값을 한곳에 모아 두고 미저장 줄을 표시한 뒤 한 번에 저장한다.
+function AudienceTally({ rows }: { rows: Row[] }) {
+  const [values, setValues] = useState<Record<string, string>>(() =>
+    Object.fromEntries(rows.map((r) => [r.id, String(r.audience)]))
+  );
+  // 서버에 실제로 저장된 값 — 미저장 줄을 가려내는 기준
+  const [stored, setStored] = useState<Record<string, number>>(() =>
+    Object.fromEntries(rows.map((r) => [r.id, r.audience]))
+  );
   const [pending, startTransition] = useTransition();
-  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<string | null>(null);
 
-  const dirty = value !== String(row.audience);
+  const num = (v: string | undefined) => Math.max(0, Math.round(Number(v)) || 0);
+  const unsaved = rows.filter((r) => num(values[r.id]) !== stored[r.id]);
+  const total = rows.reduce((s, r) => s + num(values[r.id]), 0);
 
-  function save() {
+  function saveAll() {
+    setError(null);
+    setDone(null);
+    const entries = unsaved.map((r) => ({
+      projectId: r.id,
+      count: num(values[r.id]),
+    }));
     startTransition(async () => {
-      await setAudienceVotes(row.id, Number(value));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 1500);
+      const res = await setAudienceVotesBulk(entries);
+      if (res?.error) {
+        setError(res.error); // 실패를 성공으로 표시하지 않는다
+        return;
+      }
+      setStored((prev) => {
+        const next = { ...prev };
+        entries.forEach((e) => (next[e.projectId] = e.count));
+        return next;
+      });
+      setDone(`${entries.length}팀 저장했습니다`);
     });
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-[var(--line)] px-3 py-2">
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold">{row.team}</p>
-        <p className="truncate text-xs text-[var(--muted)]">{row.title}</p>
+    <div className="mt-4 flex flex-col gap-2">
+      {rows.map((r) => {
+        const changed = num(values[r.id]) !== stored[r.id];
+        return (
+          <div
+            key={r.id}
+            className={`flex items-center gap-3 rounded-lg border px-3 py-2 ${
+              changed
+                ? "border-vote bg-vote/5"
+                : "border-[var(--line)]"
+            }`}
+          >
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{r.team}</p>
+              <p className="truncate text-xs text-[var(--muted)]">{r.title}</p>
+            </div>
+            {changed && (
+              <span className="flex-none text-[10px] font-bold text-vote">
+                미저장
+              </span>
+            )}
+            <input
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={values[r.id] ?? ""}
+              onChange={(e) =>
+                setValues((prev) => ({ ...prev, [r.id]: e.target.value }))
+              }
+              onFocus={(e) => e.currentTarget.select()}
+              aria-label={`${r.team} 스티커 수`}
+              className="input h-12 w-24 text-right text-lg font-bold tabular-nums"
+            />
+          </div>
+        );
+      })}
+
+      <div className="mt-2 flex items-center justify-between gap-3 border-t border-[var(--line)] pt-3">
+        <div>
+          <p className="text-sm text-[var(--muted)]">
+            합계{" "}
+            <b className="text-base text-ink tabular-nums">{total}</b>표
+          </p>
+          <p className="mt-0.5 text-xs text-[var(--muted)]">
+            {unsaved.length > 0
+              ? `${unsaved.length}팀 미저장`
+              : "모두 저장됨"}
+          </p>
+        </div>
+        <button
+          onClick={saveAll}
+          disabled={pending || unsaved.length === 0}
+          className="btn-primary flex-none disabled:opacity-50"
+        >
+          {pending ? "저장 중…" : `${unsaved.length}팀 저장`}
+        </button>
       </div>
-      <input
-        type="number"
-        min={0}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        className="input w-24 text-right"
-      />
-      <button
-        onClick={save}
-        disabled={pending || !dirty}
-        className="btn-primary !px-3 !py-2 text-xs"
-      >
-        {pending ? "..." : saved ? "저장됨" : "저장"}
-      </button>
+
+      {error && (
+        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+          {error}
+        </p>
+      )}
+      {done && !error && (
+        <p className="text-sm font-medium text-team">{done}</p>
+      )}
     </div>
   );
 }
