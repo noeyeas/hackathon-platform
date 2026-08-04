@@ -1,56 +1,73 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 
-// 점수 입력. 0~max 척도(10 이하)는 큰 탭 버튼으로 제공해 모바일 오조작을 줄인다.
-// 폼 제출값은 hidden input(name)에 담기고, 큰 척도는 숫자 입력으로 대체한다.
-function ScoreScale({
+// 점수 입력 — 슬라이더. 배점이 15~35 로 제각각이라 숫자 입력은 심사위원이
+// 30팀 × 5기준 = 150 번 키패드를 두드려야 했다. 슬라이더는 배점과 무관하게
+// 조작량이 같다.
+//
+// "미채점"과 "0점"을 구분해야 하므로 값은 number | "" 로 들고,
+// 폼에는 hidden input 으로 넘긴다(미채점이면 빈 문자열 → 제출 시 검증에 걸림).
+// 손잡이 위치만으로는 둘이 같아 보이므로 오른쪽 숫자를 "—" 로 구분해 보여준다.
+function ScoreSlider({
   name,
   max,
-  defaultValue,
+  value,
+  onChange,
 }: {
   name: string;
   max: number;
-  defaultValue: number | "";
+  value: number | "";
+  onChange: (next: number) => void;
 }) {
-  const [val, setVal] = useState<number | "">(defaultValue);
-
-  if (max > 10) {
-    return (
-      <input
-        name={name}
-        type="number"
-        inputMode="numeric"
-        min={0}
-        max={max}
-        defaultValue={defaultValue}
-        className="input w-24 text-right"
-        required
-      />
-    );
-  }
+  // 슬라이더 위에서 시작한 조작이 "누른 것"인지 "스크롤"인지 구분한다.
+  // 세로로 튕기면 브라우저가 스크롤을 가져가며 pointercancel 을 쏘므로,
+  // 그때는 아래 pointerup 확정을 건너뛴다(미채점이 0 점으로 굳는 것 방지).
+  const pressing = useRef(false);
+  const scored = value !== "";
+  const pct = scored ? (value / max) * 100 : 0;
 
   return (
-    <div className="flex flex-wrap gap-1.5">
-      <input type="hidden" name={name} value={val} />
-      {Array.from({ length: max + 1 }, (_, n) => {
-        const selected = val === n;
-        return (
-          <button
-            key={n}
-            type="button"
-            onClick={() => setVal(n)}
-            aria-pressed={selected}
-            className={`h-11 min-w-11 rounded-lg border text-base font-semibold tabular-nums transition ${
-              selected
-                ? "border-vote bg-vote text-white shadow-sm"
-                : "border-[var(--line)] bg-white text-ink hover:border-vote/50 active:scale-95"
-            }`}
-          >
-            {n}
-          </button>
-        );
-      })}
+    <div className="flex items-center gap-3">
+      <input type="hidden" name={name} value={value} />
+      <div className="min-w-0 flex-1">
+        <input
+          type="range"
+          min={0}
+          max={max}
+          step={1}
+          value={scored ? value : 0}
+          onChange={(e) => onChange(Number(e.target.value))}
+          onPointerDown={() => {
+            pressing.current = true;
+          }}
+          onPointerCancel={() => {
+            pressing.current = false;
+          }}
+          // 0 점을 주려고 맨 왼쪽을 눌러도 값이 그대로면 change 가 안 뜬다.
+          // 눌러서 끝낸 조작에 한해 현재 값을 확정해 "미채점" 에서 빠져나오게 한다.
+          onPointerUp={(e) => {
+            if (!pressing.current) return;
+            pressing.current = false;
+            onChange(Number(e.currentTarget.value));
+          }}
+          aria-label="점수"
+          aria-valuetext={scored ? `${value}점` : "미채점"}
+          className="score-range"
+          style={{ "--pct": `${pct}%` } as React.CSSProperties}
+        />
+        <div className="mt-0.5 flex justify-between text-[10px] tabular-nums text-[var(--muted)]">
+          <span>0</span>
+          <span>{max}</span>
+        </div>
+      </div>
+      <span
+        className={`w-9 flex-none text-right text-lg font-bold tabular-nums ${
+          scored ? "text-ink" : "text-[var(--line)]"
+        }`}
+      >
+        {scored ? value : "—"}
+      </span>
     </div>
   );
 }
@@ -89,16 +106,31 @@ export function ScoreCard({
   const [saved, setSaved] = useState(existing.length > 0);
   const [error, setError] = useState<string | null>(null);
 
-  const scoreOf = (cid: string) =>
-    existing.find((e) => e.criteria_id === cid)?.score ?? "";
+  // 합계를 보여주려면 카드가 값을 알아야 해서 슬라이더 상태를 여기서 들고 있는다.
+  const [scores, setScores] = useState<Record<string, number | "">>(() =>
+    Object.fromEntries(
+      criteria.map((c) => [
+        c.id,
+        existing.find((e) => e.criteria_id === c.id)?.score ?? "",
+      ])
+    )
+  );
   const commentOf = existing.find((e) => e.comment)?.comment ?? "";
+
+  // 배점 합계는 데이터에서 계산한다(현재 100 이지만 기준이 바뀌면 따라간다).
+  const totalMax = criteria.reduce((s, c) => s + c.max_score, 0);
+  const total = criteria.reduce((s, c) => {
+    const v = scores[c.id];
+    return s + (typeof v === "number" ? v : 0);
+  }, 0);
+  const allScored = criteria.every((c) => scores[c.id] !== "");
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     setError(null);
-    // 모든 기준을 채점했는지 확인 (버튼식 입력은 hidden 이라 브라우저 required 가 안 걸림)
-    if (criteria.some((c) => !fd.get(`c_${c.id}`))) {
+    // 슬라이더 값은 hidden input 이라 브라우저 required 가 안 걸린다.
+    if (!allScored) {
       setError("모든 항목을 채점해 주세요.");
       return;
     }
@@ -169,14 +201,32 @@ export function ScoreCard({
                   </p>
                 )}
                 <div className="mt-2.5">
-                  <ScoreScale
+                  <ScoreSlider
                     name={`c_${c.id}`}
                     max={c.max_score}
-                    defaultValue={scoreOf(c.id)}
+                    value={scores[c.id] ?? ""}
+                    onChange={(next) =>
+                      setScores((prev) => ({ ...prev, [c.id]: next }))
+                    }
                   />
                 </div>
               </div>
             ))}
+
+            <div className="flex items-center justify-between border-t border-[var(--line)] pt-3">
+              <span className="text-sm text-[var(--muted)]">합계</span>
+              <span
+                className={`text-xl font-bold tabular-nums ${
+                  allScored ? "text-team" : "text-ink"
+                }`}
+              >
+                {total}
+                <span className="text-sm font-normal text-[var(--muted)]">
+                  {" "}
+                  / {totalMax}
+                </span>
+              </span>
+            </div>
             {withComment && (
               <textarea
                 name="comment"

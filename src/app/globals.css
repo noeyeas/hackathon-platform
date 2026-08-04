@@ -164,4 +164,58 @@ body {
     @apply inline-flex items-center gap-1.5 rounded-full border border-[var(--line)]
       bg-white px-3 py-1 text-xs font-medium text-[var(--muted)];
   }
+
+  /* 채점 슬라이더 (심사·팀 평가).
+     --pct 로 채운 구간을 칠한다. 벤더 의사요소는 하나라도 모르는 게 섞이면
+     규칙 전체가 무효가 되므로 절대 셀렉터를 합치지 않는다. */
+  .score-range {
+    @apply h-9 w-full cursor-pointer appearance-none bg-transparent;
+    /* 세로 스크롤을 우선시켜, 목록을 넘기다 손가락이 스쳐도 점수가 바뀌지 않게 한다.
+       가로 드래그는 그대로 값 조정으로 간다. */
+    touch-action: pan-y;
+  }
+  .score-range:focus-visible {
+    outline: 2px solid theme(colors.vote);
+    outline-offset: 4px;
+  }
+
+  .score-range::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      to right,
+      theme(colors.vote) var(--pct, 0%),
+      var(--line) var(--pct, 0%)
+    );
+  }
+  .score-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    margin-top: -10px;
+    border-radius: 9999px;
+    background: #fff;
+    border: 2px solid theme(colors.vote);
+    box-shadow: 0 2px 6px rgb(15 27 45 / 0.22);
+  }
+
+  .score-range::-moz-range-track {
+    height: 8px;
+    border-radius: 9999px;
+    background: var(--line);
+  }
+  .score-range::-moz-range-progress {
+    height: 8px;
+    border-radius: 9999px;
+    background: theme(colors.vote);
+  }
+  .score-range::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    background: #fff;
+    border: 2px solid theme(colors.vote);
+    box-shadow: 0 2px 6px rgb(15 27 45 / 0.22);
+  }
 }
