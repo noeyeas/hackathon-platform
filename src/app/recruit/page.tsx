@@ -23,21 +23,25 @@ type Row = {
 export default async function RecruitPage() {
   const supabase = await createClient();
 
-  // 모집글 목록은 로그인 여부와 무관 — 세션 확인과 병렬로 가져온다.
-  const [
-    {
-      data: { user },
-    },
-    { data: posts },
-  ] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase
-      .from("recruit_posts")
-      .select(
-        "id, title, body, positions, is_open, kind, team_id, author_id, author_name, contact, teams(name, status)"
-      )
-      .order("created_at", { ascending: false }),
-  ]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // contact 는 로그인 사용자에게만 컬럼 권한이 있다(0036). 비로그인 상태에서
+  // 요청하면 목록 전체가 권한 오류로 비므로, 세션을 먼저 확인하고 조회 컬럼을
+  // 골라야 한다(그래서 위 getUser 와 병렬로 묶지 않는다).
+  const columns = [
+    "id, title, body, positions, is_open, kind, team_id, author_id, author_name",
+    user ? "contact" : null,
+    "teams(name, status)",
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const { data: posts } = await supabase
+    .from("recruit_posts")
+    .select(columns)
+    .order("created_at", { ascending: false });
 
   let myTeamId: string | null = null;
   let isAdmin = false;
@@ -54,8 +58,12 @@ export default async function RecruitPage() {
     isAdmin = me?.role === "admin";
   }
 
-  const all = (posts ?? []) as Row[];
+  // 조회 컬럼을 실행 중에 조립하므로 supabase-js 가 행 타입을 추론하지 못한다.
+  const all = (posts ?? []) as unknown as Row[];
 
+  // 연락처(카톡 ID·전화번호 등)는 로그인한 사람에게만 내려보낸다.
+  // 서버 컴포넌트가 넘긴 값은 RSC 페이로드에 그대로 실려 브라우저에서
+  // 읽히므로, "화면에 안 그린다"로는 가려지지 않는다. 아예 빼야 한다.
   const toPlain = (p: Row) => ({
     id: p.id,
     title: p.title,
@@ -63,7 +71,7 @@ export default async function RecruitPage() {
     positions: p.positions,
     kind: p.kind,
     author_name: p.author_name,
-    contact: p.contact,
+    contact: user ? p.contact : null,
     team:
       (p.teams as {
         name: string;
@@ -115,6 +123,7 @@ export default async function RecruitPage() {
         teamPosts={teamPosts}
         individualPosts={individualPosts}
         isAdmin={isAdmin}
+        loggedIn={!!user}
       />
     </div>
   );

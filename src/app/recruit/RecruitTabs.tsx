@@ -21,10 +21,12 @@ export function RecruitTabs({
   teamPosts,
   individualPosts,
   isAdmin = false,
+  loggedIn = false,
 }: {
   teamPosts: Post[];
   individualPosts: Post[];
   isAdmin?: boolean;
+  loggedIn?: boolean;
 }) {
   const [tab, setTab] = useState<"team" | "individual">("team");
   const [query, setQuery] = useState("");
@@ -89,7 +91,9 @@ export function RecruitTabs({
         {posts.length === 0 ? (
           <EmptyState icon={empty.icon} title={empty.title} desc={empty.desc} />
         ) : (
-          posts.map((p) => <PostCard key={p.id} p={p} isAdmin={isAdmin} />)
+          posts.map((p) => (
+            <PostCard key={p.id} p={p} isAdmin={isAdmin} loggedIn={loggedIn} />
+          ))
         )}
       </div>
     </div>
@@ -124,7 +128,15 @@ function TabButton({
   );
 }
 
-function PostCard({ p, isAdmin }: { p: Post; isAdmin: boolean }) {
+function PostCard({
+  p,
+  isAdmin,
+  loggedIn,
+}: {
+  p: Post;
+  isAdmin: boolean;
+  loggedIn: boolean;
+}) {
   const isTeam = p.kind !== "individual";
   const team = p.team;
   const [pending, startTransition] = useTransition();
@@ -192,13 +204,19 @@ function PostCard({ p, isAdmin }: { p: Post; isAdmin: boolean }) {
         </p>
       )}
 
-      {p.contact && (
+      {p.contact ? (
         <div className="mt-2 rounded-lg bg-paper p-3 text-sm">
           연락:{" "}
           <span className="select-all font-semibold text-admin">
             {p.contact}
           </span>
         </div>
+      ) : (
+        !loggedIn && (
+          <p className="mt-2 rounded-lg bg-paper p-3 text-sm text-[var(--muted)]">
+            연락처는 로그인 후에 볼 수 있어요.
+          </p>
+        )
       )}
     </div>
   );

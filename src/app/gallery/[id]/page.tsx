@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { formatDateTime, safeUrl } from "@/lib/format";
 import { LikeButton } from "@/components/LikeButton";
 import { CommentForm, DeleteCommentButton } from "@/components/CommentBox";
@@ -65,9 +65,12 @@ export default async function ProjectDetailPage({
       .single();
     isAdmin = me?.role === "admin";
 
-    const { data: mine } = await supabase
+    // liker_key 는 "user:<uid>" 라 공개하면 누가 어느 작품을 응원했는지
+    // 그대로 드러난다. 0036 에서 컬럼 권한을 회수하므로(필터에도 SELECT
+    // 권한이 필요) 본인 응원 여부 확인은 서버 클라이언트로 한다.
+    const { data: mine } = await createAdminClient()
       .from("project_likes")
-      .select("id")
+      .select("project_id")
       .eq("project_id", id)
       .eq("liker_key", `user:${user.id}`)
       .maybeSingle();
