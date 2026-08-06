@@ -3,18 +3,20 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePath, updateTag } from "next/cache";
+import { toNoticeCategory } from "@/lib/types";
 
 export async function createAnnouncement(formData: FormData) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const title = String(formData.get("title") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
   const pinned = formData.get("pinned") === "on";
+  const category = toNoticeCategory(formData.get("category"));
   if (!title) return { error: "제목을 입력하세요" };
 
   const admin = createAdminClient();
   const { error } = await admin
     .from("announcements")
-    .insert({ title, body: body || null, pinned });
+    .insert({ title, body: body || null, pinned, category });
   if (error) return { error: error.message };
 
   revalidatePath("/admin/announcements");

@@ -35,13 +35,13 @@ export function TeamRow({
   }
 
   return (
-    <div className="flex items-start justify-between gap-3 rounded-lg bg-gray-50 px-4 py-3">
+    <div className="flex items-start justify-between gap-3 rounded-lg bg-paper px-4 py-3">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate font-semibold">{name}</span>
           <span
             className={`chip ${
-              linked ? "border-team text-team" : "border-vote text-vote"
+              linked ? "border-team text-team" : "border-navy text-navy"
             }`}
           >
             {linked ? "팀장 연결됨" : "연결 대기"}
@@ -69,7 +69,7 @@ export function TeamRow({
               <button
                 onClick={saveEmail}
                 disabled={savePending}
-                className="font-medium text-vote hover:underline"
+                className="font-medium text-navy hover:underline"
               >
                 {savePending ? "..." : "저장"}
               </button>
@@ -90,7 +90,7 @@ export function TeamRow({
               </span>
               <button
                 onClick={() => setEditing(true)}
-                className="font-medium text-vote hover:underline"
+                className="font-medium text-navy hover:underline"
               >
                 {leaderEmail ? "수정" : "설정"}
               </button>

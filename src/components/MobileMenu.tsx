@@ -38,17 +38,17 @@ export function MobileMenu({
         onClick={() => setOpen((o) => !o)}
         aria-label="메뉴"
         aria-expanded={open}
-        className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
+        className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--muted)] hover:bg-paper hover:text-ink"
       >
         <span className="text-lg leading-none">{open ? "✕" : "☰"}</span>
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-30 mt-1 w-48 rounded-xl border border-[var(--line)] bg-white p-1 shadow-lg">
+        <div className="absolute right-0 top-full z-30 mt-1 w-48 rounded-lg border border-[var(--line)] bg-white p-1 shadow-lg">
           {items.map((it) => (
             <Link
               key={it.href}
               href={it.href}
-              className={`block rounded-lg px-3 py-2 text-sm hover:bg-gray-100 ${
+              className={`block rounded-lg px-3 py-2 text-sm hover:bg-paper ${
                 it.accent === "admin" ? "font-medium text-admin" : "text-ink"
               }`}
             >
@@ -58,14 +58,14 @@ export function MobileMenu({
           <div className="my-1 border-t border-[var(--line)]" />
           {loggedIn ? (
             <form action="/auth/signout" method="post">
-              <button className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[var(--muted)] hover:bg-gray-100 hover:text-ink">
+              <button className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[var(--muted)] hover:bg-paper hover:text-ink">
                 로그아웃
               </button>
             </form>
           ) : (
             <Link
               href="/login"
-              className="block rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-gray-100"
+              className="block rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-paper"
             >
               로그인
             </Link>

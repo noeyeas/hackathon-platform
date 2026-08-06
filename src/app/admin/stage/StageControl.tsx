@@ -50,10 +50,10 @@ export function StageControl({
               key={p.id}
               disabled={pending}
               onClick={() => run(() => setPresenting(p.id))}
-              className={`flex items-center justify-between rounded-xl border p-3 text-left transition ${
+              className={`flex items-center justify-between rounded-lg border p-3 text-left transition ${
                 active
-                  ? "border-vote bg-vote/10"
-                  : "border-[var(--line)] bg-white hover:bg-gray-50"
+                  ? "border-navy bg-navy/10"
+                  : "border-[var(--line)] bg-white hover:bg-paper"
               }`}
             >
               <div className="flex items-center gap-3">
@@ -66,7 +66,7 @@ export function StageControl({
                 </div>
               </div>
               {active && (
-                <span className="chip border-vote text-vote">발표 중</span>
+                <span className="chip border-navy text-navy">발표 중</span>
               )}
             </button>
           );

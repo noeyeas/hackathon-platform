@@ -41,14 +41,14 @@ export function RecruitModal({
           onClick={() => setOpen(false)}
         >
           <div
-            className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl sm:rounded-2xl"
+            className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl sm:rounded-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-bold">모집글 작성</h2>
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-lg p-1 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
+                className="rounded-lg p-1 text-[var(--muted)] hover:bg-paper hover:text-ink"
                 aria-label="닫기"
               >
                 ✕
@@ -70,7 +70,7 @@ export function RecruitModal({
             </div>
 
             {isTeam && !hasTeam && (
-              <p className="mb-3 rounded-lg bg-vote/10 px-3 py-2 text-sm text-vote">
+              <p className="mb-3 rounded-md border border-gold/30 bg-gold-soft px-3 py-2 text-sm text-gold-ink">
                 팀원 구함 글은 먼저{" "}
                 <Link href="/team" className="font-semibold underline">
                   팀을 만든 뒤
@@ -151,7 +151,7 @@ function KindButton({
       onClick={onClick}
       className={`flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition ${
         active
-          ? "bg-vote text-white"
+          ? "bg-navy text-white"
           : "border border-[var(--line)] bg-white text-[var(--muted)] hover:text-ink"
       }`}
     >

@@ -7,7 +7,7 @@ export default function NotFound() {
       <span aria-hidden className="text-4xl">
         🧭
       </span>
-      <h1 className="text-lg font-bold text-ink">페이지를 찾을 수 없어요</h1>
+      <h1 className="display text-lg">페이지를 찾을 수 없어요</h1>
       <p className="text-sm text-[var(--muted)]">
         주소가 바뀌었거나 삭제된 페이지일 수 있어요.
       </p>

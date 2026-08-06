@@ -1,27 +1,15 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { type Ranking } from "@/lib/types";
 import { VotingControls } from "../voting/VotingControls";
 import { ResultsToggle } from "./ResultsToggle";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
+import { AdminPageHeader } from "../AdminPageHeader";
 
 export const dynamic = "force-dynamic";
 
 export default async function ScoringProgressPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: me } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  if (me?.role !== "admin") redirect("/");
-
+  // 권한 검사는 admin/layout.tsx 가 처리한다.
   const admin = createAdminClient();
   const [
     { data: settings },
@@ -92,23 +80,21 @@ export default async function ScoringProgressPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold">심사 · 평가 · 투표</h1>
-      <p className="mt-1 text-[var(--muted)]">
-        온라인 투표를 열고 닫고, 진행 현황과 집계를 한곳에서 관리합니다.
-      </p>
-
-      <div className="mt-4 flex flex-wrap gap-3 text-sm">
-        <Link href="/judge" className="btn-primary">
-          심사위원 채점 화면 →
-        </Link>
-        <Link
-          href="/vote"
-          className="rounded-lg border border-[var(--line)] px-4 py-2 font-medium text-[var(--muted)] hover:text-ink"
-        >
-          팀 평가 화면 →
-        </Link>
-      </div>
+    <div className="mx-auto max-w-2xl lg:mx-0">
+      <AdminPageHeader
+        title="심사 · 평가 · 투표"
+        desc="온라인 투표를 열고 닫고, 진행 현황과 집계를 한곳에서 관리합니다."
+        aside={
+          <>
+            <Link href="/judge" className="btn-primary">
+              심사위원 채점 화면 →
+            </Link>
+            <Link href="/vote" className="btn-ghost">
+              팀 평가 화면 →
+            </Link>
+          </>
+        }
+      />
 
       {/* 온라인 투표 ON/OFF + 주민 수기 입력 (수기 입력은 자체 토글) */}
       <div className="mt-6">
@@ -179,38 +165,27 @@ export default async function ScoringProgressPage() {
       <Section title="실시간 집계">
         {rankings && rankings.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-sm">
+            <table className="tbl min-w-[520px]">
               <thead>
-                <tr className="border-b border-[var(--line)] text-left text-xs uppercase tracking-wider text-[var(--muted)]">
-                  <th className="py-2">순위 / 팀</th>
-                  <th className="py-2 text-right">심사</th>
-                  <th className="py-2 text-right">팀 점수</th>
-                  <th className="py-2 text-right">주민</th>
-                  <th className="py-2 text-right">종합</th>
+                <tr>
+                  <th>순위 / 팀</th>
+                  <th className="!text-right">심사</th>
+                  <th className="!text-right">팀 점수</th>
+                  <th className="!text-right">주민</th>
+                  <th className="!text-right">종합</th>
                 </tr>
               </thead>
               <tbody>
                 {rankings.map((r, i) => (
-                  <tr
-                    key={r.project_id}
-                    className="border-b border-[var(--line)] last:border-0"
-                  >
-                    <td className="py-2">
-                      <span className="mr-2 font-bold">{i + 1}</span>
+                  <tr key={r.project_id}>
+                    <td>
+                      <span className="mr-2 font-bold tabular-nums">{i + 1}</span>
                       {r.team_name}
                     </td>
-                    <td className="py-2 text-right tabular-nums">
-                      {r.judge_score}
-                    </td>
-                    <td className="py-2 text-right tabular-nums">
-                      {r.team_votes}
-                    </td>
-                    <td className="py-2 text-right tabular-nums">
-                      {r.audience_votes}
-                    </td>
-                    <td className="py-2 text-right font-bold tabular-nums text-vote">
-                      {r.final_score}
-                    </td>
+                    <td className="num">{r.judge_score}</td>
+                    <td className="num">{r.team_votes}</td>
+                    <td className="num">{r.audience_votes}</td>
+                    <td className="num font-bold text-navy">{r.final_score}</td>
                   </tr>
                 ))}
               </tbody>
@@ -269,10 +244,10 @@ function ProgressRow({
   return (
     <li className="flex items-center gap-3 py-2.5">
       <span className="w-28 flex-none truncate font-medium">{name}</span>
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+      <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper">
         <div
           className={`h-full rounded-full ${
-            complete ? "bg-team" : "bg-vote"
+            complete ? "bg-team" : "bg-navy"
           }`}
           style={{ width: `${pct}%` }}
         />

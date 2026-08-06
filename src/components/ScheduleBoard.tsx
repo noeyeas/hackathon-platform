@@ -34,7 +34,7 @@ export function ScheduleBoard({ items }: { items: SchedItem[] }) {
             const border =
               i !== items.length - 1 ? "border-b border-[var(--line)]" : "";
             const active = activeId === it.id;
-            const activeBg = active ? "bg-vote/10" : "";
+            const activeBg = active ? "bg-navy/10" : "";
             const hasDetail = !!it.detail?.trim();
 
             const hoverProps = {
@@ -49,7 +49,7 @@ export function ScheduleBoard({ items }: { items: SchedItem[] }) {
                   {...hoverProps}
                   className={`flex flex-col gap-0.5 px-5 py-4 transition-colors sm:flex-row sm:items-center sm:gap-5 ${activeBg} ${border}`}
                 >
-                  <span className="font-mono text-sm font-semibold text-vote sm:w-48 sm:flex-none">
+                  <span className="font-mono text-sm font-semibold text-navy sm:w-48 sm:flex-none">
                     {when}
                   </span>
                   <span className="text-sm">{it.title}</span>
@@ -61,9 +61,9 @@ export function ScheduleBoard({ items }: { items: SchedItem[] }) {
               <li key={it.id} {...hoverProps} className={border}>
                 <details className="group">
                   <summary
-                    className={`flex cursor-pointer list-none flex-col gap-0.5 px-5 py-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:gap-5 ${activeBg}`}
+                    className={`flex cursor-pointer list-none flex-col gap-0.5 px-5 py-4 transition-colors hover:bg-paper sm:flex-row sm:items-center sm:gap-5 ${activeBg}`}
                   >
-                    <span className="font-mono text-sm font-semibold text-vote sm:w-48 sm:flex-none">
+                    <span className="font-mono text-sm font-semibold text-navy sm:w-48 sm:flex-none">
                       {when}
                     </span>
                     <span className="flex flex-1 items-center gap-2 text-sm">
@@ -73,7 +73,7 @@ export function ScheduleBoard({ items }: { items: SchedItem[] }) {
                       </span>
                     </span>
                   </summary>
-                  <div className="whitespace-pre-wrap border-t border-dashed border-[var(--line)] bg-gray-50/50 px-5 py-3 text-sm leading-relaxed text-[var(--muted)] sm:pl-[13.25rem]">
+                  <div className="whitespace-pre-wrap border-t border-dashed border-[var(--line)] bg-paper/50 px-5 py-3 text-sm leading-relaxed text-[var(--muted)] sm:pl-[13.25rem]">
                     {it.detail}
                   </div>
                 </details>

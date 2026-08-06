@@ -52,7 +52,7 @@ export function MilestoneAdminRow({
   }
 
   return (
-    <div className="rounded-lg bg-gray-50 px-4 py-3">
+    <div className="rounded-lg bg-paper px-4 py-3">
       <div className="flex flex-wrap items-center gap-2">
         <input
           value={labelText}

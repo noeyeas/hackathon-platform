@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import NoticeList from "./NoticeList";
 import { AutoRefresh } from "@/components/AutoRefresh";
+import { PageHeader } from "@/components/PageHeader";
+import { toNoticeCategory } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -8,31 +10,27 @@ export default async function NoticePage() {
   const supabase = await createClient();
   const { data: list } = await supabase
     .from("announcements")
-    .select("id, title, body, pinned, created_at")
+    .select("id, title, body, pinned, category, created_at")
     .order("pinned", { ascending: false })
     .order("created_at", { ascending: false });
 
-  const items = list ?? [];
+  const items = (list ?? []).map((a) => ({
+    ...a,
+    category: toNoticeCategory(a.category),
+  }));
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-3xl">
       {/* 현장에서 새 공지를 새로고침 없이 받아보도록 60초마다 갱신 */}
       <AutoRefresh intervalMs={60000} />
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-ink">공지사항</h1>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            제목을 누르면 자세한 내용을 볼 수 있어요.
-          </p>
-        </div>
-        {items.length > 0 && (
-          <span className="shrink-0 rounded-full bg-vote/10 px-3 py-1 text-sm font-semibold text-vote">
-            전체 {items.length}
-          </span>
-        )}
-      </div>
 
-      <div className="mt-6">
+      <PageHeader
+        eyebrow="Notice"
+        title="공지사항"
+        desc="운영 일정과 규정 변경은 모두 여기에 먼저 올라갑니다."
+      />
+
+      <div className="mt-8">
         <NoticeList list={items} />
       </div>
     </div>

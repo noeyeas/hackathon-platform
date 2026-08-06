@@ -9,7 +9,7 @@ export default function Loading() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="flex flex-col gap-3 rounded-2xl border border-[var(--line)] p-5"
+            className="flex flex-col gap-3 rounded-lg border border-[var(--line)] p-5"
           >
             <div className="h-5 w-1/2 rounded bg-[var(--line)]" />
             <div className="h-4 w-full rounded bg-[var(--line)]" />

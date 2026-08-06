@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { safeError } from "@/lib/actionError";
+import { toProjectTrack } from "@/lib/types";
 
 export async function saveProject(formData: FormData) {
   const supabase = await createClient();
@@ -24,6 +25,8 @@ export async function saveProject(formData: FormData) {
     team_id: membership.team_id,
     title: String(formData.get("title") ?? "").trim(),
     description: String(formData.get("description") ?? "").trim() || null,
+    // 주제는 선택 — 알 수 없는 값이 오면 미지정으로 떨어뜨린다.
+    track: toProjectTrack(formData.get("track")),
     repo_url: String(formData.get("repo_url") ?? "").trim(),
     demo_url: String(formData.get("demo_url") ?? "").trim() || null,
     video_url: String(formData.get("video_url") ?? "").trim() || null,

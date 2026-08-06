@@ -1,25 +1,13 @@
-import { redirect } from "next/navigation";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { ActionForm } from "@/components/ActionForm";
 import { createTeamAsAdmin } from "./actions";
 import { TeamRow } from "./TeamRow";
+import { AdminPageHeader } from "../AdminPageHeader";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminTeamsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: me } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  if (me?.role !== "admin") redirect("/");
-
+  // 권한 검사는 admin/layout.tsx 가 처리한다.
   // 이메일 등 팀원 정보는 RLS 우회를 위해 Service Role 로 조회
   const admin = createAdminClient();
   const { data: teams } = await admin
@@ -32,13 +20,17 @@ export default async function AdminTeamsPage() {
   const list = teams ?? [];
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold">팀 등록</h1>
-      <p className="mt-1 text-[var(--muted)]">
-        구글폼으로 신청받아 선정한 팀을 등록하세요. <b>팀장 이메일</b>을 함께
-        입력하면, 그 이메일로 로그인한 팀장이 자동으로 연결되어 팀 정보를
-        관리하고 프로젝트를 제출합니다. (참가 코드 불필요)
-      </p>
+    <div className="mx-auto max-w-2xl lg:mx-0">
+      <AdminPageHeader
+        title="팀 등록"
+        desc={
+          <>
+            구글폼으로 신청받아 선정한 팀을 등록하세요. <b>팀장 이메일</b>을 함께
+            입력하면, 그 이메일로 로그인한 팀장이 자동으로 연결되어 팀 정보를
+            관리하고 프로젝트를 제출합니다. (참가 코드 불필요)
+          </>
+        }
+      />
 
       {/* 팀 등록 */}
       <div className="card mt-6">

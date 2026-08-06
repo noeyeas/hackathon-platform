@@ -28,7 +28,7 @@ export function ResultsToggle({ initialOpen }: { initialOpen: boolean }) {
           onClick={toggle}
           disabled={pending}
           className={`relative h-8 w-14 flex-none rounded-full transition ${
-            open ? "bg-team" : "bg-gray-300"
+            open ? "bg-team" : "bg-[var(--line-strong)]"
           }`}
           aria-pressed={open}
         >

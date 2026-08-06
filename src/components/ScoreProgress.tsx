@@ -15,7 +15,7 @@ export function ScoreProgress({
   const left = Math.max(0, total - done);
 
   return (
-    <div className="mt-4 rounded-xl border border-[var(--line)] bg-white p-4 shadow-sm">
+    <div className="mt-4 rounded-lg border border-[var(--line)] bg-white p-4 shadow-sm">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-sm font-semibold text-ink">
           {label} <span className="tabular-nums">{done}</span>
@@ -27,16 +27,16 @@ export function ScoreProgress({
         </span>
         <span
           className={`text-sm font-bold tabular-nums ${
-            allDone ? "text-team" : "text-vote"
+            allDone ? "text-team" : "text-navy"
           }`}
         >
           {allDone ? "모두 완료 🎉" : `${left}${unit} 남음`}
         </span>
       </div>
-      <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-gray-100">
+      <div className="mt-2.5 h-2.5 overflow-hidden rounded-full bg-paper">
         <div
           className={`h-full rounded-full transition-all duration-500 ${
-            allDone ? "bg-team" : "bg-vote"
+            allDone ? "bg-team" : "bg-navy"
           }`}
           style={{ width: `${pct}%` }}
         />

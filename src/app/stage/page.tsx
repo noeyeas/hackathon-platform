@@ -29,7 +29,7 @@ export default async function StagePage() {
   const current = currentIdx >= 0 ? list[currentIdx] : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#14161c] text-white">
+    <div className="fixed inset-0 z-50 flex flex-col bg-navy-deep text-white">
       {/* 발표 화면 — 현재 발표 팀이 바뀌면 바로 따라가야 하므로 짧게 잡는다 */}
       <AutoRefresh intervalMs={4000} />
 
@@ -48,7 +48,7 @@ export default async function StagePage() {
       <div className="flex flex-1 flex-col items-center justify-center px-10 text-center">
         {current ? (
           <>
-            <p className="font-mono text-lg uppercase tracking-widest text-vote">
+            <p className="font-mono text-lg uppercase tracking-widest text-gold-bright">
               NOW PRESENTING
               {currentIdx >= 0 && (
                 <span className="text-white/40">
@@ -57,7 +57,7 @@ export default async function StagePage() {
                 </span>
               )}
             </p>
-            <h1 className="mt-6 text-6xl font-extrabold leading-tight sm:text-7xl">
+            <h1 className="mt-6 font-title text-6xl font-bold leading-tight tracking-tight sm:text-7xl">
               {current.team}
             </h1>
             <p className="mt-4 text-2xl text-white/70">{current.title}</p>
@@ -82,7 +82,7 @@ export default async function StagePage() {
               key={p.id}
               className={`flex-none rounded-lg px-4 py-2 text-sm ${
                 active
-                  ? "bg-vote font-bold text-white"
+                  ? "bg-gold-bright font-bold text-navy-deep"
                   : done
                     ? "bg-white/5 text-white/30"
                     : "bg-white/10 text-white/70"

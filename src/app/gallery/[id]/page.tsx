@@ -7,6 +7,7 @@ import { CommentForm, DeleteCommentButton } from "@/components/CommentBox";
 import { TeamName } from "@/components/TeamName";
 import { ViewPing } from "@/components/ViewPing";
 import { ShareButton } from "@/components/ShareButton";
+import { PROJECT_TRACK_LABEL, toProjectTrack } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export default async function ProjectDetailPage({
   const { data: p } = await supabase
     .from("projects")
     .select(
-      "id, title, description, repo_url, demo_url, video_url, deck_url, view_count, teams(name, tagline, members_note), project_likes(count)"
+      "id, title, description, track, repo_url, demo_url, video_url, deck_url, view_count, teams(name, tagline, members_note), project_likes(count)"
     )
     .eq("id", id)
     .single();
@@ -46,6 +47,7 @@ export default async function ProjectDetailPage({
   } | null;
   const likeCount =
     (p.project_likes as unknown as { count: number }[])?.[0]?.count ?? 0;
+  const track = toProjectTrack(p.track);
 
   const embed = p.video_url ? youtubeEmbed(p.video_url) : null;
 
@@ -101,11 +103,16 @@ export default async function ProjectDetailPage({
         <ShareButton title={p.title} />
       </div>
 
-      <div className="mt-4 flex flex-col gap-2">
-        {team?.name && (
-          <TeamName name={team.name} membersNote={team.members_note} />
-        )}
-        <h1 className="text-3xl font-bold">{p.title}</h1>
+      <div className="mt-5 flex flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {team?.name && (
+            <TeamName name={team.name} membersNote={team.members_note} />
+          )}
+          {track && (
+            <span className="eyebrow">{PROJECT_TRACK_LABEL[track]}</span>
+          )}
+        </div>
+        <h1 className="display text-3xl sm:text-4xl">{p.title}</h1>
         {team?.tagline && (
           <p className="text-[var(--muted)]">{team.tagline}</p>
         )}
@@ -131,12 +138,12 @@ export default async function ProjectDetailPage({
               href={p.deck_url!}
               target="_blank"
               rel="noreferrer"
-              className="text-xs text-vote hover:underline"
+              className="text-xs text-navy hover:underline"
             >
               새 탭에서 열기 ↗
             </a>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--bg)]">
+          <div className="overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--bg)]">
             <iframe
               src={`${p.deck_url}#view=FitH`}
               title={`${p.title} 참고자료`}
@@ -148,7 +155,7 @@ export default async function ProjectDetailPage({
 
       {/* 3) 영상 */}
       {embed && (
-        <div className="mt-6 aspect-video overflow-hidden rounded-2xl border border-[var(--line)]">
+        <div className="mt-6 aspect-video overflow-hidden rounded-lg border border-[var(--line)]">
           <iframe
             src={embed}
             title={`${p.title} 영상`}
@@ -168,7 +175,7 @@ export default async function ProjectDetailPage({
                 href={safeUrl(l.url)}
                 target="_blank"
                 rel="noreferrer"
-                className="chip hover:border-vote hover:text-vote"
+                className="chip hover:border-navy hover:text-navy"
               >
                 <span>{l.icon}</span>
                 {l.label}
@@ -219,7 +226,7 @@ export default async function ProjectDetailPage({
               const mine = user?.id === c.user_id;
               return (
                 <li key={c.id} className="flex gap-3">
-                  <div className="flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-full bg-vote/10 text-sm font-bold text-vote">
+                  <div className="flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-full bg-navy/10 text-sm font-bold text-navy">
                     {author?.avatar_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img

@@ -59,7 +59,8 @@ export default function LoginPage() {
     <div className="mx-auto max-w-md py-10">
       <div className="card flex flex-col gap-5">
         <div>
-          <h1 className="text-2xl font-bold">로그인 / 가입</h1>
+          <p className="eyebrow">Sign in</p>
+          <h1 className="display mt-2 text-2xl">로그인 / 가입</h1>
           <p className="mt-1 text-sm text-[var(--muted)]">
             해커톤 참가를 위해 로그인해 주세요.
           </p>

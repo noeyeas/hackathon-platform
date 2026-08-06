@@ -52,7 +52,7 @@ function Row({ p }: { p: Post }) {
         <span className="flex min-w-0 items-center gap-2">
           <span
             className={`h-2 w-2 flex-none rounded-full ${
-              p.is_open ? "bg-team" : "bg-gray-300"
+              p.is_open ? "bg-team" : "bg-[var(--line-strong)]"
             }`}
           />
           <span className="truncate">{p.title}</span>

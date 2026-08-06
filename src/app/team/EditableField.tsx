@@ -52,7 +52,7 @@ export function EditableField({
         {editable && !editing && (
           <button
             onClick={() => setEditing(true)}
-            className="text-xs font-medium text-vote hover:underline"
+            className="text-xs font-medium text-navy hover:underline"
           >
             {value ? "수정" : "추가"}
           </button>

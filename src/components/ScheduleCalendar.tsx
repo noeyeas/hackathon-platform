@@ -85,17 +85,17 @@ function Month({
           // 배경만 진해져서 띠 전체가 한 번에 강조되게.
           let cls = "text-ink";
           if (info?.single) {
-            cls = `bg-vote font-bold text-white rounded-full ${
-              isActive ? "ring-2 ring-vote ring-offset-1" : ""
+            cls = `bg-navy font-bold text-white rounded-full ${
+              isActive ? "ring-2 ring-navy ring-offset-1" : ""
             }`;
           } else if (info?.rangeStart || info?.rangeEnd) {
-            cls = `bg-vote font-bold text-white ${
+            cls = `bg-navy font-bold text-white ${
               info.rangeStart ? "rounded-l-full" : ""
             } ${info.rangeEnd ? "rounded-r-full" : ""}`;
           } else if (info?.rangeMid) {
-            cls = isActive ? "bg-vote/50 text-ink" : "bg-vote/20 text-ink";
+            cls = isActive ? "bg-navy/50 text-ink" : "bg-navy/20 text-ink";
           } else if (isToday) {
-            cls = "font-bold text-vote ring-1 ring-vote rounded-full";
+            cls = "font-bold text-navy ring-1 ring-navy rounded-full";
           }
 
           return (

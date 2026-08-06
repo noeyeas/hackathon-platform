@@ -31,7 +31,7 @@ export function ShareButton({ title }: { title: string }) {
     <button
       type="button"
       onClick={share}
-      className="btn btn-ghost gap-1.5 hover:border-vote hover:text-vote"
+      className="btn btn-ghost gap-1.5 hover:border-navy hover:text-navy"
     >
       <span className="text-base leading-none">🔗</span>
       {copied ? "링크 복사됨!" : "공유"}

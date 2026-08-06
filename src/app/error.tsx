@@ -14,7 +14,7 @@ export default function Error({
       <span aria-hidden className="text-4xl">
         ⚠️
       </span>
-      <h1 className="text-lg font-bold text-ink">일시적인 오류가 발생했어요</h1>
+      <h1 className="display text-lg">일시적인 오류가 발생했어요</h1>
       <p className="text-sm text-[var(--muted)]">
         잠시 후 다시 시도해 주세요. 계속 문제가 생기면 운영진에게 알려주세요.
       </p>

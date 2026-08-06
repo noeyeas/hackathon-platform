@@ -4,6 +4,7 @@ import { ScoreCard } from "./ScoreCard";
 import { saveScores } from "./actions";
 import { ScoreProgress } from "@/components/ScoreProgress";
 import { completedCount } from "@/lib/scoring";
+import { PageHeader } from "@/components/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export default async function JudgePage() {
   if (me?.role !== "judge" && me?.role !== "admin") {
     return (
       <div className="card mx-auto max-w-md text-center">
-        <h1 className="text-xl font-bold">심사위원 전용 페이지입니다</h1>
+        <h1 className="display text-xl">심사위원 전용 페이지입니다</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
           운영진에게 심사위원 권한을 요청하세요.
         </p>
@@ -56,15 +57,16 @@ export default async function JudgePage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold">심사 채점</h1>
-      <p className="mt-1 text-[var(--muted)]">
-        모든 팀을 심사 기준으로 채점해 주세요.
-      </p>
+      <PageHeader
+        eyebrow="Judging"
+        title="심사 채점"
+        desc="모든 팀을 심사 기준으로 채점해 주세요."
+      />
 
       <ScoreProgress done={doneCount} total={projects?.length ?? 0} />
 
       {!votingOpen && (
-        <div className="mt-4 rounded-lg bg-vote/10 px-4 py-3 text-sm text-vote">
+        <div className="mt-4 rounded-md border border-gold/30 bg-gold-soft px-4 py-3 text-sm text-gold-ink">
           현재는 평가가 닫혀 있습니다. 운영진이 평가를 열면 채점을 저장할 수
           있어요.
         </div>

@@ -13,7 +13,7 @@ export default async function TeamPage() {
   if (!user) {
     return (
       <div className="card mx-auto max-w-md text-center">
-        <h1 className="text-xl font-bold">참가하려면 로그인하세요</h1>
+        <h1 className="display text-xl">참가하려면 로그인하세요</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
           구글폼에 적어 주신 팀장 이메일로 로그인하면 팀이 자동으로 연결됩니다.
         </p>
@@ -42,7 +42,7 @@ export default async function TeamPage() {
   if (!membership) {
     return (
       <div className="card mx-auto max-w-md text-center">
-        <h1 className="text-xl font-bold">연결된 팀이 없습니다</h1>
+        <h1 className="display text-xl">연결된 팀이 없습니다</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
           구글폼에 적어 주신 <b>팀장 이메일</b>로 로그인하면 자동으로 연결됩니다.
           현재 계정으로 연결된 팀이 없어요. 이메일이 맞는지 운영진에게 문의해
@@ -75,7 +75,7 @@ export default async function TeamPage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
       <div className="card">
         <div className="flex items-start justify-between">
-          <h1 className="text-2xl font-bold">{team?.name}</h1>
+          <h1 className="display text-2xl">{team?.name}</h1>
           {membership.is_leader && (
             <span className="chip border-team text-team">팀장</span>
           )}

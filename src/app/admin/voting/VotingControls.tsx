@@ -41,7 +41,7 @@ export function VotingControls({
           onClick={toggle}
           disabled={pending}
           className={`relative h-8 w-14 flex-none rounded-full transition ${
-            open ? "bg-team" : "bg-gray-300"
+            open ? "bg-team" : "bg-[var(--line-strong)]"
           }`}
           aria-pressed={open}
         >
@@ -137,7 +137,7 @@ function AudienceTally({ rows }: { rows: Row[] }) {
             key={r.id}
             className={`flex items-center gap-3 rounded-lg border px-3 py-2 ${
               changed
-                ? "border-vote bg-vote/5"
+                ? "border-navy bg-navy/5"
                 : "border-[var(--line)]"
             }`}
           >
@@ -146,7 +146,7 @@ function AudienceTally({ rows }: { rows: Row[] }) {
               <p className="truncate text-xs text-[var(--muted)]">{r.title}</p>
             </div>
             {changed && (
-              <span className="flex-none text-[10px] font-bold text-vote">
+              <span className="flex-none text-[10px] font-bold text-navy">
                 미저장
               </span>
             )}

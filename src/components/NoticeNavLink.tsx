@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { navItem, navUnderline } from "./NavLink";
 
 const READ_KEY = "notice_read_at";
 
@@ -28,16 +29,13 @@ export function NoticeNavLink({ latestAt }: { latestAt: string | null }) {
       href="/notice"
       onClick={markRead}
       aria-current={active ? "page" : undefined}
-      className={`relative rounded-lg px-3 py-1.5 transition ${
-        active
-          ? "bg-gray-100 font-medium text-ink"
-          : "text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
-      }`}
+      className={navItem(active)}
     >
       공지
       {unread && (
-        <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
+        <span className="absolute -right-1.5 top-3 h-1.5 w-1.5 rounded-full bg-gold" />
       )}
+      {active && <span className={navUnderline} />}
     </Link>
   );
 }

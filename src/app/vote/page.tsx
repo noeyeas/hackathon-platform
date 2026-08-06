@@ -5,6 +5,7 @@ import { ScoreCard } from "../judge/ScoreCard";
 import { saveTeamScores } from "./actions";
 import { ScoreProgress } from "@/components/ScoreProgress";
 import { completedCount } from "@/lib/scoring";
+import { PageHeader } from "@/components/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -102,21 +103,22 @@ export default async function VotePage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold">팀별 채점</h1>
-      <p className="mt-1 text-[var(--muted)]">
-        자기 팀을 제외한 다른 팀을 심사 기준으로 채점해 주세요.
-      </p>
+      <PageHeader
+        eyebrow="Peer review"
+        title="팀별 채점"
+        desc="자기 팀을 제외한 다른 팀을 심사 기준으로 채점해 주세요."
+      />
 
       {teamId && <ScoreProgress done={doneCount} total={projects?.length ?? 0} />}
 
       {isAdmin && !teamId && (
-        <div className="mt-4 rounded-lg bg-admin/10 px-4 py-3 text-sm text-admin">
+        <div className="mt-4 rounded-md border border-admin/20 bg-admin/[0.06] px-4 py-3 text-sm text-admin">
           운영자 미리보기입니다. 실제 채점 저장은 참가 팀만 할 수 있어요.
         </div>
       )}
 
       {!votingOpen && (
-        <div className="mt-4 rounded-lg bg-vote/10 px-4 py-3 text-sm text-vote">
+        <div className="mt-4 rounded-md border border-gold/30 bg-gold-soft px-4 py-3 text-sm text-gold-ink">
           현재는 평가가 닫혀 있습니다. 평가가 열리면 채점을 저장할 수 있어요.
         </div>
       )}
@@ -166,7 +168,7 @@ function Notice({
 }) {
   return (
     <div className="card mx-auto max-w-md text-center">
-      <h1 className="text-xl font-bold">{title}</h1>
+      <h1 className="display text-xl">{title}</h1>
       <p className="mt-2 text-sm text-[var(--muted)]">{body}</p>
       {cta && (
         <Link href="/login" className="btn-primary mt-4 inline-flex">

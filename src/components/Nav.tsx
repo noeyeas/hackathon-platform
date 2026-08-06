@@ -5,6 +5,7 @@ import { getRemoteData } from "@/lib/remoteData";
 import { MobileMenu } from "./MobileMenu";
 import { NoticeNavLink } from "./NoticeNavLink";
 import { NavLink } from "./NavLink";
+import { BrandMark } from "./BrandMark";
 
 const LINKS = [
   { href: "/recruit", label: "모집" },
@@ -68,11 +69,15 @@ export async function Nav() {
 
   return (
     <header className="sticky top-0 z-10 border-b border-[var(--line)] bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-5 px-5">
-        <Link href="/" className="font-bold tracking-tight">
-          🏆 해커톤
+      <div className="mx-auto flex h-12 w-full max-w-5xl items-center gap-6 px-5">
+        <Link
+          href="/"
+          className="flex flex-none items-center gap-2.5 font-title text-[0.95rem] font-bold tracking-tight text-ink"
+        >
+          <BrandMark />
+          월계동 해커톤
         </Link>
-        <nav className="hidden items-center gap-1 text-sm sm:flex">
+        <nav className="hidden items-center gap-5 text-sm sm:flex">
           <NoticeNavLink latestAt={latestNoticeAt} />
           {LINKS.map((l) => (
             <NavLink key={l.href} href={l.href} label={l.label} />
@@ -82,19 +87,19 @@ export async function Nav() {
             <NavLink href="/admin" label="운영" tone="admin" />
           )}
         </nav>
-        <div className="ml-auto flex items-center gap-3 text-sm">
+        <div className="ml-auto flex items-center gap-4 text-sm">
           {isLeader && (
             <NavLink
               href="/vote"
               label="평가"
-              className="hidden sm:inline-flex"
+              className="max-sm:hidden"
             />
           )}
           {role === "judge" && (
             <NavLink
               href="/judge"
               label="심사"
-              className="hidden sm:inline-flex"
+              className="max-sm:hidden"
             />
           )}
           {user ? (
@@ -102,13 +107,13 @@ export async function Nav() {
               {isLeader && (
                 <Link
                   href="/mypage"
-                  className="text-[var(--muted)] hover:text-ink max-sm:hidden"
+                  className="text-[var(--muted)] transition hover:text-ink max-sm:hidden"
                 >
                   마이페이지
                 </Link>
               )}
               <form action="/auth/signout" method="post" className="max-sm:hidden">
-                <button className="text-[var(--muted)] hover:text-ink">
+                <button className="text-[var(--muted)] transition hover:text-ink">
                   로그아웃
                 </button>
               </form>
@@ -116,7 +121,7 @@ export async function Nav() {
           ) : (
             <Link
               href="/login"
-              className="btn-primary !rounded-full max-sm:hidden"
+              className="btn border border-navy bg-white !py-2 text-navy hover:bg-navy hover:text-white max-sm:hidden"
             >
               로그인
             </Link>

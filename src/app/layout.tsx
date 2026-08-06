@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { IBM_Plex_Sans_KR } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 
-// 본문 기본 폰트: Pretendard (한글+라틴 통일, 기기별 편차 제거)
-const pretendard = localFont({
-  src: "./fonts/PretendardVariable.woff2",
+// 본문·제목 공용 폰트. 한글 글리프가 유니코드 구간별로 쪼개져 배포되므로
+// preload 는 끄고(불필요한 preload 링크 수십 개 방지) swap 으로 받는다.
+const plexKR = IBM_Plex_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
   display: "swap",
-  weight: "45 920",
+  preload: false,
 });
 
 // 히어로 디스플레이 폰트: Archivo Black
@@ -47,10 +50,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" className={`${pretendard.variable} ${archivo.variable}`}>
+    <html lang="ko" className={`${plexKR.variable} ${archivo.variable}`}>
       <body>
         <Nav />
-        <main className="mx-auto w-full max-w-5xl px-5 py-8 max-sm:pb-24">
+        <main className="mx-auto w-full max-w-5xl px-5 py-10 max-sm:pb-24">
           {children}
         </main>
       </body>

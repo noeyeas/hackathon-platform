@@ -5,11 +5,14 @@
 :root {
   /* 라이트 전용 디자인. OS 다크모드가 폼 컨트롤/색을 강제 반전시키지 않도록 고정 */
   color-scheme: light;
-  --bg: #f4f5f8;
+  /* 웜 아이보리 배경 + 흰 지면. 종이 위 인쇄물 같은 인상을 만든다. */
+  --bg: #f4f2ec;
   --surface: #ffffff;
-  --ink: #1b1e26;
-  --muted: #6b7180;
-  --line: #dde0e7;
+  --ink: #141a33;
+  --muted: #6d7280;
+  --line: #e4dfd4;
+  /* 표 머리글·구분선처럼 한 단계 진한 선 */
+  --line-strong: #cfc7b6;
 }
 
 body {
@@ -23,7 +26,7 @@ body {
 /* 라이트 테마에 맞춘 은은한 스크롤바 (Firefox) */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #c3c9d4 transparent;
+  scrollbar-color: #cbc4b4 transparent;
 }
 /* WebKit(Chrome/Safari/Edge) */
 ::-webkit-scrollbar {
@@ -34,12 +37,21 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c3c9d4;
+  background: #cbc4b4;
   border: 2px solid var(--bg);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a7afbe;
+  background: #b0a794;
+}
+
+/* 제출작 카드의 썸네일 자리 — 이미지가 없어도 그리드에 리듬을 준다 */
+.tile-pattern {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(26, 34, 70, 0.05) 0 2px,
+    transparent 2px 11px
+  );
 }
 
 /* 컨테이너를 벗어나 화면 가로 전체 폭으로 확장 */
@@ -136,33 +148,95 @@ body {
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5
       text-sm font-semibold transition-all duration-200
       hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vote/50
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/40
       focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]
       disabled:opacity-50 disabled:hover:translate-y-0;
   }
   .btn-primary {
-    @apply btn bg-vote text-white hover:brightness-105
-      hover:shadow-lg hover:shadow-vote/30;
+    @apply btn bg-navy text-white hover:bg-navy-soft hover:shadow-md hover:shadow-navy/20;
+  }
+  /* 시상·CTA처럼 한 번 더 눈에 띄어야 하는 자리 */
+  .btn-gold {
+    @apply btn bg-gold-bright text-navy-deep hover:brightness-105 hover:shadow-md hover:shadow-gold/30;
   }
   .btn-ghost {
-    @apply btn border border-[var(--line)] bg-white text-ink hover:bg-gray-50;
+    @apply btn border border-[var(--line-strong)] bg-white text-ink hover:bg-paper;
   }
+
+  /* 지면 단위. 시안처럼 얇은 테두리 + 각진 모서리, 그림자는 최소로. */
   .card {
-    @apply rounded-2xl border border-[var(--line)] bg-white p-6 shadow-sm;
+    @apply rounded-lg border border-[var(--line)] bg-white p-6;
   }
+  /* 여백 없이 목록·표를 그대로 담는 지면 */
+  .panel {
+    @apply overflow-hidden rounded-lg border border-[var(--line)] bg-white;
+  }
+
   .input {
-    @apply w-full rounded-lg border border-[var(--line)] bg-white px-3 py-2.5
-      text-sm outline-none focus:border-vote focus:ring-2 focus:ring-vote/20;
+    @apply w-full rounded-md border border-[var(--line-strong)] bg-white px-3 py-2.5
+      text-sm outline-none transition focus:border-navy focus:ring-2 focus:ring-navy/15;
   }
   .label {
     @apply mb-1.5 block text-sm font-medium text-ink;
   }
+
+  /* 섹션·페이지 제목 위에 얹는 작은 라벨 (NOTICE, GALLERY · 2025 …) */
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-ink;
+  }
+  /* 명조 제목 */
+  .display {
+    @apply font-title font-bold tracking-tight text-ink;
+  }
+
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-[var(--line)]
-      bg-white px-3 py-1 text-xs font-medium text-[var(--muted)];
+    @apply inline-flex items-center gap-1.5 rounded border border-[var(--line-strong)]
+      bg-white px-2.5 py-1 text-xs font-medium text-[var(--muted)];
+  }
+  /* 목록 위 필터 버튼. 선택되면 네이비로 채운다. */
+  .filter-chip {
+    @apply inline-flex items-center gap-1.5 rounded-md border border-[var(--line-strong)]
+      bg-white px-3.5 py-1.5 text-sm font-medium text-[var(--muted)]
+      transition hover:border-navy/40 hover:text-ink
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/30;
+  }
+  .filter-chip-on {
+    @apply border-navy bg-navy text-white hover:text-white;
+  }
+
+  /* 등급·상태 배지 */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-bold;
+  }
+  .badge-gold {
+    @apply badge bg-gold-bright text-navy-deep;
+  }
+  .badge-navy {
+    @apply badge bg-navy text-white;
+  }
+  .badge-line {
+    @apply badge border border-[var(--line-strong)] bg-white text-ink;
+  }
+
+  /* 표 — 결과·운영 콘솔 공용 */
+  .tbl {
+    @apply w-full border-collapse text-sm;
+  }
+  .tbl thead th {
+    @apply border-b border-[var(--line-strong)] px-3 py-2.5 text-left text-xs
+      font-semibold uppercase tracking-wider text-[var(--muted)];
+  }
+  .tbl tbody td {
+    @apply border-b border-[var(--line)] px-3 py-3 align-middle;
+  }
+  .tbl tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  .num {
+    @apply text-right tabular-nums;
   }
 
   /* 채점 슬라이더 (심사·팀 평가).
@@ -175,7 +249,7 @@ body {
     touch-action: pan-y;
   }
   .score-range:focus-visible {
-    outline: 2px solid theme(colors.vote);
+    outline: 2px solid theme(colors.navy.DEFAULT);
     outline-offset: 4px;
   }
 
@@ -184,7 +258,7 @@ body {
     border-radius: 9999px;
     background: linear-gradient(
       to right,
-      theme(colors.vote) var(--pct, 0%),
+      theme(colors.navy.DEFAULT) var(--pct, 0%),
       var(--line) var(--pct, 0%)
     );
   }
@@ -196,7 +270,7 @@ body {
     margin-top: -10px;
     border-radius: 9999px;
     background: #fff;
-    border: 2px solid theme(colors.vote);
+    border: 2px solid theme(colors.navy.DEFAULT);
     box-shadow: 0 2px 6px rgb(15 27 45 / 0.22);
   }
 
@@ -208,14 +282,14 @@ body {
   .score-range::-moz-range-progress {
     height: 8px;
     border-radius: 9999px;
-    background: theme(colors.vote);
+    background: theme(colors.navy.DEFAULT);
   }
   .score-range::-moz-range-thumb {
     width: 28px;
     height: 28px;
     border-radius: 9999px;
     background: #fff;
-    border: 2px solid theme(colors.vote);
+    border: 2px solid theme(colors.navy.DEFAULT);
     box-shadow: 0 2px 6px rgb(15 27 45 / 0.22);
   }
 }

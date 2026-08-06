@@ -41,10 +41,10 @@ export function Dday({
   });
 
   return (
-    <div className="flex flex-col gap-2 rounded-2xl border border-[var(--line)] bg-gradient-to-br from-vote/10 to-transparent p-5">
+    <div className="flex flex-col gap-2 rounded-lg border border-[var(--line)] bg-gradient-to-br from-navy/10 to-transparent p-5">
       <span className="text-sm font-semibold text-[var(--muted)]">{label}</span>
       <div className="flex items-baseline gap-2">
-        <span className="text-4xl font-extrabold tracking-tight text-vote">
+        <span className="text-4xl font-extrabold tracking-tight text-navy">
           {now === null ? "D-…" : past ? "종료" : dday === 0 ? "D-DAY" : `D-${dday}`}
         </span>
       </div>

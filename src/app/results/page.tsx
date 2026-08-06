@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { SCORE_WEIGHTS, type Ranking, type EventPhase } from "@/lib/types";
+import { safeUrl } from "@/lib/format";
+import { PageHeader } from "@/components/PageHeader";
+import {
+  AWARD_LABELS,
+  SCORE_WEIGHTS,
+  type Ranking,
+  type EventPhase,
+} from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -57,11 +64,18 @@ export default async function ResultsPage() {
   // rankings 뷰는 anon/authenticated 접근이 막혀 있으므로(0022) 공개 조건일 때만
   // Service Role 로 읽는다. 종료 전 일반 사용자에게는 순위/점수를 노출하지 않는다.
   const { data: rankings } = canSeeRankings
-    ? await createAdminClient()
-        .from("rankings")
-        .select("*")
-        .returns<Ranking[]>()
+    ? await createAdminClient().from("rankings").select("*").returns<Ranking[]>()
     : { data: null as Ranking[] | null };
+
+  // 1위 팀은 상단에 크게 — 소개·링크가 필요해 제출물을 한 번 더 읽는다.
+  const top = rankings?.[0] ?? null;
+  const { data: topProject } = top
+    ? await supabase
+        .from("projects")
+        .select("description, repo_url, demo_url, video_url")
+        .eq("id", top.project_id)
+        .maybeSingle()
+    : { data: null };
 
   const noteByTeam = new Map(
     (teamNotes ?? []).map((t) => [t.id as string, t.members_note as string | null])
@@ -69,26 +83,78 @@ export default async function ResultsPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-bold">
-        {showFinal ? "최종 결과 🏆" : "집계 현황"}
-      </h1>
-      <p className="mt-1 text-[var(--muted)]">
-        종합 산정 · 심사 {pct(weights.judge)} / 팀 {pct(weights.team)} / 주민{" "}
-        {pct(weights.audience)}
-        {!showFinal && " · 투표 종료 후 최종 순위가 공개됩니다."}
-      </p>
+      <PageHeader
+        eyebrow={showFinal ? "Final Result" : "Progress"}
+        title={showFinal ? "최종 결과" : "집계 현황"}
+        desc={
+          <>
+            종합 산정 · 심사 {pct(weights.judge)} / 팀 {pct(weights.team)} / 주민{" "}
+            {pct(weights.audience)}
+            {!showFinal && " · 투표 종료 후 최종 순위가 공개됩니다."}
+          </>
+        }
+      />
 
       {isAdmin && !showFinal && (
-        <div className="mt-4 rounded-lg bg-admin/10 px-4 py-3 text-sm text-admin">
-          운영자 미리보기입니다. 참가자·관객에게는 종료 전까지 순위가 보이지 않습니다.
-        </div>
+        <p className="mt-5 rounded-md border border-admin/20 bg-admin/[0.06] px-4 py-3 text-sm text-admin">
+          운영자 미리보기입니다. 참가자·관객에게는 종료 전까지 순위가 보이지
+          않습니다.
+        </p>
       )}
 
+      {/* ── 대상 팀 히어로 ── */}
+      {canSeeRankings && top && (
+        <section className="mt-8 overflow-hidden rounded-lg bg-navy px-6 py-8 text-white sm:px-8 sm:py-10">
+          <p className="eyebrow !text-gold-bright">Grand Prize · 대상</p>
+          <h2 className="mt-3 font-title text-3xl font-bold leading-tight sm:text-4xl">
+            {top.title}
+          </h2>
+          <p className="mt-1 font-title text-xl font-medium text-white/60">
+            Team {top.team_name}
+          </p>
+
+          {topProject?.description && (
+            <p className="mt-5 max-w-xl whitespace-pre-wrap text-sm leading-relaxed text-white/75">
+              {topProject.description}
+            </p>
+          )}
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link href={`/gallery/${top.project_id}`} className="btn-gold">
+              제출작 보기
+            </Link>
+            {topProject?.video_url && (
+              <a
+                href={safeUrl(topProject.video_url)}
+                target="_blank"
+                rel="noreferrer"
+                className="btn border border-white/25 bg-white/10 text-white hover:bg-white/20"
+              >
+                데모 영상 ↗
+              </a>
+            )}
+            {topProject?.repo_url && (
+              <a
+                href={safeUrl(topProject.repo_url)}
+                target="_blank"
+                rel="noreferrer"
+                className="btn border border-white/25 bg-white/10 text-white hover:bg-white/20"
+              >
+                GitHub ↗
+              </a>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* ── 심사 기준 ── */}
       {!!criteria?.length && (
-        <details className="group mt-4 rounded-2xl border border-[var(--line)] bg-white">
+        <details className="group mt-6 rounded-lg border border-[var(--line)] bg-white">
           <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-semibold">
             <span>심사기준 {criteria.length}가지 보기</span>
-            <span className="text-[var(--muted)] transition group-open:rotate-180">⌄</span>
+            <span className="text-[var(--muted)] transition group-open:rotate-180">
+              ⌄
+            </span>
           </summary>
           <ol className="flex flex-col border-t border-[var(--line)]">
             {criteria.map((c, i) => (
@@ -98,13 +164,15 @@ export default async function ResultsPage() {
                   i !== criteria.length - 1 ? "border-b border-[var(--line)]" : ""
                 }`}
               >
-                <span className="mt-0.5 flex-none text-xs font-bold text-vote">
+                <span className="mt-0.5 flex-none text-xs font-bold text-gold-ink">
                   {pct(c.weight / 100)}
                 </span>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">{c.name}</p>
                   {c.description && (
-                    <p className="mt-0.5 text-xs text-[var(--muted)]">{c.description}</p>
+                    <p className="mt-0.5 text-xs text-[var(--muted)]">
+                      {c.description}
+                    </p>
                   )}
                 </div>
               </li>
@@ -113,80 +181,87 @@ export default async function ResultsPage() {
         </details>
       )}
 
+      {/* ── 최종 순위 ── */}
       {canSeeRankings ? (
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-[var(--line)]">
-        <table className="w-full min-w-[560px] bg-white text-sm">
-          <thead>
-            <tr className="border-b border-[var(--line)] bg-gray-50 text-left font-mono text-xs uppercase text-[var(--muted)]">
-              <th className="px-4 py-3">순위</th>
-              <th className="px-4 py-3">팀 / 작품</th>
-              <th className="px-4 py-3 text-right">심사</th>
-              <th className="px-4 py-3 text-right">팀 점수</th>
-              <th className="px-4 py-3 text-right">주민표</th>
-              <th className="px-4 py-3 text-right">종합</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rankings?.map((r, i) => (
-              <tr
-                key={r.project_id}
-                className={`border-b border-[var(--line)] last:border-0 ${
-                  i === 0
-                    ? "border-l-4 border-l-amber-400 bg-amber-50"
-                    : i === 1
-                      ? "border-l-4 border-l-slate-400 bg-slate-50"
-                      : i === 2
-                        ? "border-l-4 border-l-orange-400 bg-orange-50"
-                        : ""
-                }`}
-              >
-                <td className="px-4 py-3 font-bold">
-                  {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
-                </td>
-                <td className="px-4 py-3">
-                  {(() => {
-                    const note = noteByTeam.get(r.team_id);
-                    return (
-                      <Link
-                        href={`/gallery/${r.project_id}`}
-                        className="font-semibold hover:text-vote hover:underline"
-                        title={note ? `팀원 구성\n${note}` : undefined}
-                      >
-                        {r.team_name}
-                      </Link>
-                    );
-                  })()}
-                  <div className="text-xs text-[var(--muted)]">{r.title}</div>
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  {r.judge_score}
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  {r.team_votes}
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums">
-                  {r.audience_votes}
-                </td>
-                <td className="px-4 py-3 text-right font-bold tabular-nums text-vote">
-                  {r.final_score}
-                </td>
-              </tr>
-            ))}
-            {!rankings?.length && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-[var(--muted)]">
-                  아직 집계할 데이터가 없습니다.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+        <section className="mt-8">
+          <div className="mb-3 flex items-baseline gap-3">
+            <span className="eyebrow">Final Score</span>
+            <h2 className="display text-xl">최종 순위</h2>
+          </div>
+
+          <div className="panel overflow-x-auto">
+            <table className="tbl min-w-[560px]">
+              <thead>
+                <tr>
+                  <th className="w-16">순위</th>
+                  <th>팀 · 작품</th>
+                  <th className="!text-right">심사</th>
+                  <th className="!text-right">팀 점수</th>
+                  <th className="!text-right">주민표</th>
+                  <th className="!text-right">종합</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rankings?.map((r, i) => {
+                  const award = i < AWARD_LABELS.length ? AWARD_LABELS[i] : null;
+                  return (
+                    <tr key={r.project_id} className={i === 0 ? "bg-gold-soft/50" : ""}>
+                      <td>
+                        {award ? (
+                          <span className={i === 0 ? "badge-gold" : i === 1 ? "badge-navy" : "badge-line"}>
+                            {award}
+                          </span>
+                        ) : (
+                          <span className="tabular-nums text-[var(--muted)]">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <Link
+                          href={`/gallery/${r.project_id}`}
+                          className="font-semibold hover:text-navy hover:underline"
+                          title={
+                            noteByTeam.get(r.team_id)
+                              ? `팀원 구성\n${noteByTeam.get(r.team_id)}`
+                              : undefined
+                          }
+                        >
+                          {r.team_name}
+                        </Link>
+                        <span className="ml-2 text-xs text-[var(--muted)]">
+                          {r.title}
+                        </span>
+                      </td>
+                      <td className="num">{r.judge_score}</td>
+                      <td className="num">{r.team_votes}</td>
+                      <td className="num">{r.audience_votes}</td>
+                      <td className="num text-base font-bold text-navy">
+                        {r.final_score}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {!rankings?.length && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="!py-10 text-center text-[var(--muted)]"
+                    >
+                      아직 집계할 데이터가 없습니다.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
       ) : (
-        <div className="mt-6 rounded-2xl border border-[var(--line)] bg-white px-6 py-12 text-center">
-          <p className="text-lg font-semibold">투표 종료 후 순위가 공개됩니다</p>
+        <div className="card mt-8 py-12 text-center">
+          <p className="display text-lg">투표 종료 후 순위가 공개됩니다</p>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            공정성을 위해 대회가 종료되기 전까지 실시간 순위와 점수는 비공개입니다.
+            공정성을 위해 대회가 종료되기 전까지 실시간 순위와 점수는
+            비공개입니다.
           </p>
         </div>
       )}

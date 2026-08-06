@@ -6,6 +6,7 @@ import { TeamName } from "@/components/TeamName";
 import { canEditTeam } from "@/lib/teamEdit";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { NewCommentsDot } from "./NewCommentsDot";
+import { PageHeader } from "@/components/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function MyPage() {
   if (!user) {
     return (
       <div className="card mx-auto max-w-md text-center">
-        <h1 className="text-xl font-bold">로그인이 필요합니다</h1>
+        <h1 className="display text-xl">로그인이 필요합니다</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
           마이페이지는 로그인 후 이용할 수 있습니다.
         </p>
@@ -64,7 +65,7 @@ export default async function MyPage() {
         supabase
           .from("projects")
           .select(
-            "id, title, description, repo_url, demo_url, video_url, deck_url, view_count"
+            "id, title, description, track, repo_url, demo_url, video_url, deck_url, view_count"
           )
           .eq("team_id", membership.team_id)
           .maybeSingle(),
@@ -102,12 +103,11 @@ export default async function MyPage() {
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5">
-      <div>
-        <h1 className="text-2xl font-bold">마이페이지</h1>
-        <p className="mt-1 text-[var(--muted)]">
-          {me?.name ?? user.email}님, 환영합니다.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="My page"
+        title="마이페이지"
+        desc={`${me?.name ?? user.email}님, 환영합니다.`}
+      />
 
       {/* 팀 미연결 안내 */}
       {!membership && (
@@ -183,7 +183,7 @@ export default async function MyPage() {
 
                 <Link
                   href={`/gallery/${project.id}`}
-                  className="mt-4 block text-center text-sm text-[var(--muted)] hover:text-vote"
+                  className="mt-4 block text-center text-sm text-[var(--muted)] hover:text-navy"
                 >
                   갤러리에서 댓글 확인 →
                 </Link>
@@ -199,7 +199,7 @@ export default async function MyPage() {
               </h2>
               <span
                 className={`chip ${
-                  project ? "border-team text-team" : "border-vote text-vote"
+                  project ? "border-team text-team" : "border-gold text-gold-ink"
                 }`}
               >
                 {project ? "제출됨" : "제출 전"}
@@ -207,8 +207,8 @@ export default async function MyPage() {
             </div>
 
             <div
-              className={`mt-3 flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium ${
-                project ? "bg-team/10 text-team" : "bg-vote/10 text-vote"
+              className={`mt-3 flex items-center gap-2 rounded-md px-4 py-3 text-sm font-medium ${
+                project ? "bg-team/10 text-team" : "bg-gold-soft text-gold-ink"
               }`}
             >
               <span aria-hidden>{project ? "✅" : "📌"}</span>
@@ -234,9 +234,9 @@ export default async function MyPage() {
 }
 
 const STAT_TONES = {
-  sky: "bg-sky-50 text-sky-600",
-  rose: "bg-rose-50 text-rose-500",
-  amber: "bg-amber-50 text-amber-600",
+  sky: "bg-navy/[0.06] text-navy",
+  rose: "bg-alert/[0.08] text-alert",
+  amber: "bg-gold-soft text-gold-ink",
 } as const;
 
 function Stat({

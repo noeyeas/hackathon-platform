@@ -56,8 +56,8 @@ export function LikeButton({
       title={loggedIn ? undefined : "로그인 후 응원할 수 있어요"}
       className={`btn gap-1.5 transition ${
         liked
-          ? "bg-vote text-white hover:brightness-95"
-          : "btn-ghost hover:border-vote hover:text-vote"
+          ? "bg-navy text-white hover:brightness-95"
+          : "btn-ghost hover:border-navy hover:text-navy"
       } disabled:opacity-60`}
     >
       <span className="text-base leading-none">{liked ? "♥" : "♡"}</span>

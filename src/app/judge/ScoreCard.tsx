@@ -187,7 +187,7 @@ export function ScoreCard({
                 <div className="flex items-baseline justify-between gap-3">
                   <label className="text-sm font-semibold">
                     {c.name}{" "}
-                    <span className="text-xs font-bold text-vote">
+                    <span className="text-xs font-bold text-navy">
                       {c.weight}%
                     </span>
                   </label>

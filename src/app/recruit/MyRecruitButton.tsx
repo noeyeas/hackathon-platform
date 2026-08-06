@@ -31,14 +31,14 @@ export function MyRecruitButton({ posts }: { posts: Post[] }) {
           onClick={() => setOpen(false)}
         >
           <div
-            className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl sm:rounded-2xl"
+            className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl sm:rounded-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-bold">내 모집글</h2>
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-lg p-1 text-[var(--muted)] hover:bg-gray-100 hover:text-ink"
+                className="rounded-lg p-1 text-[var(--muted)] hover:bg-paper hover:text-ink"
                 aria-label="닫기"
               >
                 ✕

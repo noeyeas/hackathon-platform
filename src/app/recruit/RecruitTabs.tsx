@@ -112,7 +112,7 @@ function TabButton({
       onClick={onClick}
       className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
         active
-          ? "bg-vote text-white"
+          ? "bg-navy text-white"
           : "border border-[var(--line)] bg-white text-[var(--muted)] hover:text-ink"
       }`}
     >
@@ -193,7 +193,7 @@ function PostCard({ p, isAdmin }: { p: Post; isAdmin: boolean }) {
       )}
 
       {p.contact && (
-        <div className="mt-2 rounded-lg bg-gray-50 p-3 text-sm">
+        <div className="mt-2 rounded-lg bg-paper p-3 text-sm">
           연락:{" "}
           <span className="select-all font-semibold text-admin">
             {p.contact}

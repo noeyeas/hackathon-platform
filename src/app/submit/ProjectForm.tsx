@@ -1,5 +1,6 @@
 import { ActionForm } from "@/components/ActionForm";
 import { saveProject } from "./actions";
+import { PROJECT_TRACKS } from "@/lib/types";
 
 type Project = {
   title: string | null;
@@ -8,6 +9,7 @@ type Project = {
   demo_url: string | null;
   video_url: string | null;
   deck_url: string | null;
+  track?: string | null;
 } | null;
 
 // 프로젝트 제출/수정 폼 (제출 페이지·마이페이지 공용)
@@ -24,6 +26,23 @@ export function ProjectForm({ project }: { project: Project }) {
         defaultValue={project?.title ?? ""}
         className="input"
       />
+
+      <label className="label mt-4">주제</label>
+      <select
+        name="track"
+        defaultValue={project?.track ?? ""}
+        className="input"
+      >
+        <option value="">선택 안 함</option>
+        {PROJECT_TRACKS.map((t) => (
+          <option key={t.value} value={t.value}>
+            {t.label}
+          </option>
+        ))}
+      </select>
+      <p className="mt-1.5 text-xs text-[var(--muted)]">
+        갤러리에서 주제별로 묶어 보여줍니다. 나중에 바꿔도 됩니다.
+      </p>
 
       <label className="label mt-4">한 줄 ~ 짧은 설명</label>
       <textarea

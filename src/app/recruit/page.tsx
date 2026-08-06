@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { RecruitModal } from "./RecruitModal";
 import { MyRecruitButton } from "./MyRecruitButton";
 import { RecruitTabs } from "./RecruitTabs";
+import { PageHeader } from "@/components/PageHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -97,18 +98,17 @@ export default async function RecruitPage() {
   return (
     <div className="mx-auto max-w-2xl">
       {/* 헤더 + 작성 버튼 */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">모집</h1>
-          <p className="mt-1 text-[var(--muted)]">
-            함께할 팀원을 찾거나, 관심 있는 팀에 합류하세요.
-          </p>
-        </div>
-        <div className="flex flex-none items-center gap-2">
-          {myPosts.length > 0 && <MyRecruitButton posts={myPosts} />}
-          <RecruitModal loggedIn={!!user} hasTeam={!!myTeamId} />
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Recruit"
+        title="모집"
+        desc="함께할 팀원을 찾거나, 관심 있는 팀에 합류하세요."
+        aside={
+          <>
+            {myPosts.length > 0 && <MyRecruitButton posts={myPosts} />}
+            <RecruitModal loggedIn={!!user} hasTeam={!!myTeamId} />
+          </>
+        }
+      />
 
       {/* 팀원 구함 / 팀 구함 탭 전환 */}
       <RecruitTabs

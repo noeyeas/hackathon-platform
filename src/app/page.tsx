@@ -11,11 +11,12 @@ import { formatMonthDayRange } from "@/lib/format";
 // 비워두면 "준비 중" 비활성 버튼으로 표시된다.
 const APPLY_FORM_URL = "https://forms.gle/KDkrR7bC9GgssgAa7";
 
+// 4개 주제 카드. 배경은 웜 아이보리 계열로 낮추고 강조색만 주제별로 다르게 둔다.
 const THEMES = [
-  { icon: "♻️", t: "탄소 중립과 ESG", en: "Carbon Neutral", d: "탄소 배출 저감·자원 순환·친환경 생활을 유도하는 플랫폼으로 일상 속 ESG 실현", tint: "#edf9f1", ring: "#cfeed7", chip: "#d7f1e0", accent: "#2f9e5f" },
-  { icon: "🏪", t: "시장 상권 활성화", en: "Local Commerce", d: "소상공인과 주민을 디지털로 연결해 골목상권·전통시장의 경쟁력 강화", tint: "#fdf5e9", ring: "#f4e3c4", chip: "#f9e8cd", accent: "#c58a1c" },
-  { icon: "📚", t: "교육 문제 해결·지원", en: "Education", d: "교육 격차 해소, 청소년·주민 맞춤 교육 인프라 및 멘토링 매칭", tint: "#eef3fd", ring: "#d5e2f7", chip: "#dce8fb", accent: "#3b78d4" },
-  { icon: "🚦", t: "교통 문제", en: "Mobility", d: "상습 정체·주차난·대중교통 접근성을 데이터와 기술로 개선", tint: "#fdeef2", ring: "#f6d7e0", chip: "#f9dce4", accent: "#d05579" },
+  { icon: "♻️", t: "탄소 중립과 ESG", en: "Carbon Neutral", d: "탄소 배출 저감·자원 순환·친환경 생활을 유도하는 플랫폼으로 일상 속 ESG 실현", tint: "#f2f5ef", ring: "#dfe6d8", chip: "#e5ecdd", accent: "#3f6b3a" },
+  { icon: "🏪", t: "시장 상권 활성화", en: "Local Commerce", d: "소상공인과 주민을 디지털로 연결해 골목상권·전통시장의 경쟁력 강화", tint: "#faf4e8", ring: "#ece0c6", chip: "#f1e6cf", accent: "#8a6a12" },
+  { icon: "📚", t: "교육 문제 해결·지원", en: "Education", d: "교육 격차 해소, 청소년·주민 맞춤 교육 인프라 및 멘토링 매칭", tint: "#eff1f7", ring: "#d9dee9", chip: "#e2e7f0", accent: "#2c3767" },
+  { icon: "🚦", t: "교통 문제", en: "Mobility", d: "상습 정체·주차난·대중교통 접근성을 데이터와 기술로 개선", tint: "#f9f0ee", ring: "#ecd9d3", chip: "#f1e2dd", accent: "#a53a1c" },
 ];
 
 const INSTAGRAM = [
@@ -140,7 +141,7 @@ export default async function Home() {
     <div className="flex flex-col gap-24">
       {/* ===== 히어로 + 하단 마퀴 ===== */}
       <div>
-        <section className="bleed relative -mt-8 flex min-h-[560px] flex-col items-center justify-center overflow-hidden px-5 text-center sm:min-h-[640px]">
+        <section className="bleed relative -mt-10 flex min-h-[420px] flex-col items-center justify-center overflow-hidden px-5 pb-28 pt-12 text-center sm:min-h-[500px] sm:pb-32">
           <Image
             src="/campus.jpg"
             alt=""
@@ -151,8 +152,8 @@ export default async function Home() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/55 to-black/70" />
 
-          <div className="hero-in relative flex flex-col items-center gap-5 text-white">
-            <h1 className="font-display text-5xl leading-none tracking-tight sm:text-8xl">
+          <div className="hero-in relative flex flex-col items-center gap-4 text-white">
+            <h1 className="font-display text-4xl leading-none tracking-tight sm:text-7xl">
               2026
               <br />
               <span
@@ -196,7 +197,7 @@ export default async function Home() {
               style={{ backgroundColor: t.tint, borderColor: t.ring }}
             >
               <span
-                className="flex h-11 w-11 items-center justify-center rounded-xl text-2xl"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-2xl"
                 style={{ backgroundColor: t.chip }}
               >
                 {t.icon}
@@ -253,10 +254,8 @@ export default async function Home() {
         <div className="relative mx-auto flex max-w-5xl flex-col gap-14">
           {/* FAQ */}
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-vote">
-              FAQ
-            </p>
-            <h2 className="mt-1 text-3xl font-bold">자주 묻는 질문</h2>
+            <p className="eyebrow !text-gold-bright">FAQ</p>
+            <h2 className="mt-2 font-title text-3xl font-bold">자주 묻는 질문</h2>
             <p className="mt-2 text-sm text-white/60">
               문의 전에 여기서 먼저 확인해 보세요.
             </p>
@@ -264,7 +263,7 @@ export default async function Home() {
               {FAQ.map((f) => (
                 <details
                   key={f.q}
-                  className="group rounded-2xl border border-white/15 bg-white/5 transition hover:border-white/25"
+                  className="group rounded-lg border border-white/15 bg-white/5 transition hover:border-white/25"
                 >
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 font-semibold">
                     <span>{f.q}</span>
@@ -292,10 +291,8 @@ export default async function Home() {
           {/* 문의 */}
           <div className="grid gap-10 sm:grid-cols-2">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-vote">
-              Contact
-            </p>
-            <h2 className="mt-1 text-3xl font-bold">문의하기</h2>
+            <p className="eyebrow !text-gold-bright">Contact</p>
+            <h2 className="mt-2 font-title text-3xl font-bold">문의하기</h2>
             <div className="mt-6">
               <p className="text-sm text-white/60">담당자</p>
               <p className="mt-1 text-2xl font-bold">김세연</p>
@@ -304,7 +301,7 @@ export default async function Home() {
               </a>
             </div>
           </div>
-          <div className="flex flex-col justify-center gap-3 rounded-2xl bg-white/5 p-6 backdrop-blur">
+          <div className="flex flex-col justify-center gap-3 rounded-lg bg-white/5 p-6 backdrop-blur">
             <p className="text-sm text-white/70">
               궁금한 점은 카카오톡으로 편하게 문의하세요.
             </p>
@@ -358,10 +355,8 @@ function Section({
     <section className="flex flex-col gap-5">
       <Reveal>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-vote">
-            {eyebrow}
-          </p>
-          <h2 className="mt-1 text-2xl font-bold sm:text-3xl">{title}</h2>
+          <p className="eyebrow">{eyebrow}</p>
+          <h2 className="display mt-2 text-2xl sm:text-3xl">{title}</h2>
           {desc && <p className="mt-2 text-[var(--muted)]">{desc}</p>}
         </div>
       </Reveal>
