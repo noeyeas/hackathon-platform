@@ -28,10 +28,19 @@ export async function saveScores(projectId: string, formData: FormData) {
   if (!settings?.voting_open)
     return { error: "지금은 평가 기간이 아닙니다" };
 
-  const { data: criteria } = await supabase.from("criteria").select("id, max_score");
+  // 코멘트를 첫 행에만 싣기 위해 순서를 고정한다(정렬 없이는 매번 달라짐).
+  const { data: criteria } = await supabase
+    .from("criteria")
+    .select("id, max_score")
+    .order("sort");
   if (!criteria) return { error: "평가 기준을 불러오지 못했습니다" };
 
-  const rows = criteria.map((c) => {
+  // 코멘트는 기준별이 아니라 (프로젝트, 심사위원) 단위 속성이다. 모든 행에
+  // 복제해 넣으면 기준 수만큼 같은 값이 쌓이고 수정 시 정합성이 깨지므로
+  // 첫 기준 행에만 저장한다. 읽는 쪽(ScoreCard)은 값이 있는 행을 찾는다.
+  const comment = String(formData.get("comment") ?? "").trim() || null;
+
+  const rows = criteria.map((c, i) => {
     const raw = Number(formData.get(`c_${c.id}`) ?? 0);
     const score = Math.max(0, Math.min(c.max_score, Math.round(raw)));
     return {
@@ -39,7 +48,7 @@ export async function saveScores(projectId: string, formData: FormData) {
       judge_id: user.id,
       criteria_id: c.id,
       score,
-      comment: String(formData.get("comment") ?? "").trim() || null,
+      comment: i === 0 ? comment : null,
     };
   });
 

@@ -4,6 +4,7 @@ import { EditableField } from "../team/EditableField";
 import { ProjectForm } from "../submit/ProjectForm";
 import { TeamName } from "@/components/TeamName";
 import { canEditTeam } from "@/lib/teamEdit";
+import { canSubmitProject } from "@/lib/submitWindow";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { NewCommentsDot } from "./NewCommentsDot";
 import { PageHeader } from "@/components/PageHeader";
@@ -43,7 +44,10 @@ export default async function MyPage() {
     await Promise.all([
       supabase.from("users").select("name, role").eq("id", user.id).single(),
       selectMembership(),
-      supabase.from("event_settings").select("team_edit_deadline").single(),
+      supabase
+        .from("event_settings")
+        .select("team_edit_deadline, submit_deadline")
+        .single(),
     ]);
 
   // 팀장 이메일로 등록된 팀에 자동 연결 (참가 코드 대체).
@@ -100,6 +104,7 @@ export default async function MyPage() {
   }
 
   const canEdit = isLeader && canEditTeam(editSettings?.team_edit_deadline);
+  const canSubmit = canSubmitProject(editSettings?.submit_deadline);
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5">
@@ -212,15 +217,24 @@ export default async function MyPage() {
               }`}
             >
               <span aria-hidden>{project ? "✅" : "📌"}</span>
-              {project
-                ? "제출 완료 — 마감 전까지 언제든 수정할 수 있어요."
-                : "아직 제출하지 않았어요. 마감 전에 꼭 제출해 주세요."}
+              {!canSubmit
+                ? project
+                  ? "제출 마감 — 이 내용으로 심사가 진행됩니다."
+                  : "제출이 마감되었습니다. 운영진에게 문의해 주세요."
+                : project
+                  ? "제출 완료 — 마감 전까지 언제든 수정할 수 있어요."
+                  : "아직 제출하지 않았어요. 마감 전에 꼭 제출해 주세요."}
             </div>
 
-            {isLeader ? (
+            {isLeader && canSubmit ? (
               <div className="mt-4">
                 <ProjectForm project={project} />
               </div>
+            ) : isLeader ? (
+              <p className="mt-3 text-sm text-[var(--muted)]">
+                제출이 마감되어 수정할 수 없습니다. 수정이 꼭 필요하면 운영진에게
+                문의해 주세요.
+              </p>
             ) : (
               <p className="mt-3 text-sm text-[var(--muted)]">
                 프로젝트 제출·수정은 팀을 대표하는 팀장 계정에서 진행합니다.

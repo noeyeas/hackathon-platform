@@ -80,7 +80,8 @@ export async function editRecruitPost(id: string, formData: FormData) {
     .filter(Boolean);
   if (!title) return { error: "제목을 입력하세요" };
 
-  const { error } = await supabase
+  // RLS 에 막힌 UPDATE 는 에러가 아니라 0행 — 실제 반영 여부를 확인한다.
+  const { data, error } = await supabase
     .from("recruit_posts")
     .update({
       title,
@@ -88,9 +89,11 @@ export async function editRecruitPost(id: string, formData: FormData) {
       positions,
       contact: contact || null,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
   if (error)
     return { error: safeError(error, "모집 글 수정에 실패했어요. 잠시 후 다시 시도해 주세요.") };
+  if (!data?.length) return { error: "수정할 권한이 없는 글입니다" };
 
   revalidatePath("/recruit");
   return { ok: true };
@@ -99,12 +102,14 @@ export async function editRecruitPost(id: string, formData: FormData) {
 export async function toggleRecruitPost(id: string, isOpen: boolean) {
   const { user, supabase } = await myTeamId();
   if (!user) return { error: "로그인이 필요합니다" };
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("recruit_posts")
     .update({ is_open: isOpen })
-    .eq("id", id);
+    .eq("id", id)
+    .select("id");
   if (error)
     return { error: safeError(error, "상태 변경에 실패했어요. 잠시 후 다시 시도해 주세요.") };
+  if (!data?.length) return { error: "변경할 권한이 없는 글입니다" };
   revalidatePath("/recruit");
   return { ok: true };
 }
@@ -121,9 +126,15 @@ export async function deleteRecruitPost(id: string) {
     .single();
   const client = me?.role === "admin" ? createAdminClient() : supabase;
 
-  const { error } = await client.from("recruit_posts").delete().eq("id", id);
+  const { data, error } = await client
+    .from("recruit_posts")
+    .delete()
+    .eq("id", id)
+    .select("id");
   if (error)
     return { error: safeError(error, "모집 글 삭제에 실패했어요. 잠시 후 다시 시도해 주세요.") };
+  if (!data?.length)
+    return { error: "삭제할 권한이 없거나 이미 삭제된 글입니다" };
   revalidatePath("/recruit");
   return { ok: true };
 }

@@ -42,12 +42,15 @@ export async function updateTeamField(field: string, value: string) {
     return { error: "수정할 수 없는 항목입니다" };
 
   const v = value.trim();
-  const { error } = await supabase
+  // RLS 가 막으면 에러 없이 0행이 된다 — 저장된 척하지 않도록 확인한다.
+  const { data, error } = await supabase
     .from("teams")
     .update({ [field]: v || null })
-    .eq("id", res.teamId);
+    .eq("id", res.teamId)
+    .select("id");
   if (error)
     return { error: safeError(error, "저장에 실패했어요. 잠시 후 다시 시도해 주세요.") };
+  if (!data?.length) return { error: "수정할 권한이 없습니다" };
 
   revalidatePath("/mypage");
   revalidatePath("/team");

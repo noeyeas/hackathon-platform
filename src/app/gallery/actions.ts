@@ -113,12 +113,17 @@ export async function deleteComment(
   } = await supabase.auth.getUser();
   if (!user) return { error: "로그인이 필요합니다" };
 
-  const { error } = await supabase
+  // RLS 에 막힌 DELETE 는 에러가 아니라 0행이다. .select() 로 실제 지워진
+  // 행을 확인하지 않으면 남의 댓글 삭제 시도에도 "성공"을 돌려주게 된다.
+  const { data, error } = await supabase
     .from("project_comments")
     .delete()
-    .eq("id", commentId);
+    .eq("id", commentId)
+    .select("id");
   if (error)
     return { error: safeError(error, "댓글 삭제에 실패했어요. 잠시 후 다시 시도해 주세요.") };
+  if (!data?.length)
+    return { error: "삭제할 권한이 없거나 이미 삭제된 댓글입니다" };
 
   revalidatePath(`/gallery/${projectId}`);
   return { ok: true };
