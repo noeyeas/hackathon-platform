@@ -1,7 +1,8 @@
 "use server";
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { viewerHash, clientIp } from "@/lib/viewerHash";
 import { revalidatePath } from "next/cache";
 import { safeError } from "@/lib/actionError";
 
@@ -54,14 +55,36 @@ export async function setLike(
 
 // 조회수 +1 — 상세 페이지 마운트 시 클라이언트에서 1회만 호출.
 // (RSC 에서 렌더마다 올리면 router.refresh() 로 유령 조회가 누적되므로 분리)
-// 남용 방지: RPC 실행 권한은 서버(Service Role)만(0026), 세션당 작품별 1회만 집계.
+//
+// 남용 방지는 두 겹이다:
+//  (1) 쿠키 — 같은 브라우저의 재방문을 DB 왕복 없이 걸러내는 빠른 관문
+//  (2) DB  — 방문자 해시 기준 중복 판정(0034). 쿠키를 지우거나 시크릿 창을
+//            써도 여기서 막힌다. 판정 주체가 쿠키가 아니라 서버여야 한다.
+// RPC 실행 권한은 서버(Service Role)만(0026, 0034).
 export async function pingView(projectId: string): Promise<void> {
   if (!projectId) return;
+
   const jar = await cookies();
   const key = `vw_${projectId}`;
-  if (jar.get(key)) return; // 이미 이 세션에서 집계함
+  if (jar.get(key)) return; // 이 브라우저에선 이미 집계함 — DB 까지 갈 필요 없음
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const h = await headers();
+  const hash = viewerHash({
+    userId: user?.id,
+    ip: clientIp(h),
+    userAgent: h.get("user-agent"),
+  });
+
   const admin = createAdminClient();
-  await admin.rpc("increment_project_view", { pid: projectId });
+  await admin.rpc("count_project_view", { pid: projectId, vhash: hash });
+
+  // 중복이라 실제로 증가하지 않았더라도 쿠키는 심는다 — 다음 방문부터
+  // DB 왕복 자체를 건너뛰기 위한 캐시이지, 집계 근거가 아니다.
   jar.set(key, "1", { maxAge: 60 * 60 * 12, path: "/", sameSite: "lax" });
 }
 
