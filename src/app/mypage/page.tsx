@@ -81,11 +81,13 @@ export default async function MyPage() {
   let commentCount = 0;
   let latestCommentAt: string | null = null;
   if (project) {
-    const [{ count: lc }, { count: cc }, { data: latest }] = await Promise.all([
+    const [{ data: likeRow }, { count: cc }, { data: latest }] = await Promise.all([
+      // 집계 뷰 사용 — project_likes 직접 카운트는 권한이 없다(0036·0037)
       supabase
-        .from("project_likes")
-        .select("id", { count: "exact", head: true })
-        .eq("project_id", project.id),
+        .from("project_like_counts")
+        .select("likes")
+        .eq("project_id", project.id)
+        .maybeSingle(),
       supabase
         .from("project_comments")
         .select("id", { count: "exact", head: true })
@@ -98,7 +100,7 @@ export default async function MyPage() {
         .limit(1)
         .maybeSingle(),
     ]);
-    likeCount = lc ?? 0;
+    likeCount = likeRow?.likes ?? 0;
     commentCount = cc ?? 0;
     latestCommentAt = latest?.created_at ?? null;
   }

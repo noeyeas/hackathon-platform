@@ -27,13 +27,22 @@ export default async function ProjectDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: p } = await supabase
-    .from("projects")
-    .select(
-      "id, title, description, track, repo_url, demo_url, video_url, deck_url, view_count, teams(name, tagline, members_note), project_likes(count)"
-    )
-    .eq("id", id)
-    .single();
+  // 응원 수는 집계 뷰에서 읽는다 (0036·0037 — liker_key 를 가리느라
+  // project_likes 테이블 권한을 회수했고, count(*) 는 그 권한을 요구한다).
+  const [{ data: p }, { data: likeRow }] = await Promise.all([
+    supabase
+      .from("projects")
+      .select(
+        "id, title, description, track, repo_url, demo_url, video_url, deck_url, view_count, teams(name, tagline, members_note)"
+      )
+      .eq("id", id)
+      .single(),
+    supabase
+      .from("project_like_counts")
+      .select("likes")
+      .eq("project_id", id)
+      .maybeSingle(),
+  ]);
 
   if (!p) notFound();
 
@@ -45,8 +54,7 @@ export default async function ProjectDetailPage({
     tagline: string | null;
     members_note: string | null;
   } | null;
-  const likeCount =
-    (p.project_likes as unknown as { count: number }[])?.[0]?.count ?? 0;
+  const likeCount = likeRow?.likes ?? 0;
   const track = toProjectTrack(p.track);
 
   const embed = p.video_url ? youtubeEmbed(p.video_url) : null;

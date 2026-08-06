@@ -19,14 +19,21 @@ function hash(str: string): number {
 
 export default async function GalleryPage() {
   const supabase = await createClient();
-  const [{ data }, { data: settings }] = await Promise.all([
+  // 응원 수는 project_likes 를 직접 세지 않고 집계 뷰에서 읽는다 —
+  // 누가 눌렀는지(liker_key)를 가리느라 테이블 권한을 회수했기 때문(0036·0037).
+  const [{ data }, { data: settings }, { data: likeRows }] = await Promise.all([
     supabase
       .from("projects")
       .select(
-        "id, title, description, track, view_count, submitted_at, teams(name, members_note), project_likes(count)"
+        "id, title, description, track, view_count, submitted_at, teams(name, members_note)"
       ),
     supabase.from("event_settings").select("phase").single(),
+    supabase.from("project_like_counts").select("project_id, likes"),
   ]);
+
+  const likesByProject = new Map<string, number>(
+    (likeRows ?? []).map((r) => [r.project_id as string, r.likes as number])
+  );
 
   // 순위(=수상)는 대회가 끝난 뒤에만 공개한다. rankings 뷰는 서비스 롤 전용(0022).
   const showAwards = ((settings?.phase ?? "signup") as EventPhase) === "closed";
@@ -57,8 +64,7 @@ export default async function GalleryPage() {
       teamName: team?.name ?? "",
       membersNote: team?.members_note ?? null,
       views: p.view_count ?? 0,
-      likes:
-        (p.project_likes as unknown as { count: number }[])?.[0]?.count ?? 0,
+      likes: likesByProject.get(p.id) ?? 0,
       submittedAt: p.submitted_at,
       shuffle: hash(seed + p.id),
       awardRank,
