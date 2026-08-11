@@ -1,6 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/server";
+import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePath, updateTag } from "next/cache";
 
@@ -31,7 +32,7 @@ export async function addMilestone(formData: FormData) {
     place,
     sort,
   });
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidate();
   return { ok: true };
 }
@@ -62,7 +63,7 @@ export async function updateMilestone(
       place: place.trim() || null,
     })
     .eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidate();
   return { ok: true };
 }
@@ -71,7 +72,7 @@ export async function deleteMilestone(id: string) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
   const { error } = await admin.from("milestones").delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidate();
   return { ok: true };
 }
@@ -95,7 +96,7 @@ export async function addScheduleItem(formData: FormData) {
     detail,
     sort: 0,
   });
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidate();
   return { ok: true };
 }
@@ -122,7 +123,7 @@ export async function updateScheduleItem(
       detail: data.detail.trim() || null,
     })
     .eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidate();
   return { ok: true };
 }
@@ -131,7 +132,7 @@ export async function deleteScheduleItem(id: string) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
   const { error } = await admin.from("schedule_items").delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidate();
   return { ok: true };
 }

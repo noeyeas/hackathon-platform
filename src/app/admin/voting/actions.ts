@@ -1,6 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/server";
+import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -12,7 +13,7 @@ export async function setVotingOpen(open: boolean) {
     .from("event_settings")
     .update({ voting_open: open })
     .eq("id", 1);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidatePath("/admin/scoring");
   revalidatePath("/vote");
   return { ok: true };
@@ -27,7 +28,7 @@ export async function setAudienceVotes(projectId: string, count: number) {
     .from("projects")
     .update({ audience_votes_manual: n })
     .eq("id", projectId);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidatePath("/admin/scoring");
   revalidatePath("/results");
   return { ok: true };

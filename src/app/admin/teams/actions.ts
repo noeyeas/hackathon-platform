@@ -1,6 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/server";
+import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 
@@ -21,7 +22,7 @@ export async function createTeamAsAdmin(formData: FormData) {
     tagline: tagline || null,
     leader_email: leaderEmail || null,
   });
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidatePath("/admin/teams");
   return { ok: true };
 }
@@ -35,7 +36,7 @@ export async function setTeamLeaderEmail(id: string, email: string) {
     .from("teams")
     .update({ leader_email: value || null })
     .eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidatePath("/admin/teams");
   return { ok: true };
 }
@@ -44,7 +45,7 @@ export async function deleteTeamAsAdmin(id: string) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
   const { error } = await admin.from("teams").delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidatePath("/admin/teams");
   return { ok: true };
 }

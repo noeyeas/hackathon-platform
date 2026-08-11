@@ -1,6 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/server";
+import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import type { EventPhase } from "@/lib/types";
@@ -12,7 +13,7 @@ export async function setPhase(phase: EventPhase) {
     .from("event_settings")
     .update({ phase })
     .eq("id", 1);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidatePath("/admin");
   revalidatePath("/");
   return { ok: true };
@@ -26,7 +27,7 @@ export async function setResultsPublic(open: boolean) {
     .from("event_settings")
     .update({ phase: open ? "closed" : "voting" })
     .eq("id", 1);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidatePath("/results");
   revalidatePath("/admin/scoring");
   revalidatePath("/");
@@ -51,7 +52,7 @@ export async function setWeights(formData: FormData) {
     .from("event_settings")
     .update({ weights: { judge, team, audience } })
     .eq("id", 1);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
   revalidatePath("/admin");
   revalidatePath("/results");
   return { ok: true };

@@ -1,6 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase/server";
+import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePath, updateTag } from "next/cache";
 import { toNoticeCategory } from "@/lib/types";
@@ -17,7 +18,7 @@ export async function createAnnouncement(formData: FormData) {
   const { error } = await admin
     .from("announcements")
     .insert({ title, body: body || null, pinned, category });
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
 
   revalidatePath("/admin/announcements");
   revalidatePath("/notice");
@@ -30,7 +31,7 @@ export async function deleteAnnouncement(id: string) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
   const { error } = await admin.from("announcements").delete().eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: adminError(error) };
 
   revalidatePath("/admin/announcements");
   revalidatePath("/notice");
