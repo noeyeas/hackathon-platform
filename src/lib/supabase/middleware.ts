@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { hasSupabaseAuthCookie } from "@/lib/authGate";
 
 // 매 요청마다 Supabase 세션 쿠키를 갱신
 export async function updateSession(request: NextRequest) {
@@ -16,9 +17,9 @@ export async function updateSession(request: NextRequest) {
 
   // 비로그인 방문자는 갱신할 세션이 없다. Supabase 클라이언트를 만들지 않고
   // 곧바로 응답해 매 요청의 불필요한 작업을 없앤다.
-  const hasAuthCookie = request.cookies
-    .getAll()
-    .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+  const hasAuthCookie = hasSupabaseAuthCookie(
+    request.cookies.getAll().map((c) => c.name)
+  );
   if (!hasAuthCookie) {
     if (newGallerySeed) {
       response.cookies.set("gallery_seed", newGallerySeed, {

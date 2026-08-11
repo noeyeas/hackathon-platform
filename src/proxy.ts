@@ -1,4 +1,5 @@
 import { updateSession } from "@/lib/supabase/middleware";
+import { shouldBlockBeforeRender } from "@/lib/authGate";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Next.js 16: middleware → proxy 규칙. 매 요청마다 Supabase 세션 갱신
@@ -8,16 +9,12 @@ export async function proxy(request: NextRequest) {
   // 조회해 HTML 에 실어 보낸다(응답은 200 + meta refresh 라 브라우저만 튕긴다).
   // 세션 쿠키조차 없는 요청은 렌더가 시작되기 전인 여기서 끊는다.
   const { pathname } = request.nextUrl;
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
-    const hasAuthCookie = request.cookies
-      .getAll()
-      .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
-    if (!hasAuthCookie) {
-      const login = new URL("/login", request.url);
-      // 로그인 페이지는 ?redirect= 를 읽어 콜백의 next 로 넘긴다.
-      login.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(login);
-    }
+  const cookieNames = request.cookies.getAll().map((c) => c.name);
+  if (shouldBlockBeforeRender(pathname, cookieNames)) {
+    const login = new URL("/login", request.url);
+    // 로그인 페이지는 ?redirect= 를 읽어 콜백의 next 로 넘긴다.
+    login.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(login);
   }
 
   return await updateSession(request);
