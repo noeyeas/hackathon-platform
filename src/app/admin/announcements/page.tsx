@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { ActionForm } from "@/components/ActionForm";
 import { createAnnouncement } from "./actions";
 import { DeleteButton } from "./DeleteButton";
@@ -8,6 +9,9 @@ import { NOTICE_CATEGORIES, NOTICE_CATEGORY_LABEL, toNoticeCategory } from "@/li
 export const dynamic = "force-dynamic";
 
 export default async function AdminAnnouncementsPage() {
+  // 레이아웃의 검사는 이 페이지의 렌더를 막지 못한다(병렬 렌더).
+  if (!(await requireAdmin())) return null;
+
   const supabase = await createClient();
   const { data: list } = await supabase
     .from("announcements")

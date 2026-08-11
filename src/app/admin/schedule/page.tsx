@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { ActionForm } from "@/components/ActionForm";
 import { addMilestone } from "./actions";
 import { MilestoneAdminRow } from "./MilestoneAdminRow";
@@ -7,7 +8,9 @@ import { AdminPageHeader } from "../AdminPageHeader";
 export const dynamic = "force-dynamic";
 
 export default async function AdminSchedulePage() {
-  // 권한 검사는 admin/layout.tsx 가 처리한다.
+  // 레이아웃의 검사는 이 페이지의 렌더를 막지 못한다(병렬 렌더).
+  if (!(await requireAdmin())) return null;
+
   const supabase = await createClient();
   const { data: milestones } = await supabase
     .from("milestones")

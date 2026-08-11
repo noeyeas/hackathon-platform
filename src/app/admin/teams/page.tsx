@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { ActionForm } from "@/components/ActionForm";
 import { createTeamAsAdmin } from "./actions";
 import { TeamRow } from "./TeamRow";
@@ -7,7 +8,11 @@ import { AdminPageHeader } from "../AdminPageHeader";
 export const dynamic = "force-dynamic";
 
 export default async function AdminTeamsPage() {
-  // 권한 검사는 admin/layout.tsx 가 처리한다.
+  // 레이아웃의 검사는 이 페이지의 렌더를 막지 못한다(병렬 렌더). 서비스 롤로
+  // 조회하기 전에 여기서 직접 확인한다 — 통과 못 하면 레이아웃이 안내 화면을
+  // 대신 보여주므로 아무것도 그리지 않는다.
+  if (!(await requireAdmin())) return null;
+
   // 이메일 등 팀원 정보는 RLS 우회를 위해 Service Role 로 조회
   const admin = createAdminClient();
   const { data: teams } = await admin

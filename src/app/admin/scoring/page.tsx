@@ -4,12 +4,16 @@ import { type Ranking } from "@/lib/types";
 import { VotingControls } from "../voting/VotingControls";
 import { ResultsToggle } from "./ResultsToggle";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
+import { requireAdmin } from "@/lib/auth";
 import { AdminPageHeader } from "../AdminPageHeader";
 
 export const dynamic = "force-dynamic";
 
 export default async function ScoringProgressPage() {
-  // 권한 검사는 admin/layout.tsx 가 처리한다.
+  // 레이아웃의 검사는 이 페이지의 렌더를 막지 못한다(병렬 렌더). 서비스 롤로
+  // 조회하기 전에 여기서 직접 확인한다 — 순위·점수가 걸려 있다.
+  if (!(await requireAdmin())) return null;
+
   const admin = createAdminClient();
   const [
     { data: settings },
