@@ -3,6 +3,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { safeError } from "@/lib/actionError";
+import { clampScore } from "@/lib/scoring";
 
 // 팀이 다른 팀(project)을 기준별로 채점 (심사와 동일 방식)
 export async function saveTeamScores(projectId: string, formData: FormData) {
@@ -44,8 +45,7 @@ export async function saveTeamScores(projectId: string, formData: FormData) {
   if (!criteria) return { error: "평가 기준을 불러오지 못했습니다" };
 
   const rows = criteria.map((c) => {
-    const raw = Number(formData.get(`c_${c.id}`) ?? 0);
-    const score = Math.max(0, Math.min(c.max_score, Math.round(raw)));
+    const score = clampScore(formData.get(`c_${c.id}`), c.max_score);
     return {
       project_id: projectId,
       voter_team_id: membership.team_id,

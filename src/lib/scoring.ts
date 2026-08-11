@@ -60,6 +60,18 @@ export function completedByVoter(
   return result;
 }
 
+// 폼으로 들어온 점수 한 칸을 0~max 정수로 다듬는다. 심사 채점과 팀 평가가
+// 같은 규칙을 쓴다.
+//
+// 클램핑만으로는 부족하다 — Math.max(0, NaN) 은 0 이 아니라 NaN 이라
+// 숫자가 아닌 입력이 그대로 빠져나간다. NaN 은 JSON 에서 null 로 나가
+// NOT NULL 위반이 되고, 그 한 칸 때문에 팀 점수 저장 전체가 실패한다.
+export function clampScore(raw: unknown, maxScore: number): number {
+  const n = Number(raw ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(maxScore, Math.round(n)));
+}
+
 // 한 팀이 평가해야 할 대상 수.
 // 자기 팀은 목록에서 빠지므로 제출한 팀은 하나가 줄지만,
 // 제출하지 않은 팀은 뺄 자기 몫이 없어 목표가 그대로다.

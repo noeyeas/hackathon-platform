@@ -3,6 +3,7 @@
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { safeError } from "@/lib/actionError";
+import { clampScore } from "@/lib/scoring";
 
 // 한 팀(project)에 대한 기준별 점수 저장 (심사위원·운영진이 전 팀 채점)
 export async function saveScores(projectId: string, formData: FormData) {
@@ -41,8 +42,7 @@ export async function saveScores(projectId: string, formData: FormData) {
   const comment = String(formData.get("comment") ?? "").trim() || null;
 
   const rows = criteria.map((c, i) => {
-    const raw = Number(formData.get(`c_${c.id}`) ?? 0);
-    const score = Math.max(0, Math.min(c.max_score, Math.round(raw)));
+    const score = clampScore(formData.get(`c_${c.id}`), c.max_score);
     return {
       project_id: projectId,
       judge_id: user.id,

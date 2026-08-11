@@ -11,6 +11,7 @@ import {
   completedCount,
   completedByVoter,
   teamVoteTarget,
+  clampScore,
 } from "../src/lib/scoring.ts";
 
 const CRITERIA = 3;
@@ -86,4 +87,43 @@ test("teamVoteTarget — 제출한 팀은 n-1, 미제출 팀은 n", () => {
 test("teamVoteTarget — 제출작이 없거나 하나뿐이면 음수가 되지 않는다", () => {
   assert.equal(teamVoteTarget(0, false), 0);
   assert.equal(teamVoteTarget(1, true), 0);
+});
+
+// ---------------------------------------------------------------
+// clampScore — 폼 값 한 칸을 0~max 정수로 다듬는다.
+// 지키려는 것: 숫자가 아닌 입력이 NaN 인 채로 빠져나가지 않는 것.
+// Math.max(0, NaN) 이 0 이 아니라 NaN 이라, 클램핑만으로는 막히지 않았다.
+// NaN 은 JSON 에서 null 로 나가 NOT NULL 위반이 되고, 한 칸 때문에
+// 그 팀 점수 저장 전체가 실패했다.
+// ---------------------------------------------------------------
+test("clampScore — 정상 입력은 그대로", () => {
+  assert.equal(clampScore("7", 10), 7);
+  assert.equal(clampScore(3, 10), 3);
+});
+
+test("clampScore — 범위를 벗어나면 0~max 로 자른다", () => {
+  assert.equal(clampScore("999", 10), 10);
+  assert.equal(clampScore("-5", 10), 0);
+});
+
+test("clampScore — 소수는 반올림한다", () => {
+  assert.equal(clampScore("7.6", 10), 8);
+  assert.equal(clampScore("7.4", 10), 7);
+});
+
+test("clampScore — 빈 값과 누락은 0", () => {
+  assert.equal(clampScore("", 10), 0);
+  assert.equal(clampScore(null, 10), 0);
+  assert.equal(clampScore(undefined, 10), 0);
+});
+
+test("clampScore — 숫자가 아닌 입력도 항상 유한한 정수를 낸다", () => {
+  for (const bad of ["abc", "1,2", {}, [1, 2], "NaN"]) {
+    const v = clampScore(bad, 10);
+    assert.ok(
+      Number.isFinite(v),
+      `${JSON.stringify(bad)} → ${v} (NaN 이 새어나가면 저장 전체가 실패한다)`
+    );
+    assert.equal(v, 0);
+  }
 });
