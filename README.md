@@ -78,7 +78,7 @@ src/
 ├── app/
 │   ├── (참가자)  page · recruit · team · submit · gallery · vote · mypage · notice
 │   ├── judge/    심사위원 채점
-│   ├── admin/    stage · teams · scoring · announcements · schedule · voting
+│   ├── admin/    teams · scoring · announcements · schedule · voting
 │   └── api/health  Supabase 자동 일시중단 방지용 크론 엔드포인트
 ├── components/   Nav · Toast · Reveal · ScheduleBoard · LikeButton …
 └── lib/          auth · scoring · format · linkLeader · remoteData

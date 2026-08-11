@@ -10,7 +10,6 @@ const ITEMS = [
   { href: "/admin/scoring", label: "심사 · 점수" },
   { href: "/admin/announcements", label: "공지 발행" },
   { href: "/admin/schedule", label: "홈 타임라인" },
-  { href: "/admin/stage", label: "발표 진행" },
 ];
 
 // 운영 콘솔 좌측 메뉴. 좁은 화면에서는 가로 스크롤 탭으로 접힌다.
