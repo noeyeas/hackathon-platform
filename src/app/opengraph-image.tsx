@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 // 공유 미리보기용 OG 이미지 (1200×630). 카톡·페북·트위터 카드에 사용.
-export const alt = "2026 월계동 해커톤 — 기술을 통해 월계동의 내일을 그리다";
+export const alt = "2026 광운대학교 KW해커톤 — 기술을 통해 월계1동의 내일을 그리다";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -49,7 +49,7 @@ export default async function OpengraphImage() {
               color: "#EC8365",
             }}
           >
-            월계동 지역사회 해커톤
+            광운대학교 KW해커톤
           </div>
         </div>
 
@@ -83,7 +83,7 @@ export default async function OpengraphImage() {
         {/* 하단 태그라인 + 정보 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div style={{ display: "flex", fontSize: 42, fontWeight: 700 }}>
-            기술을 통해 월계동의 내일을 그리다
+            기술을 통해 월계1동의 내일을 그리다
           </div>
           <div
             style={{
@@ -93,7 +93,7 @@ export default async function OpengraphImage() {
               color: "#94a3b8",
             }}
           >
-            9.7 – 9.19 · 광운대학교 기념관 319호
+            9.16 – 10.12 · 광운대학교 80주년기념관
           </div>
         </div>
       </div>

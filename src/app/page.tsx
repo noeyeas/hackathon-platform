@@ -11,12 +11,29 @@ import { formatMonthDayRange } from "@/lib/format";
 // 비워두면 "준비 중" 비활성 버튼으로 표시된다.
 const APPLY_FORM_URL = "https://forms.gle/KDkrR7bC9GgssgAa7";
 
-// 4개 주제 카드. 배경은 웜 아이보리 계열로 낮추고 강조색만 주제별로 다르게 둔다.
+// 4개 주제 카드(기획(안) II-☐해커톤 주제). 순서·명칭은 기획(안)을 따른다.
+// 배경은 웜 아이보리 계열로 낮추고 강조색만 주제별로 다르게 둔다.
 const THEMES = [
-  { icon: "♻️", t: "탄소 중립과 ESG", en: "Carbon Neutral", d: "탄소 배출 저감·자원 순환·친환경 생활을 유도하는 플랫폼으로 일상 속 ESG 실현", tint: "#f2f5ef", ring: "#dfe6d8", chip: "#e5ecdd", accent: "#3f6b3a" },
-  { icon: "🏪", t: "시장 상권 활성화", en: "Local Commerce", d: "소상공인과 주민을 디지털로 연결해 골목상권·전통시장의 경쟁력 강화", tint: "#faf4e8", ring: "#ece0c6", chip: "#f1e6cf", accent: "#8a6a12" },
-  { icon: "📚", t: "교육 문제 해결·지원", en: "Education", d: "교육 격차 해소, 청소년·주민 맞춤 교육 인프라 및 멘토링 매칭", tint: "#eff1f7", ring: "#d9dee9", chip: "#e2e7f0", accent: "#2c3767" },
-  { icon: "🚦", t: "교통 문제", en: "Mobility", d: "상습 정체·주차난·대중교통 접근성을 데이터와 기술로 개선", tint: "#f9f0ee", ring: "#ecd9d3", chip: "#f1e2dd", accent: "#a53a1c" },
+  { icon: "🏪", t: "상권 활성화", en: "Local Commerce", d: "소상공인과 주민을 디지털로 연결해 월계1동 골목상권의 경쟁력 강화", tint: "#faf4e8", ring: "#ece0c6", chip: "#f1e6cf", accent: "#8a6a12" },
+  { icon: "🛡️", t: "생활안전", en: "Public Safety", d: "보행·야간 안전, 재난 대응 등 주민의 일상 안전을 기술로 보완", tint: "#f9f0ee", ring: "#ecd9d3", chip: "#f1e2dd", accent: "#a53a1c" },
+  { icon: "♻️", t: "탄소중립 및 ESG", en: "Carbon Neutral", d: "탄소 배출 저감·자원 순환·친환경 생활을 유도하는 플랫폼으로 일상 속 ESG 실현", tint: "#f2f5ef", ring: "#dfe6d8", chip: "#e5ecdd", accent: "#3f6b3a" },
+  { icon: "🧩", t: "기타 (지역 연계형)", en: "Open Track", d: "위 세 분야에 속하지 않더라도 월계1동과 연계된 문제라면 자유롭게 제안", tint: "#eff1f7", ring: "#d9dee9", chip: "#e2e7f0", accent: "#2c3767" },
+];
+
+// 시상 내역(기획(안) II-☐수상작 시상). 상금 액수는 기획(안) 예산안 기준.
+const AWARDS = [
+  { medal: "🥇", t: "노원구청장 표창", n: "1팀", money: "100만원", d: "종합 최우수 1팀" },
+  { medal: "🥈", t: "광운대학교 총장상", n: "3팀", money: "각 50만원", d: "주제 분야별 1팀" },
+  { medal: "🎁", t: "매니패스트상", n: "1팀", money: "10만원", d: "매니패스트 이용권 지급 예정" },
+];
+
+// 최종 심사 기준(기획(안) II-☐심사 기준 및 위원, 나. 최종 심사 기준표). 합계 100점.
+const FINAL_CRITERIA = [
+  { t: "실현 & 상용화 가능성", p: 30, d: "실제 지역사회 적용 및 지속 운영 가능 여부" },
+  { t: "지역 문제 적합성", p: 20, d: "월계1동 실제 주민 수요 및 문제 해결 적합도" },
+  { t: "구현 완성도 & 기술력", p: 20, d: "실제 시연 동작 완성도, 코드 및 GitHub 관리 상태" },
+  { t: "창의성 & 차별성", p: 20, d: "아이디어의 독창성 및 기존 서비스 대비 차별점" },
+  { t: "발표", p: 10, d: "팀당 5분 발표 시간 엄수 (초과 시 감점)" },
 ];
 
 const INSTAGRAM = [
@@ -41,11 +58,11 @@ const FAQ = [
   },
   {
     q: "몇 팀을 뽑고, 선정 기준은 무엇인가요?",
-    a: "총 30팀을 선정합니다. 신청이 초과되면 전공 다양성과 인원수(4명) 가산점을 기준으로 선정합니다.",
+    a: "25~30팀을 선정합니다. 신청이 초과되면 전공 다양성과 인원수(4명) 가산점을 기준으로 선정합니다.",
   },
   {
     q: "어떤 주제로 개발하나요?",
-    a: "월계동 지역사회 문제를 해결하는 웹/애플리케이션을 만듭니다. 탄소 중립·ESG, 시장 상권 활성화, 교육 문제 해결, 교통 문제 개선 — 4개 분야 중에서 정하면 됩니다.",
+    a: "월계1동 지역사회 문제를 해결하는 웹·애플리케이션을 만듭니다. 상권 활성화, 생활안전, 탄소중립 및 ESG, 기타(지역 연계형) — 4개 분야 중에서 정하면 됩니다. 특정 분야에 쏠리지 않도록 주제당 10팀으로 제한할 예정입니다.",
   },
   {
     q: "무엇을 제출해야 하나요?",
@@ -57,7 +74,7 @@ const FAQ = [
   },
   {
     q: "전체 일정과 장소가 어떻게 되나요?",
-    a: "모집 8.24–9.2 → 9.7 해커톤 시작 → 9.11 중간 보고·멘토링 → 9.18–9.19 최종 발표 및 스프린트(무박 2일) 순으로 진행합니다. 최종 발표는 광운대학교 기념관 319호에서 열립니다.",
+    a: "모집 9.7–9.14 → 9.16(수) 개회식·OT → 9.28(월) 중간발표·멘토링 → 10.8(목)–10.9(금) 본선(무박 2일) → 10.10(토)–10.12(월) 전시·주민투표 순으로 진행합니다. 장소는 광운대학교 80주년기념관이며, 발표는 310호에서 열립니다.",
   },
 ];
 
@@ -164,7 +181,7 @@ export default async function Home() {
               </span>
             </h1>
             <p className="max-w-xl text-lg font-medium text-white/90 sm:text-xl">
-              기술을 통해 월계동의 내일을 그리다
+              기술을 통해 월계1동의 내일을 그리다
             </p>
             <div className="mt-2 flex flex-wrap justify-center gap-3">
               <ApplyButton
@@ -188,7 +205,7 @@ export default async function Home() {
       </div>
 
       {/* ===== 주제 (Theme) ===== */}
-      <Section eyebrow="Theme" title="해커톤 주제" desc="월계동 지역사회 문제 해결 및 발전을 위한 웹/애플리케이션 개발">
+      <Section eyebrow="Theme" title="해커톤 주제" desc="월계1동을 비롯한 지역사회의 생활 밀착형 문제 해결을 위한 웹·애플리케이션 개발">
         <RevealGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {THEMES.map((t) => (
             <div
@@ -219,7 +236,7 @@ export default async function Home() {
             <h3 className="mb-3 font-bold">팀 구성</h3>
             <ul className="flex flex-col gap-1.5 text-sm text-[var(--muted)]">
               <li>· 팀당 <b className="text-ink">최소 2인 ~ 최대 4인</b></li>
-              <li>· 총 <b className="text-ink">30팀</b> 선정</li>
+              <li>· 총 <b className="text-ink">25~30팀</b> 선정</li>
               <li>· 개인 신청 불가</li>
               <li>· 전공 다양성·인원수(4명) 가산점</li>
               <li>· 초과 시 가산점 기준으로 선정</li>
@@ -234,7 +251,7 @@ export default async function Home() {
           </div>
           <div className="card h-full">
             <h3 className="mb-3 font-bold">모집 기간</h3>
-            <p className="text-2xl font-bold">8.24 – 9.2</p>
+            <p className="text-2xl font-bold">9.7 – 9.14</p>
             <ApplyButton
               className="btn-primary mt-3 w-full"
               label="신청 폼 열기"
@@ -242,6 +259,50 @@ export default async function Home() {
             />
           </div>
         </RevealGroup>
+      </Section>
+
+      {/* ===== 시상 · 심사 (Awards) ===== */}
+      <Section
+        eyebrow="Awards"
+        title="시상 및 심사"
+        desc="최종 발표 심사와 주민투표 결과를 반영해 수상팀을 선정합니다."
+      >
+        <RevealGroup className="grid gap-4 sm:grid-cols-3">
+          {AWARDS.map((a) => (
+            <div key={a.t} className="card flex h-full flex-col gap-1">
+              <span className="text-2xl">{a.medal}</span>
+              <h3 className="mt-1 font-bold">{a.t}</h3>
+              <p className="text-2xl font-bold text-navy">{a.money}</p>
+              <p className="text-sm text-[var(--muted)]">
+                {a.n} · {a.d}
+              </p>
+            </div>
+          ))}
+        </RevealGroup>
+
+        <Reveal>
+          <div className="card">
+            <h3 className="mb-1 font-bold">최종 심사 기준</h3>
+            <p className="mb-4 text-sm text-[var(--muted)]">
+              합계 100점. 팀당 5분 발표 후 질의응답이 진행됩니다.
+            </p>
+            <ul className="flex flex-col divide-y divide-[var(--line)]">
+              {FINAL_CRITERIA.map((c) => (
+                <li key={c.t} className="flex items-baseline gap-3 py-2.5">
+                  <span className="w-10 flex-none text-right text-lg font-bold tabular-nums text-navy">
+                    {c.p}
+                  </span>
+                  <span className="min-w-0">
+                    <b className="font-semibold">{c.t}</b>
+                    <span className="mt-0.5 block text-sm text-[var(--muted)]">
+                      {c.d}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
       </Section>
 
       {/* ===== FAQ + 문의 (풀 블리드 다크) ===== */}

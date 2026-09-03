@@ -24,23 +24,23 @@ const archivo = localFont({
 
 export const metadata: Metadata = {
   // 상대 경로 이미지(og:image)를 절대 URL로 변환하는 기준. 공유 미리보기 필수.
-  metadataBase: new URL("https://hackathon-platform-seven.vercel.app"),
-  title: "월계동 해커톤",
-  description: "기술을 통해 월계동의 내일을 그리다",
+  metadataBase: new URL("https://hackathon-platform-sy04.vercel.app"),
+  title: "KW해커톤",
+  description: "기술을 통해 월계1동의 내일을 그리다",
   openGraph: {
     // og:image 는 opengraph-image.tsx 가 자동 공급 (1200×630 동적 생성)
-    title: "2026 월계동 해커톤",
-    description: "기술을 통해 월계동의 내일을 그리다 · 광운대 기념관 319호",
+    title: "2026 광운대학교 KW해커톤",
+    description: "기술을 통해 월계1동의 내일을 그리다 · 광운대 80주년기념관",
     url: "/",
-    siteName: "월계동 해커톤",
+    siteName: "2026 광운대학교 KW해커톤",
     locale: "ko_KR",
     type: "website",
   },
   twitter: {
     // twitter:image 는 twitter-image.tsx 가 자동 공급
     card: "summary_large_image",
-    title: "2026 월계동 해커톤",
-    description: "기술을 통해 월계동의 내일을 그리다",
+    title: "2026 광운대학교 KW해커톤",
+    description: "기술을 통해 월계1동의 내일을 그리다",
   },
 };
 

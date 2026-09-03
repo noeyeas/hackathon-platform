@@ -6,7 +6,7 @@ const ORGS: Org[] = [
   { name: "광운대학교 총학생회 이음", role: "주관", img: "/council.jpg" },
   { name: "인공지능융합대학 학생회 하성", role: "주관", img: "/hasung.jpg" },
   { name: "카카오페이", role: "후원", img: "/kakaopay.jpeg", contain: true },
-  { name: "월계동 주민단체", role: "후원", img: "/people.png", contain: true },
+  { name: "월계1동 주민자치회", role: "협력", img: "/people.png", contain: true },
 ];
 
 function Item({ org }: { org: Org }) {

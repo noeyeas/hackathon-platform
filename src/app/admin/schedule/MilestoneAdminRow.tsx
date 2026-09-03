@@ -91,7 +91,7 @@ export function MilestoneAdminRow({
             setSaved(false);
           }}
           className="input min-w-[7rem] flex-1 text-sm"
-          placeholder="장소 (선택 · 예: 기념관 319호)"
+          placeholder="장소 (선택 · 예: 80주년기념관 310호)"
         />
       </div>
       <div className="mt-1.5 flex items-center gap-2">

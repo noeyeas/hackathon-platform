@@ -64,7 +64,7 @@ export default async function AdminSchedulePage() {
               <label className="label">종료 (선택)</label>
               <input name="ends_at" type="datetime-local" className="input" />
               <p className="mt-1 text-xs text-[var(--muted)]">
-                여러 날에 걸치면 입력하세요. 타임라인에 9.18~19 처럼 표시됩니다.
+                여러 날에 걸치면 입력하세요. 타임라인에 10.8~9 처럼 표시됩니다.
               </p>
             </div>
             <div className="sm:col-span-2">
@@ -72,7 +72,7 @@ export default async function AdminSchedulePage() {
               <input
                 name="place"
                 className="input"
-                placeholder="예: 광운대 기념관 319호"
+                placeholder="예: 광운대 80주년기념관 310호"
               />
             </div>
           </div>

@@ -75,7 +75,7 @@ export async function Nav() {
           className="flex flex-none items-center gap-2.5 font-title text-[0.95rem] font-bold tracking-tight text-ink"
         >
           <BrandMark />
-          월계동 해커톤
+          KW해커톤
         </Link>
         <nav className="hidden items-center gap-5 text-sm sm:flex">
           <NoticeNavLink latestAt={latestNoticeAt} />

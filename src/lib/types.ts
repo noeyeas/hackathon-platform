@@ -77,14 +77,15 @@ export function toNoticeCategory(value: unknown): NoticeCategory {
     : "general";
 }
 
-// 제출작 주제(트랙) — 홈에 안내한 4개 분야. projects.track 체크 제약과 같은 집합.
-export type ProjectTrack = "esg" | "commerce" | "education" | "mobility";
+// 제출작 주제(트랙) — 기획(안)의 4개 분야. projects.track 체크 제약과 같은 집합.
+// 순서도 기획(안) 표기 순서를 따른다(상권 → 생활안전 → 탄소중립 → 기타).
+export type ProjectTrack = "commerce" | "safety" | "esg" | "etc";
 
 export const PROJECT_TRACKS: { value: ProjectTrack; label: string }[] = [
-  { value: "esg", label: "탄소 중립" },
-  { value: "commerce", label: "시장 상권" },
-  { value: "education", label: "교육" },
-  { value: "mobility", label: "교통" },
+  { value: "commerce", label: "상권 활성화" },
+  { value: "safety", label: "생활안전" },
+  { value: "esg", label: "탄소중립·ESG" },
+  { value: "etc", label: "기타" },
 ];
 
 export const PROJECT_TRACK_LABEL: Record<ProjectTrack, string> =
