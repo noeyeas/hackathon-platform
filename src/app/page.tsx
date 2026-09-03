@@ -299,13 +299,21 @@ export default async function Home() {
                   <li>· 장소 <b className="text-ink">광운대학교 80주년기념관</b></li>
                 </ul>
               </div>
+              {/* 포스터 원본은 위 이미지 클릭으로 열리므로, 이 자리는
+                  더 자세한 정보를 원하는 사람을 위한 기획(안)으로 둔다. */}
+              {/* 포스터 원본은 위 이미지 클릭으로 열리므로, 이 자리는
+                  더 자세한 정보를 원하는 사람을 위한 기획(안)으로 둔다.
+                  HWP 가 아니라 PDF 로 둔다 — 한글 프로그램이 없어도 열린다. */}
               <a
-                href="/해커톤_포스터.png"
+                href="/2026_KW해커톤_기획안.pdf"
                 target="_blank"
                 rel="noreferrer"
                 className="btn-ghost self-start"
               >
-                포스터 원본 열기 ↗
+                기획(안) 보기 ↗
+                <span className="ml-2 text-xs font-normal text-[var(--muted)]">
+                  PDF · 120KB
+                </span>
               </a>
             </div>
           </div>
