@@ -24,7 +24,10 @@ export default async function ResultsPage() {
     { data: criteria },
     { data: teamNotes },
   ] = await Promise.all([
-    supabase.from("event_settings").select("phase, weights").single(),
+    supabase
+      .from("event_settings")
+      .select("phase, weights, finalist_count")
+      .single(),
     supabase.auth.getUser(),
     // 심사위원 배점 기준 (관리자에서 관리) — 결과 페이지에서 펼쳐볼 수 있게 노출
     supabase
@@ -44,9 +47,12 @@ export default async function ResultsPage() {
   ]);
 
   const phase = (settings?.phase ?? "signup") as EventPhase;
-  // 집계 뷰(rankings)와 동일하게 event_settings.weights 를 사용 — 표시/계산 일치
+  // 집계 뷰(rankings)와 동일하게 event_settings 값을 사용 — 표시/계산 일치.
+  // 선정 팀 수도 DB 를 따른다. 코드 상수를 그대로 쓰면 운영진이 DB 값을
+  // 바꿨을 때 화면 문구만 4팀으로 남아 실제 선정 결과와 어긋난다.
   const weights =
     (settings?.weights as typeof SCORE_WEIGHTS | null) ?? SCORE_WEIGHTS;
+  const finalistCount = settings?.finalist_count ?? FINALIST_COUNT;
 
   const showFinal = phase === "closed";
 
@@ -92,7 +98,7 @@ export default async function ResultsPage() {
             1차 심사 {pct(weights.judge / (weights.judge + weights.team))} 심사위원
             {" / "}
             {pct(weights.team / (weights.judge + weights.team))} 팀 상호평가 →
-            상위 {FINALIST_COUNT}팀 · 주민투표로 대상 선정
+            상위 {finalistCount}팀 · 주민투표로 대상 선정
             {!showFinal && " · 투표 종료 후 최종 순위가 공개됩니다."}
           </>
         }

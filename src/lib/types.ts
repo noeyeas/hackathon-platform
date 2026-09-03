@@ -116,13 +116,6 @@ export function toProjectTrack(value: unknown): ProjectTrack | null {
 // 1차 상위 4팀 중 주민투표 1위가 대상, 나머지 셋이 총장상이다.
 export const AWARD_LABELS = ["대상", "총장상", "총장상", "총장상"] as const;
 
-// 배지에는 짧게 쓰고, 설명이 필요한 곳에서는 기획(안)의 정식 명칭을 쓴다.
-export const AWARD_FULL_LABELS = [
-  "노원구청장 표창",
-  "광운대학교 총장상",
-  "광운대학교 총장상",
-  "광운대학교 총장상",
-] as const;
 
 export const PHASE_LABEL: Record<EventPhase, string> = {
   signup: "참가 신청",
