@@ -301,21 +301,52 @@ export default async function Home() {
               </div>
               {/* 포스터 원본은 위 이미지 클릭으로 열리므로, 이 자리는
                   더 자세한 정보를 원하는 사람을 위한 기획(안)으로 둔다. */}
-              {/* 포스터 원본은 위 이미지 클릭으로 열리므로, 이 자리는
-                  더 자세한 정보를 원하는 사람을 위한 기획(안)으로 둔다.
-                  HWP 가 아니라 PDF 로 둔다 — 한글 프로그램이 없어도 열린다. */}
+            </div>
+          </div>
+        </Reveal>
+
+        {/* 기획(안)은 링크로 걸면 잘 눌리지 않는다. 페이지 안에서 바로 넘겨
+            볼 수 있게 붙인다.
+            <object> 를 쓰는 이유 — iOS/안드로이드 일부 브라우저는 PDF 를
+            인라인으로 못 그린다. 그때 내부 자식 요소가 대체 화면으로 뜬다
+            (iframe 은 그냥 빈 화면이 된다). */}
+        <Reveal>
+          <div className="overflow-hidden rounded-lg border border-[var(--line)] bg-paper">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] px-4 py-2.5">
+              <p className="text-sm font-semibold">KW해커톤 기획(안)</p>
               <a
                 href="/2026_KW해커톤_기획안.pdf"
                 target="_blank"
                 rel="noreferrer"
-                className="btn-ghost self-start"
+                className="text-sm font-medium text-navy hover:underline"
               >
-                기획(안) 보기 ↗
-                <span className="ml-2 text-xs font-normal text-[var(--muted)]">
+                전체 화면으로 보기 ↗
+                <span className="ml-1.5 text-xs font-normal text-[var(--muted)]">
                   PDF · 120KB
                 </span>
               </a>
             </div>
+
+            <object
+              data="/2026_KW해커톤_기획안.pdf#view=FitH"
+              type="application/pdf"
+              aria-label="2026 광운대학교 KW해커톤 기획(안)"
+              className="h-[70vh] max-h-[900px] min-h-[420px] w-full bg-white"
+            >
+              <div className="flex flex-col items-center gap-3 px-5 py-12 text-center">
+                <p className="text-sm text-[var(--muted)]">
+                  이 브라우저에서는 문서를 바로 볼 수 없어요.
+                </p>
+                <a
+                  href="/2026_KW해커톤_기획안.pdf"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-primary"
+                >
+                  기획(안) 열기 (PDF)
+                </a>
+              </div>
+            </object>
           </div>
         </Reveal>
       </Section>
