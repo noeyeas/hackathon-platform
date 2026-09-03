@@ -41,10 +41,15 @@ export default async function GalleryPage() {
     ? await createAdminClient().from("rankings").select("*").returns<Ranking[]>()
     : { data: null as Ranking[] | null };
 
+  // 수상 배지는 선정된 팀에만 붙인다. 뷰가 시상 순서로 정렬해 주므로
+  // (선정팀 먼저, 그 안에서 주민표 순) 걸러낸 뒤의 순번이 곧 상 순서다.
   const awardByProject = new Map<string, number>();
-  (rankings ?? []).slice(0, AWARD_LABELS.length).forEach((r, i) => {
-    awardByProject.set(r.project_id, i);
-  });
+  (rankings ?? [])
+    .filter((r) => r.is_finalist)
+    .slice(0, AWARD_LABELS.length)
+    .forEach((r, i) => {
+      awardByProject.set(r.project_id, i);
+    });
 
   // 방문(세션)당 고정된 무작위 순서 — 시드는 쿠키, 같은 시드면 항상 같은 순서.
   // 특정 팀이 항상 위에 오지 않게 하면서 새로고침·뒤로가기엔 순서 유지.

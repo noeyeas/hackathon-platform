@@ -4,6 +4,7 @@ import { safeUrl } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import {
   AWARD_LABELS,
+  FINALIST_COUNT,
   SCORE_WEIGHTS,
   type Ranking,
   type EventPhase,
@@ -88,8 +89,10 @@ export default async function ResultsPage() {
         title={showFinal ? "최종 결과" : "집계 현황"}
         desc={
           <>
-            종합 산정 · 심사 {pct(weights.judge)} / 팀 {pct(weights.team)} / 주민{" "}
-            {pct(weights.audience)}
+            1차 심사 {pct(weights.judge / (weights.judge + weights.team))} 심사위원
+            {" / "}
+            {pct(weights.team / (weights.judge + weights.team))} 팀 상호평가 →
+            상위 {FINALIST_COUNT}팀 · 주민투표로 대상 선정
             {!showFinal && " · 투표 종료 후 최종 순위가 공개됩니다."}
           </>
         }
@@ -198,12 +201,18 @@ export default async function ResultsPage() {
                   <th className="!text-right">심사</th>
                   <th className="!text-right">팀 점수</th>
                   <th className="!text-right">주민표</th>
-                  <th className="!text-right">종합</th>
+                  <th className="!text-right">1차 점수</th>
                 </tr>
               </thead>
               <tbody>
                 {rankings?.map((r, i) => {
-                  const award = i < AWARD_LABELS.length ? AWARD_LABELS[i] : null;
+                  // 시상 배지는 순번이 아니라 선정 여부로 결정한다.
+                  // 뷰가 이미 시상 순서로 정렬해 주므로(선정팀 먼저, 그 안에서
+                  // 주민표 순) 선정팀의 i 가 곧 상 순서가 된다.
+                  const award =
+                    r.is_finalist && i < AWARD_LABELS.length
+                      ? AWARD_LABELS[i]
+                      : null;
                   return (
                     <tr key={r.project_id} className={i === 0 ? "bg-gold-soft/50" : ""}>
                       <td>

@@ -22,8 +22,8 @@ const THEMES = [
 
 // 시상 내역(기획(안) II-☐수상작 시상). 상금 액수는 기획(안) 예산안 기준.
 const AWARDS = [
-  { medal: "🥇", t: "노원구청장 표창", n: "1팀", money: "100만원", d: "종합 최우수 1팀" },
-  { medal: "🥈", t: "광운대학교 총장상", n: "3팀", money: "각 50만원", d: "주제 분야별 1팀" },
+  { medal: "🥇", t: "노원구청장 표창", n: "1팀", money: "100만원", d: "선정 4팀 중 주민투표 1위" },
+  { medal: "🥈", t: "광운대학교 총장상", n: "3팀", money: "각 50만원", d: "선정 4팀 중 나머지" },
   { medal: "🎁", t: "매니패스트상", n: "1팀", money: "10만원", d: "매니패스트 이용권 지급 예정" },
 ];
 
@@ -70,7 +70,7 @@ const FAQ = [
   },
   {
     q: "순위는 어떻게 정해지나요?",
-    a: "심사위원 평가 50%, 참가 팀 간 상호 평가 25%, 주민 투표 25%를 합산해 종합 순위를 정합니다. 공정성을 위해 실시간 순위·점수는 대회가 끝난 뒤에 공개됩니다.",
+    a: "두 단계로 나뉩니다. 먼저 10.9 최종발표에서 심사위원 평가와 참가 팀 간 상호 평가(2:1)를 합산해 상위 4팀을 선정합니다. 이어서 10.10–10.12 전시 기간에 그 4팀만을 대상으로 주민투표를 진행해, 가장 많은 표를 받은 1팀이 노원구청장 표창을 받고 나머지 3팀이 광운대학교 총장상을 받습니다. 공정성을 위해 실시간 순위·점수는 대회가 끝난 뒤에 공개됩니다.",
   },
   {
     q: "전체 일정과 장소가 어떻게 되나요?",
@@ -265,7 +265,7 @@ export default async function Home() {
       <Section
         eyebrow="Awards"
         title="시상 및 심사"
-        desc="최종 발표 심사와 주민투표 결과를 반영해 수상팀을 선정합니다."
+        desc="최종발표 심사로 4팀을 선정하고, 전시 기간 주민투표로 그중 대상을 가립니다."
       >
         <RevealGroup className="grid gap-4 sm:grid-cols-3">
           {AWARDS.map((a) => (
@@ -282,6 +282,19 @@ export default async function Home() {
 
         <Reveal>
           <div className="card">
+            <h3 className="mb-1 font-bold">선정 방식</h3>
+            <ol className="mb-5 flex flex-col gap-2 text-sm text-[var(--muted)]">
+              <li>
+                <b className="text-ink">1차 · 10.9 최종발표</b> — 심사위원 평가와
+                참가 팀 상호평가를 <b className="text-ink">2 : 1</b> 로 합산해{" "}
+                <b className="text-ink">상위 4팀</b> 선정
+              </li>
+              <li>
+                <b className="text-ink">2차 · 10.10–10.12 전시</b> — 선정된 4팀을
+                대상으로 주민투표. 1위가 노원구청장 표창, 나머지 3팀이 총장상
+              </li>
+            </ol>
+
             <h3 className="mb-1 font-bold">최종 심사 기준</h3>
             <p className="mb-4 text-sm text-[var(--muted)]">
               합계 100점. 팀당 5분 발표 후 질의응답이 진행됩니다.

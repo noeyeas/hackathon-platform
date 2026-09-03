@@ -167,6 +167,10 @@ export default async function ScoringProgressPage() {
 
       {/* 실시간 집계 */}
       <Section title="실시간 집계">
+        <p className="mb-3 text-xs text-[var(--muted)]">
+          1차 점수 = 심사 · 팀 상호평가(2:1). 주민표는 섞이지 않고, 선정된
+          4팀 안에서 순서만 가릅니다 — 표는 시상 순서대로 정렬됩니다.
+        </p>
         {rankings && rankings.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="tbl min-w-[520px]">
@@ -176,12 +180,13 @@ export default async function ScoringProgressPage() {
                   <th className="!text-right">심사</th>
                   <th className="!text-right">팀 점수</th>
                   <th className="!text-right">주민</th>
-                  <th className="!text-right">종합</th>
+                  <th className="!text-right">1차 점수</th>
+                  <th>선정</th>
                 </tr>
               </thead>
               <tbody>
                 {rankings.map((r, i) => (
-                  <tr key={r.project_id}>
+                  <tr key={r.project_id} className={r.is_finalist ? "bg-gold-soft/40" : ""}>
                     <td>
                       <span className="mr-2 font-bold tabular-nums">{i + 1}</span>
                       {r.team_name}
@@ -190,6 +195,15 @@ export default async function ScoringProgressPage() {
                     <td className="num">{r.team_votes}</td>
                     <td className="num">{r.audience_votes}</td>
                     <td className="num font-bold text-navy">{r.final_score}</td>
+                    <td>
+                      {r.is_finalist ? (
+                        <span className="badge-gold">
+                          {i === 0 ? "대상" : "총장상"}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[var(--muted)]">—</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

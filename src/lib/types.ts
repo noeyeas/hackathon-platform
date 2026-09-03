@@ -45,15 +45,26 @@ export type Ranking = {
   judge_score: number;
   team_votes: number;
   audience_votes: number;
+  // 1차 점수(심사 + 팀 상호평가). 주민표는 섞이지 않는다.
   final_score: number;
+  stage1_rank: number;
+  is_finalist: boolean;
 };
 
-// 종합 점수 가중치 (심사 / 팀 상호 / 주민) — 합이 1이 되도록
+// 1차 선정 가중치 (심사 / 팀 상호). 주민(audience)은 1차 점수에 들어가지
+// 않지만, 예전 설정값과 모양을 맞추려고 키는 남겨둔다.
+//
+// 2단계 구조라 이 두 값의 "비율"만 의미가 있다 — rankings 뷰(0040)가
+// (judge + team) 으로 나눠 다시 100점으로 되돌리기 때문이다. 0.5 : 0.25 는
+// 곧 2 : 1 이다.
 export const SCORE_WEIGHTS = {
   judge: 0.5,
   team: 0.25,
   audience: 0.25,
 } as const;
+
+// 1차 선정 팀 수. DB 의 event_settings.finalist_count 기본값과 같아야 한다.
+export const FINALIST_COUNT = 4;
 
 // 공지 분류 — DB 의 announcements.category 체크 제약과 같은 집합을 쓴다.
 export type NoticeCategory = "general" | "schedule" | "rule" | "submit";
@@ -101,7 +112,17 @@ export function toProjectTrack(value: unknown): ProjectTrack | null {
 }
 
 // 상위 3팀 시상 이름 (결과 공개 후 갤러리·결과 페이지에서 공통 사용)
-export const AWARD_LABELS = ["대상", "최우수", "우수"] as const;
+// 시상 순서 = rankings 뷰의 표시 순서(0040).
+// 1차 상위 4팀 중 주민투표 1위가 대상, 나머지 셋이 총장상이다.
+export const AWARD_LABELS = ["대상", "총장상", "총장상", "총장상"] as const;
+
+// 배지에는 짧게 쓰고, 설명이 필요한 곳에서는 기획(안)의 정식 명칭을 쓴다.
+export const AWARD_FULL_LABELS = [
+  "노원구청장 표창",
+  "광운대학교 총장상",
+  "광운대학교 총장상",
+  "광운대학교 총장상",
+] as const;
 
 export const PHASE_LABEL: Record<EventPhase, string> = {
   signup: "참가 신청",
