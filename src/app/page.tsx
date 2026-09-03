@@ -261,6 +261,57 @@ export default async function Home() {
         </RevealGroup>
       </Section>
 
+      {/* ===== 공식 홍보물 (Poster) ===== */}
+      <Section
+        eyebrow="Poster"
+        title="공식 포스터"
+        desc="행사 정보를 한 장으로 정리했습니다. 주변에 공유해 주세요."
+      >
+        <Reveal>
+          <div className="grid items-start gap-5 sm:grid-cols-[minmax(0,22rem)_1fr]">
+            {/* 원본이 큰 이미지라 next/image 로 리사이즈해 내려보낸다.
+                sizes 를 주지 않으면 모바일에도 전체 폭 원본이 간다. */}
+            <a
+              href="/해커톤_포스터.png"
+              target="_blank"
+              rel="noreferrer"
+              className="block overflow-hidden rounded-lg border border-[var(--line)] transition hover:-translate-y-1 hover:shadow-md"
+            >
+              <Image
+                src="/해커톤_포스터.png"
+                alt="2026 광운대학교 KW해커톤 공식 포스터"
+                width={2380}
+                height={3368}
+                sizes="(min-width: 640px) 22rem, 100vw"
+                className="h-auto w-full"
+              />
+            </a>
+
+            <div className="flex flex-col gap-4">
+              <div className="card">
+                <h3 className="mb-3 font-bold">한눈에 보기</h3>
+                <ul className="flex flex-col gap-1.5 text-sm text-[var(--muted)]">
+                  <li>· 접수 <b className="text-ink">9.7(월) – 9.14(월)</b></li>
+                  <li>· 개회식·OT <b className="text-ink">9.16(수)</b></li>
+                  <li>· 중간발표·멘토링 <b className="text-ink">9.28(월)</b></li>
+                  <li>· 본선 <b className="text-ink">10.8(목) – 10.9(금)</b> 무박 2일</li>
+                  <li>· 전시·주민투표 <b className="text-ink">10.10(토) – 10.12(월)</b></li>
+                  <li>· 장소 <b className="text-ink">광운대학교 80주년기념관</b></li>
+                </ul>
+              </div>
+              <a
+                href="/해커톤_포스터.png"
+                target="_blank"
+                rel="noreferrer"
+                className="btn-ghost self-start"
+              >
+                포스터 원본 열기 ↗
+              </a>
+            </div>
+          </div>
+        </Reveal>
+      </Section>
+
       {/* ===== 시상 · 심사 (Awards) ===== */}
       <Section
         eyebrow="Awards"

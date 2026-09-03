@@ -3,10 +3,16 @@
 type Org = { name: string; role: string; img?: string; contain?: boolean };
 
 const ORGS: Org[] = [
-  { name: "광운대학교 총학생회 이음", role: "주관", img: "/council.jpg" },
-  { name: "인공지능융합대학 학생회 하성", role: "주관", img: "/hasung.jpg" },
-  { name: "카카오페이", role: "후원", img: "/kakaopay.jpeg", contain: true },
-  { name: "월계1동 주민자치회", role: "협력", img: "/people.png", contain: true },
+  // 기획(안) I-☐행사 개요의 주최 / 협력·후원 목록과 같은 집합을 쓴다.
+  // 로고 파일이 없는 곳은 이름만 표시된다(Item 의 텍스트 대체).
+  { name: "광운대학교 총학생회 이음", role: "주최", img: "/council.jpg" },
+  { name: "인공지능융합대학 학생회 하성", role: "주최", img: "/hasung.jpg" },
+  { name: "노원구청", role: "협력·후원" },
+  { name: "광운대학교", role: "협력·후원" },
+  { name: "월계1동 주민자치회", role: "협력·후원", img: "/people.png", contain: true },
+  { name: "카카오페이", role: "협력·후원", img: "/Kakaopay_BI_Primary_Black.png", contain: true },
+  { name: "봉사동아리 소원", role: "협력·후원", img: "/sowon.png", contain: true },
+  { name: "매니패스트", role: "협력·후원", img: "/manifest.png", contain: true },
 ];
 
 function Item({ org }: { org: Org }) {
