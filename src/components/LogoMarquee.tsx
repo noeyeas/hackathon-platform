@@ -3,18 +3,19 @@
 type Org = { name: string; role: string; img?: string; contain?: boolean };
 
 const ORGS: Org[] = [
-  // 기획(안) I-☐행사 개요의 주최 / 협력·후원 목록과 같은 집합을 쓴다.
+  // 기획(안) I-☐행사 개요의 주최·주관 / 협력·후원 목록과 같은 집합을 쓴다.
+  // 주최·주관 3곳을 앞에 모으고 협력·후원이 뒤따른다.
   // 로고 파일이 없는 곳은 이름만 표시된다(Item 의 텍스트 대체).
-  { name: "광운대학교 총학생회 이음", role: "주최", img: "/council.jpg" },
-  { name: "인공지능융합대학 학생회 하성", role: "주최", img: "/hasung.jpg" },
+  { name: "광운대학교 총학생회 이음", role: "주최·주관", img: "/council.jpg" },
+  { name: "인공지능융합대학 학생회 하성", role: "주최·주관", img: "/hasung.jpg" },
+  { name: "월계1동 주민자치회", role: "주최·주관", img: "/people.png", contain: true },
   // 노원구 CI("문화도시 노원") 원본은 심볼 위에 워드마크가 얹힌 세로 조합형
-  // .ai 다. 세로 조합형을 28px 높이에 밀어 넣으면 글자가 뭉개지므로 심볼만
+  // .ai 다. 세로 조합형을 24px 높이에 밀어 넣으면 글자가 뭉개지므로 심볼만
   // 잘라 쓴다(기관명은 alt/title 로 붙는다). 원본은 design/ 에 둔다.
   { name: "노원구청", role: "협력·후원", img: "/nowon.png", contain: true },
   // 광운대 엠블럼은 정사각 캔버스를 꽉 채운 원형이라 가로형 로고와 같은
-  // 규칙(contain)을 쓰면 28px 짜리 붉은 점이 된다. 학생회 로고와 같은 원형 규칙으로 둔다.
+  // 규칙(contain)을 쓰면 24px 짜리 붉은 점이 된다. 학생회 로고와 같은 원형 규칙으로 둔다.
   { name: "광운대학교", role: "협력·후원", img: "/kwangwoon.jpeg" },
-  { name: "월계1동 주민자치회", role: "협력·후원", img: "/people.png", contain: true },
   { name: "카카오페이", role: "협력·후원", img: "/Kakaopay_BI_Primary_Black.png", contain: true },
   { name: "봉사동아리 소원", role: "협력·후원", img: "/sowon.png", contain: true },
   { name: "매니패스트", role: "협력·후원", img: "/manifest.png", contain: true },
