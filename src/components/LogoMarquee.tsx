@@ -7,8 +7,10 @@ const ORGS: Org[] = [
   // 로고 파일이 없는 곳은 이름만 표시된다(Item 의 텍스트 대체).
   { name: "광운대학교 총학생회 이음", role: "주최", img: "/council.jpg" },
   { name: "인공지능융합대학 학생회 하성", role: "주최", img: "/hasung.jpg" },
-  { name: "노원구청", role: "협력·후원" },
-  { name: "광운대학교", role: "협력·후원" },
+  { name: "노원구청", role: "협력·후원", img: "/nowon.png", contain: true },
+  // 광운대 엠블럼은 정사각 캔버스를 꽉 채운 원형이라 가로형 로고와 같은
+  // 규칙(contain)을 쓰면 28px 짜리 붉은 점이 된다. 학생회 로고와 같은 원형 규칙으로 둔다.
+  { name: "광운대학교", role: "협력·후원", img: "/kwangwoon.jpeg" },
   { name: "월계1동 주민자치회", role: "협력·후원", img: "/people.png", contain: true },
   { name: "카카오페이", role: "협력·후원", img: "/Kakaopay_BI_Primary_Black.png", contain: true },
   { name: "봉사동아리 소원", role: "협력·후원", img: "/sowon.png", contain: true },
@@ -16,9 +18,10 @@ const ORGS: Org[] = [
 ];
 
 function Item({ org }: { org: Org }) {
-  // 평소엔 흑백+흐리게, 호버하면 컬러로 또렷하게
-  const reveal =
-    "flex-none opacity-60 grayscale transition duration-500 hover:opacity-100 hover:grayscale-0";
+  // 후원·협력 기관 로고는 원본 색 그대로 둔다. 흑백/반투명 처리는 보기엔
+  // 깔끔하지만 대부분의 BI 가이드가 금지하는 변형이고, 후원사 입장에서
+  // "우리 로고만 흐리다"로 읽힌다.
+  const reveal = "flex-none transition duration-500 hover:scale-105";
   return (
     <div className="flex flex-none items-center px-10">
       {org.img ? (
@@ -28,7 +31,7 @@ function Item({ org }: { org: Org }) {
           title={`${org.role} · ${org.name}`}
           className={
             org.contain
-              ? `${reveal} h-4 w-auto object-contain`
+              ? `${reveal} h-7 w-auto max-w-[9rem] object-contain`
               : `${reveal} h-7 w-7 rounded-full object-cover`
           }
         />
