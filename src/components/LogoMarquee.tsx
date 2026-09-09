@@ -18,6 +18,8 @@ const ORGS: Org[] = [
   { name: "카카오페이", role: "협력·후원", img: "/Kakaopay_BI_Primary_Black.png", contain: true },
   { name: "봉사동아리 소원", role: "협력·후원", img: "/sowon.png", contain: true },
   { name: "매니패스트", role: "협력·후원", img: "/manifest.png", contain: true },
+  // 원형 엠블럼이라 광운대·학생회와 같은 원형 규칙으로 둔다.
+  { name: "전현직총학생회연합", role: "협력·후원", img: "/alliance.png" },
 ];
 
 function Item({ org }: { org: Org }) {
