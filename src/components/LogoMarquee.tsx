@@ -29,19 +29,19 @@ function Item({ org }: { org: Org }) {
   const reveal =
     "flex-none grayscale transition duration-500 hover:grayscale-0 hover:scale-105";
   return (
-    <div className="flex flex-none items-center px-10">
+    <div className="flex flex-none items-center px-8">
       {org.img ? (
         <img
           src={org.img}
           alt={org.name}
           title={`${org.role} · ${org.name}`}
           // 가로형은 높이만 맞추면 비율이 긴 로고가 그만큼 넓어진다 —
-          // 매니패스트(5.6:1)는 h-7 에서 157px 이 되어 28px 짜리 원형 로고
+          // 매니패스트(5.6:1)는 h-6 에서 134px 이 되어 24px 짜리 원형 로고
           // 옆에서 혼자 광고판처럼 보인다. 폭 상한으로 눌러 시각 면적을 맞춘다.
           className={
             org.contain
-              ? `${reveal} h-7 w-auto max-w-[4.5rem] object-contain`
-              : `${reveal} h-7 w-7 rounded-full object-cover`
+              ? `${reveal} h-6 w-auto max-w-[3.75rem] object-contain`
+              : `${reveal} h-6 w-6 rounded-full object-cover`
           }
         />
       ) : (
@@ -63,7 +63,7 @@ export function LogoMarquee() {
   const base = [...ORGS, ...ORGS, ...ORGS];
   const track = [...base, ...base];
   return (
-    <div className="bleed border-y border-[var(--line)] bg-white py-[1.125rem]">
+    <div className="bleed border-y border-[var(--line)] bg-white py-3.5">
       <div className="marquee-mask overflow-hidden">
         <div className="flex w-max animate-marquee items-center">
           {track.map((org, i) => (
