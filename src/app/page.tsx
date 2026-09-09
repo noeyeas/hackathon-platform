@@ -228,7 +228,7 @@ export default async function Home() {
 
       {/* ===== 주제 (Theme) ===== */}
       <Section eyebrow="Theme" title="해커톤 주제" desc="월계1동을 비롯한 지역사회의 생활 밀착형 문제 해결을 위한 웹·애플리케이션 개발">
-        <RevealGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <RevealGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {THEMES.map((t) => (
             <div
               key={t.t}
