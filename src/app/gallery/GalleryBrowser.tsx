@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { TeamName } from "@/components/TeamName";
@@ -16,8 +15,6 @@ export type GalleryItem = {
   title: string;
   description: string | null;
   track: ProjectTrack | null;
-  /** 팀이 올린 예시 이미지. 없으면 제목 첫 글자로 대체한다. */
-  thumbnailUrl: string | null;
   teamName: string;
   membersNote: string | null;
   views: number;
@@ -179,21 +176,11 @@ export function GalleryBrowser({
               href={`/gallery/${p.id}`}
               className="group flex flex-col rounded-lg border border-[var(--line)] bg-white transition hover:border-navy/40 hover:shadow-sm"
             >
-              {/* 썸네일 — 팀이 올린 예시 이미지, 없으면 제목 첫 글자 */}
+              {/* 썸네일 자리 — 이미지가 없어 제목 첫 글자를 크게 얹는다 */}
               <div className="tile-pattern relative flex aspect-[16/10] items-center justify-center overflow-hidden rounded-t-lg border-b border-[var(--line)] bg-paper">
-                {p.thumbnailUrl ? (
-                  <Image
-                    src={p.thumbnailUrl}
-                    alt=""
-                    fill
-                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                    className="object-cover transition duration-300 group-hover:scale-[1.03]"
-                  />
-                ) : (
-                  <span className="font-title text-4xl font-bold text-navy/25">
-                    {p.title.trim().charAt(0) || "?"}
-                  </span>
-                )}
+                <span className="font-title text-4xl font-bold text-navy/25">
+                  {p.title.trim().charAt(0) || "?"}
+                </span>
                 {p.awardLabel && (
                   <span
                     className={`absolute left-3 top-3 ${
