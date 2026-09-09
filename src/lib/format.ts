@@ -67,12 +67,41 @@ export function safeUrl(url: string | null | undefined): string {
   return url && /^https?:\/\//i.test(url) ? url : "#";
 }
 
-// datetime-local input 값으로 변환 (YYYY-MM-DDTHH:mm)
-export function toLocalInput(iso: string | null | undefined): string {
+// datetime-local input 값으로 변환 (YYYY-MM-DDTHH:mm) — 항상 KST 벽시계.
+//
+// getFullYear/getHours 로 만들면 "코드가 도는 곳의 시간대"가 된다. 브라우저는
+// KST 지만 Vercel 서버는 UTC 라, 같은 값이 SSR 에서 9시간 다르게 찍히고
+// (하이드레이션 불일치) 저장 왕복마다 시각이 밀린다. 표시(formatDateTime)가
+// KST 고정이므로 입력도 KST 고정으로 맞춘다.
+export function toKstInput(iso: string | null | undefined): string {
   if (!iso) return "";
   const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  if (Number.isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(d);
+  const at = (type: string) =>
+    parts.find((x) => x.type === type)?.value ?? "00";
+  return `${at("year")}-${at("month")}-${at("day")}T${at("hour")}:${at("minute")}`;
+}
+
+// datetime-local 값(시간대 없는 벽시계 문자열)을 KST 로 읽어 ISO 로 바꾼다.
+//
+// new Date("2026-10-08T14:00") 은 시간대가 없으면 런타임 로컬로 해석된다 —
+// UTC 서버에서는 14:00Z(=23:00 KST)가 되어 운영진이 넣은 시각과 달라진다.
+// KST 는 DST 가 없으므로 오프셋을 +09:00 으로 붙여 못박는다.
+// 형식이 어긋나면 null — 호출부가 저장을 막고 사용자에게 알린다.
+export function kstInputToIso(input: string): string | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(input.trim());
+  if (!m) return null;
+  const ms = Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:00+09:00`);
+  return Number.isNaN(ms) ? null : new Date(ms).toISOString();
 }
 
 // 요일까지 붙인 기간 라벨 (예: "10.8(목) – 10.9(금)", 하루면 "9.16(수)").

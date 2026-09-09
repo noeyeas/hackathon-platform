@@ -8,6 +8,8 @@ import {
   formatMonthDay,
   formatMonthDayRange,
   formatMonthDayWeekdayRange,
+  toKstInput,
+  kstInputToIso,
 } from "../src/lib/format.ts";
 
 test("formatMonthDay — KST 기준으로 M.D 를 만든다", () => {
@@ -57,4 +59,29 @@ test("formatMonthDayWeekdayRange — 하루짜리는 한 번만 찍는다", () =
     formatMonthDayWeekdayRange("2026-09-16T03:00:00Z", "2026-09-16T09:00:00Z"),
     "9.16(수)"
   );
+});
+
+// 관리자 일정 입력의 왕복(입력칸 ← DB, DB ← 입력칸)은 반드시 KST 고정이어야
+// 한다. 런타임 로컬 시간대로 읽으면 브라우저(KST)와 Vercel 서버(UTC)가 9시간
+// 어긋나 저장할 때마다 시각이 밀린다. 이 테스트가 그 회귀를 막는다.
+test("toKstInput — 뷰어/서버 시간대와 무관하게 KST 벽시계를 찍는다", () => {
+  // 2026-10-08T05:00:00Z = 2026-10-08 14:00 KST
+  assert.equal(toKstInput("2026-10-08T05:00:00Z"), "2026-10-08T14:00");
+  // 자정 넘김: 2026-10-08T15:30:00Z = 2026-10-09 00:30 KST (h23 이라 24시 아님)
+  assert.equal(toKstInput("2026-10-08T15:30:00Z"), "2026-10-09T00:30");
+  assert.equal(toKstInput(null), "");
+  assert.equal(toKstInput("나쁜값"), "");
+});
+
+test("kstInputToIso — 시간대 없는 입력값을 KST 로 읽는다", () => {
+  assert.equal(kstInputToIso("2026-10-08T14:00"), "2026-10-08T05:00:00.000Z");
+  assert.equal(kstInputToIso("2026-10-09T00:30"), "2026-10-08T15:30:00.000Z");
+  assert.equal(kstInputToIso("이상한값"), null);
+  assert.equal(kstInputToIso(""), null);
+});
+
+test("KST 입력 왕복은 값을 바꾸지 않는다 (저장할 때마다 밀리는 버그)", () => {
+  for (const wall of ["2026-10-08T14:00", "2026-10-09T00:30", "2026-01-01T09:00"]) {
+    assert.equal(toKstInput(kstInputToIso(wall)), wall);
+  }
 });

@@ -3,6 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
+import { kstInputToIso } from "@/lib/format";
 import { revalidatePath, updateTag } from "next/cache";
 
 function revalidate() {
@@ -21,14 +22,18 @@ export async function addMilestone(formData: FormData) {
   const sort = Number(formData.get("sort") ?? 0);
   if (!label) return { error: "이름을 입력하세요 (예: 신청 마감)" };
   if (!raw) return { error: "날짜/시간을 선택하세요" };
-  if (endRaw && new Date(endRaw) < new Date(raw))
+  const targetIso = kstInputToIso(raw);
+  const endIso = endRaw ? kstInputToIso(endRaw) : null;
+  if (!targetIso || (endRaw && !endIso))
+    return { error: "날짜/시간 형식이 올바르지 않습니다" };
+  if (endIso && endIso < targetIso)
     return { error: "종료가 시작보다 빠릅니다" };
 
   const admin = createAdminClient();
   const { error } = await admin.from("milestones").insert({
     label,
-    target_at: new Date(raw).toISOString(),
-    ends_at: endRaw ? new Date(endRaw).toISOString() : null,
+    target_at: targetIso,
+    ends_at: endIso,
     place,
     sort,
   });
@@ -50,7 +55,11 @@ export async function updateMilestone(
   const endRaw = endsAt.trim();
   if (!l) return { error: "이름을 입력하세요" };
   if (!raw) return { error: "날짜/시간을 선택하세요" };
-  if (endRaw && new Date(endRaw) < new Date(raw))
+  const targetIso = kstInputToIso(raw);
+  const endIso = endRaw ? kstInputToIso(endRaw) : null;
+  if (!targetIso || (endRaw && !endIso))
+    return { error: "날짜/시간 형식이 올바르지 않습니다" };
+  if (endIso && endIso < targetIso)
     return { error: "종료가 시작보다 빠릅니다" };
 
   const admin = createAdminClient();
@@ -58,8 +67,8 @@ export async function updateMilestone(
     .from("milestones")
     .update({
       label: l,
-      target_at: new Date(raw).toISOString(),
-      ends_at: endRaw ? new Date(endRaw).toISOString() : null,
+      target_at: targetIso,
+      ends_at: endIso,
       place: place.trim() || null,
     })
     .eq("id", id);
@@ -88,10 +97,17 @@ export async function addScheduleItem(formData: FormData) {
   const detail = String(formData.get("detail") ?? "").trim() || null;
   const endRaw = String(formData.get("ends_at") ?? "").trim();
 
+  const startIso = kstInputToIso(raw);
+  const endIso = endRaw ? kstInputToIso(endRaw) : null;
+  if (!startIso || (endRaw && !endIso))
+    return { error: "날짜/시간 형식이 올바르지 않습니다" };
+  if (endIso && endIso < startIso)
+    return { error: "종료가 시작보다 빠릅니다" };
+
   const admin = createAdminClient();
   const { error } = await admin.from("schedule_items").insert({
-    starts_at: new Date(raw).toISOString(),
-    ends_at: endRaw ? new Date(endRaw).toISOString() : null,
+    starts_at: startIso,
+    ends_at: endIso,
     title,
     detail,
     sort: 0,
@@ -113,12 +129,19 @@ export async function updateScheduleItem(
   if (!raw) return { error: "날짜/시간을 선택하세요" };
   const endRaw = data.ends_at.trim();
 
+  const startIso = kstInputToIso(raw);
+  const endIso = endRaw ? kstInputToIso(endRaw) : null;
+  if (!startIso || (endRaw && !endIso))
+    return { error: "날짜/시간 형식이 올바르지 않습니다" };
+  if (endIso && endIso < startIso)
+    return { error: "종료가 시작보다 빠릅니다" };
+
   const admin = createAdminClient();
   const { error } = await admin
     .from("schedule_items")
     .update({
-      starts_at: new Date(raw).toISOString(),
-      ends_at: endRaw ? new Date(endRaw).toISOString() : null,
+      starts_at: startIso,
+      ends_at: endIso,
       title,
       detail: data.detail.trim() || null,
     })

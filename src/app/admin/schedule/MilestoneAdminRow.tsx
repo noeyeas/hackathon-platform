@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { updateMilestone, deleteMilestone } from "./actions";
-import { toLocalInput } from "@/lib/format";
+import { toKstInput } from "@/lib/format";
+import { useToast } from "@/components/Toast";
 
 export function MilestoneAdminRow({
   id,
@@ -18,14 +19,15 @@ export function MilestoneAdminRow({
   place: string | null;
 }) {
   const [labelText, setLabelText] = useState(label);
-  const [dateText, setDateText] = useState(() => toLocalInput(targetAt));
-  const [endText, setEndText] = useState(() => toLocalInput(endsAt));
+  const [dateText, setDateText] = useState(() => toKstInput(targetAt));
+  const [endText, setEndText] = useState(() => toKstInput(endsAt));
   const [placeText, setPlaceText] = useState(place ?? "");
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
+  const { toast, node: toastNode } = useToast();
 
-  const base = toLocalInput(targetAt);
-  const baseEnd = toLocalInput(endsAt);
+  const base = toKstInput(targetAt);
+  const baseEnd = toKstInput(endsAt);
   const dirty =
     labelText !== label ||
     dateText !== base ||
@@ -42,13 +44,17 @@ export function MilestoneAdminRow({
         placeText,
         endText
       );
-      if (!res?.error) setSaved(true);
+      if (res?.error) toast(res.error);
+      else setSaved(true);
     });
   }
 
   function remove() {
     if (!confirm("이 마일스톤을 삭제할까요?")) return;
-    startTransition(() => void deleteMilestone(id));
+    startTransition(async () => {
+      const res = await deleteMilestone(id);
+      if (res?.error) toast(res.error);
+    });
   }
 
   return (
@@ -113,6 +119,7 @@ export function MilestoneAdminRow({
           삭제
         </button>
       </div>
+      {toastNode}
     </div>
   );
 }
