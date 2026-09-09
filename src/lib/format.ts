@@ -74,3 +74,25 @@ export function toLocalInput(iso: string | null | undefined): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+
+// 요일까지 붙인 기간 라벨 (예: "10.8(목) – 10.9(금)", 하루면 "9.16(수)").
+// 홈 포스터 섹션의 '한눈에 보기'처럼 사람이 달력에 옮겨 적는 목록용 —
+// 타임라인 노드의 짧은 라벨(formatMonthDayRange)과 달리 요일이 필요하다.
+export function formatMonthDayWeekday(iso: string): string {
+  const d = new Date(iso);
+  const weekday = d.toLocaleDateString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    weekday: "short",
+  });
+  return `${formatMonthDay(iso)}(${weekday})`;
+}
+
+export function formatMonthDayWeekdayRange(
+  startIso: string,
+  endIso: string | null | undefined
+): string {
+  const start = formatMonthDayWeekday(startIso);
+  if (!endIso) return start;
+  const end = formatMonthDayWeekday(endIso);
+  return end === start ? start : `${start} – ${end}`;
+}

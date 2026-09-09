@@ -5,7 +5,7 @@ import { HeroTimeline } from "@/components/HeroTimeline";
 import { Reveal } from "@/components/Reveal";
 import { RevealGroup } from "@/components/RevealGroup";
 import { getTimeline } from "@/lib/remoteData";
-import { formatMonthDayRange } from "@/lib/format";
+import { formatMonthDayRange, formatMonthDayWeekdayRange } from "@/lib/format";
 
 // 구글 신청 폼 주소. 채우면 아래 ApplyButton 이 자동으로 활성 링크가 되고,
 // 비워두면 "준비 중" 비활성 버튼으로 표시된다.
@@ -72,11 +72,20 @@ const FAQ = [
     q: "순위는 어떻게 정해지나요?",
     a: "두 단계로 나뉩니다. 먼저 10.9 최종발표에서 심사위원 평가와 참가 팀 간 상호 평가(2:1)를 합산해 상위 4팀을 선정합니다. 이어서 10.10–10.12 전시 기간에 그 4팀만을 대상으로 주민투표를 진행해, 가장 많은 표를 받은 1팀이 노원구청장 표창을 받고 나머지 3팀이 광운대학교 총장상을 받습니다. 공정성을 위해 실시간 순위·점수는 대회가 끝난 뒤에 공개됩니다.",
   },
-  {
-    q: "전체 일정과 장소가 어떻게 되나요?",
-    a: "모집 9.7–9.14 → 9.16(수) 개회식·OT → 9.28(월) 중간발표·멘토링 → 10.8(목)–10.9(금) 본선(무박 2일) → 10.10(토)–10.12(월) 전시·주민투표 순으로 진행합니다. 장소는 광운대학교 80주년기념관이며, 발표는 310호에서 열립니다.",
-  },
 ];
+
+// 일정 답변만은 고정 문구로 둘 수 없다 — 위 '한눈에 보기'와 같은 이유로
+// milestones 에서 만들어 붙인다.
+function scheduleAnswer(
+  timeline: { label: string; target_at: string; ends_at: string | null }[],
+  venue: string | null
+): string {
+  const steps = timeline
+    .map((m) => `${formatMonthDayWeekdayRange(m.target_at, m.ends_at)} ${m.label}`)
+    .join(" → ");
+  const where = venue ? ` 장소는 ${venue}입니다.` : "";
+  return `${steps} 순으로 진행합니다.${where}`;
+}
 
 const KAKAO_OPENCHAT = "https://open.kakao.com/o/sJcelIai";
 
@@ -147,6 +156,18 @@ function InstagramIcon() {
 
 export default async function Home() {
   const timeline = await getTimeline();
+  // 대부분의 일정이 한 장소에서 열리므로 가장 많이 쓰인 place 를 대표 장소로
+  // 본다(비어 있으면 장소 줄 자체를 숨긴다).
+  const venue = timeline.reduce<string | null>((best, m) => {
+    if (!m.place) return best;
+    if (!best) return m.place;
+    const count = (p: string) => timeline.filter((x) => x.place === p).length;
+    return count(m.place) > count(best) ? m.place : best;
+  }, null);
+  const faq = [
+    ...FAQ,
+    { q: "전체 일정과 장소가 어떻게 되나요?", a: scheduleAnswer(timeline, venue) },
+  ];
   const timelineNodes = timeline.map((m) => ({
     date: formatMonthDayRange(m.target_at, m.ends_at),
     label: m.label,
@@ -290,13 +311,23 @@ export default async function Home() {
             <div className="flex flex-col gap-4">
               <div className="card">
                 <h3 className="mb-3 font-bold">한눈에 보기</h3>
+                {/* 히어로 타임라인과 같은 milestones 를 쓴다. 여기에 날짜를
+                    다시 적어두면 관리자가 일정을 고쳐도 이 목록만 옛 날짜로
+                    남는다 — 참가자가 가장 자주 옮겨 적는 자리라 위험하다. */}
                 <ul className="flex flex-col gap-1.5 text-sm text-[var(--muted)]">
-                  <li>· 접수 <b className="text-ink">9.7(월) – 9.14(월)</b></li>
-                  <li>· 개회식·OT <b className="text-ink">9.16(수)</b></li>
-                  <li>· 중간발표·멘토링 <b className="text-ink">9.28(월)</b></li>
-                  <li>· 본선 <b className="text-ink">10.8(목) – 10.9(금)</b> 무박 2일</li>
-                  <li>· 전시·주민투표 <b className="text-ink">10.10(토) – 10.12(월)</b></li>
-                  <li>· 장소 <b className="text-ink">광운대학교 80주년기념관</b></li>
+                  {timeline.map((m) => (
+                    <li key={m.label}>
+                      · {m.label}{" "}
+                      <b className="text-ink">
+                        {formatMonthDayWeekdayRange(m.target_at, m.ends_at)}
+                      </b>
+                    </li>
+                  ))}
+                  {venue ? (
+                    <li>
+                      · 장소 <b className="text-ink">{venue}</b>
+                    </li>
+                  ) : null}
                 </ul>
               </div>
               {/* 포스터 원본은 위 이미지 클릭으로 열리므로, 이 자리는
@@ -424,7 +455,7 @@ export default async function Home() {
               문의 전에 여기서 먼저 확인해 보세요.
             </p>
             <div className="mt-6 flex flex-col gap-2">
-              {FAQ.map((f) => (
+              {faq.map((f) => (
                 <details
                   key={f.q}
                   className="group rounded-lg border border-white/15 bg-white/5 transition hover:border-white/25"
