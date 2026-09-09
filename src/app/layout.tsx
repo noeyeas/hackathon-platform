@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   title: "KW해커톤",
   description: "기술을 통해 월계1동의 내일을 그리다",
   openGraph: {
-    // og:image 는 opengraph-image.tsx 가 자동 공급 (1200×630 동적 생성)
+    // og:image 는 opengraph-image.jpg (카드뉴스 1200×630) 가 자동 공급
     title: "2026 광운대학교 KW해커톤",
     description: "기술을 통해 월계1동의 내일을 그리다 · 광운대 80주년기념관",
     url: "/",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     type: "website",
   },
   twitter: {
-    // twitter:image 는 twitter-image.tsx 가 자동 공급
+    // twitter:image 는 twitter-image.jpg 가 자동 공급
     card: "summary_large_image",
     title: "2026 광운대학교 KW해커톤",
     description: "기술을 통해 월계1동의 내일을 그리다",
