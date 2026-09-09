@@ -35,6 +35,9 @@ function Item({ org }: { org: Org }) {
           src={org.img}
           alt={org.name}
           title={`${org.role} · ${org.name}`}
+          // 가로형은 높이만 맞추면 비율이 긴 로고가 그만큼 넓어진다 —
+          // 매니패스트(5.6:1)는 h-7 에서 157px 이 되어 28px 짜리 원형 로고
+          // 옆에서 혼자 광고판처럼 보인다. 폭 상한으로 눌러 시각 면적을 맞춘다.
           className={
             org.contain
               ? `${reveal} h-7 w-auto max-w-[4.5rem] object-contain`
