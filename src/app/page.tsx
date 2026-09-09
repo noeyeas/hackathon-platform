@@ -303,8 +303,8 @@ export default async function Home() {
               <Image
                 src="/해커톤_포스터.png"
                 alt="2026 광운대학교 KW해커톤 공식 포스터"
-                width={2380}
-                height={3368}
+                width={2320}
+                height={3460}
                 sizes="(min-width: 640px) 22rem, 100vw"
                 className="h-auto w-full"
               />
