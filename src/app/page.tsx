@@ -437,6 +437,13 @@ export default async function Home() {
                 </li>
               ))}
             </ul>
+
+            {/* 포스터 하단 고지 — 상금 재원을 밝히는 문구라 시상 카드와 같은
+                화면에 있어야 의미가 있다. */}
+            <p className="mt-5 border-t border-[var(--line)] pt-4 text-xs leading-relaxed text-[var(--muted)]">
+              본 행사의 부상은 카카오페이「디지털교육격차해소를 위한 IT 교육지원」
+              발전기금과 광운대학교 각 학생회 운영비를 재원으로 하여 지원됩니다.
+            </p>
           </div>
         </Reveal>
       </Section>

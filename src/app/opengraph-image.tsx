@@ -93,7 +93,7 @@ export default async function OpengraphImage() {
               color: "#94a3b8",
             }}
           >
-            9.16 – 10.12 · 광운대학교 80주년기념관
+            9.16 – 10.13 · 광운대학교 80주년기념관
           </div>
         </div>
       </div>
