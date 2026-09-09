@@ -25,7 +25,7 @@ export default async function GalleryPage() {
     supabase
       .from("projects")
       .select(
-        "id, title, description, track, view_count, submitted_at, teams(name, members_note)"
+        "id, title, description, track, thumbnail_url, view_count, submitted_at, teams(name, members_note)"
       ),
     supabase.from("event_settings").select("phase").single(),
     supabase.from("project_like_counts").select("project_id, likes"),
@@ -66,6 +66,7 @@ export default async function GalleryPage() {
       title: p.title,
       description: p.description,
       track: toProjectTrack(p.track),
+      thumbnailUrl: p.thumbnail_url ?? null,
       teamName: team?.name ?? "",
       membersNote: team?.members_note ?? null,
       views: p.view_count ?? 0,

@@ -56,7 +56,7 @@ export default async function SubmitPage() {
       // select("*") 는 쓰지 않는다 — 0035 에서 주민 득표수 컬럼 권한을
       // 회수하므로, * 로 읽으면 권한 없는 컬럼까지 요청해 실패한다.
       .select(
-        "id, title, description, track, repo_url, demo_url, video_url, deck_url"
+        "id, title, description, track, repo_url, demo_url, video_url, deck_url, thumbnail_url"
       )
       .eq("team_id", membership.team_id)
       .maybeSingle(),

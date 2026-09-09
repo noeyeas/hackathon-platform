@@ -69,7 +69,7 @@ export default async function MyPage() {
         supabase
           .from("projects")
           .select(
-            "id, title, description, track, repo_url, demo_url, video_url, deck_url, view_count"
+            "id, title, description, track, repo_url, demo_url, video_url, deck_url, thumbnail_url, view_count"
           )
           .eq("team_id", membership.team_id)
           .maybeSingle(),

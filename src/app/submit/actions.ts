@@ -1,10 +1,19 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { safeError } from "@/lib/actionError";
 import { toProjectTrack } from "@/lib/types";
 import { canSubmitProject } from "@/lib/submitWindow";
+
+// 예시 이미지(갤러리 썸네일) 업로드 제한 — 0041 의 버킷 설정과 같은 값.
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+const IMAGE_TYPES: Record<string, string> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
 
 export async function saveProject(formData: FormData) {
   const supabase = await createClient();
@@ -31,8 +40,38 @@ export async function saveProject(formData: FormData) {
   if (!membership.is_leader)
     return { error: "프로젝트 제출은 팀장만 할 수 있습니다" };
 
+  // 예시 이미지: 새 파일을 올릴 때만 교체하고, 아니면 기존 것을 유지한다
+  // (수정 저장할 때마다 다시 올리게 하면 번거롭다). "삭제" 를 체크하면 비운다.
+  const { data: existing } = await supabase
+    .from("projects")
+    .select("thumbnail_url")
+    .eq("team_id", membership.team_id)
+    .maybeSingle();
+  let thumbnailUrl: string | null = existing?.thumbnail_url ?? null;
+
+  if (formData.get("thumbnail_remove") === "on") thumbnailUrl = null;
+
+  const imageFile = formData.get("thumbnail_file");
+  if (imageFile instanceof File && imageFile.size > 0) {
+    const ext = IMAGE_TYPES[imageFile.type];
+    if (!ext)
+      return { error: "예시 이미지는 PNG·JPG·WEBP·GIF 만 올릴 수 있습니다" };
+    if (imageFile.size > MAX_IMAGE_BYTES)
+      return { error: "예시 이미지는 5MB 이하만 가능합니다" };
+
+    const admin = createAdminClient();
+    const path = `${membership.team_id}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await admin.storage
+      .from("thumbnails")
+      .upload(path, imageFile, { contentType: imageFile.type, upsert: true });
+    if (upErr) return { error: `이미지 업로드 실패: ${upErr.message}` };
+    thumbnailUrl = admin.storage.from("thumbnails").getPublicUrl(path)
+      .data.publicUrl;
+  }
+
   const payload = {
     team_id: membership.team_id,
+    thumbnail_url: thumbnailUrl,
     title: String(formData.get("title") ?? "").trim(),
     description: String(formData.get("description") ?? "").trim() || null,
     // 주제는 선택 — 알 수 없는 값이 오면 미지정으로 떨어뜨린다.

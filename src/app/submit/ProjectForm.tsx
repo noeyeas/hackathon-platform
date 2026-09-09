@@ -10,6 +10,7 @@ type Project = {
   video_url: string | null;
   deck_url: string | null;
   track?: string | null;
+  thumbnail_url?: string | null;
 } | null;
 
 // 프로젝트 제출/수정 폼 (제출 페이지·마이페이지 공용)
@@ -52,6 +53,33 @@ export function ProjectForm({ project }: { project: Project }) {
         className="input"
         placeholder="무엇을 만들었고 어떤 문제를 해결하나요?"
       />
+
+      <label className="label mt-4">예시 이미지</label>
+      {project?.thumbnail_url && (
+        // 업로드된 원본을 그대로 미리보기 — 지금 무엇이 걸려 있는지 확인용.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={project.thumbnail_url}
+          alt="현재 등록된 예시 이미지"
+          className="mb-2 aspect-[16/10] w-full max-w-xs rounded-lg border border-[var(--line)] object-cover"
+        />
+      )}
+      <input
+        name="thumbnail_file"
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        className="input !py-2 file:mr-3 file:rounded-md file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-sm"
+      />
+      <p className="mt-1.5 text-xs text-[var(--muted)]">
+        갤러리 카드의 썸네일로 쓰입니다. PNG·JPG·WEBP·GIF, 5MB 이하. 올리지
+        않으면 제목 첫 글자가 대신 표시돼요.
+      </p>
+      {project?.thumbnail_url && (
+        <label className="mt-2 flex items-center gap-2 text-sm text-[var(--muted)]">
+          <input type="checkbox" name="thumbnail_remove" />
+          등록된 예시 이미지 삭제
+        </label>
+      )}
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>

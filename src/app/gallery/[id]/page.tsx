@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
@@ -33,7 +34,7 @@ export default async function ProjectDetailPage({
     supabase
       .from("projects")
       .select(
-        "id, title, description, track, repo_url, demo_url, video_url, deck_url, view_count, teams(name, tagline, members_note)"
+        "id, title, description, track, repo_url, demo_url, video_url, deck_url, thumbnail_url, view_count, teams(name, tagline, members_note)"
       )
       .eq("id", id)
       .single(),
@@ -132,6 +133,20 @@ export default async function ProjectDetailPage({
           <span>♥ 응원 {likeCount}</span>
         </div>
       </div>
+
+      {/* 0) 예시 이미지 (올린 팀만) */}
+      {p.thumbnail_url && (
+        <div className="relative mt-6 aspect-[16/10] overflow-hidden rounded-lg border border-[var(--line)] bg-paper">
+          <Image
+            src={p.thumbnail_url}
+            alt={`${p.title} 예시 이미지`}
+            fill
+            sizes="(min-width: 768px) 768px, 100vw"
+            className="object-contain"
+            priority
+          />
+        </div>
+      )}
 
       {/* 1) 설명 */}
       <div className="card mt-6 whitespace-pre-wrap leading-relaxed">
