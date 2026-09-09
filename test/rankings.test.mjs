@@ -2,10 +2,11 @@
 // 뷰 SQL을 마이그레이션 파일에서 직접 읽어 WASM 내장 Postgres(pglite)로 실행하고,
 // 손계산 기대값과 대조한다. 뷰를 다시 수정하면(0013→0023→0040 처럼) 여기서 잡힌다.
 //
-// 검증하려는 구조(0040):
+// 검증하려는 구조(0040 → 0045):
 //   1차 — 심사위원 + 팀 상호평가만으로 상위 N팀(기본 4) 선정. 주민표는 섞이지 않는다.
 //   2차 — 그 N팀 안에서만 주민투표로 순서를 가른다(1위 = 노원구청장 표창).
 // 주민표가 1차 선정에 영향을 주지 않는다는 점이 이 테스트의 핵심이다.
+// 0045 부터 주민표는 운영진 수기 입력이 아니라 전시장 QR 투표 기록(audience_votes)이다.
 // 실행: npm test
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -20,14 +21,14 @@ const migration = join(
   "..",
   "supabase",
   "migrations",
-  "0040_two_stage_selection.sql"
+  "0045_audience_online_vote.sql"
 );
 
 // 마이그레이션에서 view 정의만 추출(뒤따르는 revoke 는 pglite 에 없는 롤을 참조하므로 제외).
 // 뷰 정의 안에는 세미콜론이 없다는 전제를 유지한다.
 function extractViewSql(path) {
   const sql = readFileSync(path, "utf8");
-  const start = sql.indexOf("create or replace view rankings");
+  const start = sql.indexOf("create view rankings");
   assert.notEqual(start, -1, "마이그레이션에서 rankings 뷰를 찾지 못함");
   const end = sql.indexOf(";", start);
   return sql.slice(start, end + 1);
@@ -45,8 +46,13 @@ async function setup({ finalistCount = 4 } = {}) {
     create table projects (
       id uuid primary key,
       team_id uuid not null references teams(id),
-      title text,
-      audience_votes_manual int not null default 0
+      title text
+    );
+    create table audience_ballots ( code text primary key );
+    create table audience_votes (
+      ballot_code text not null references audience_ballots(code),
+      project_id uuid not null references projects(id),
+      primary key (ballot_code, project_id)
     );
     create table criteria ( id uuid primary key, max_score int not null default 10 );
     create table judge_scores (
@@ -69,13 +75,17 @@ async function setup({ finalistCount = 4 } = {}) {
     insert into criteria(id,max_score) values ('${C1}',10),('${C2}',10);
     insert into teams(id,name) values
       ('${U(1)}','A'),('${U(2)}','B'),('${U(3)}','C'),('${U(4)}','D'),('${U(5)}','E');
-    insert into projects(id,team_id,title,audience_votes_manual) values
-      ('${U(11)}','${U(1)}','pA',10),
-      ('${U(12)}','${U(2)}','pB',90),
-      ('${U(13)}','${U(3)}','pC',25),
-      ('${U(14)}','${U(4)}','pD',0),
-      ('${U(15)}','${U(5)}','pE',200);
+    insert into projects(id,team_id,title) values
+      ('${U(11)}','${U(1)}','pA'),
+      ('${U(12)}','${U(2)}','pB'),
+      ('${U(13)}','${U(3)}','pC'),
+      ('${U(14)}','${U(4)}','pD'),
+      ('${U(15)}','${U(5)}','pE');
   `);
+
+  // 주민표 — 투표권(QR) 한 장이 한 팀에 한 표. 예전 수기 입력값과 같은 분포를
+  // 실제 표 행으로 깐다: pA 10, pB 90, pC 25, pD 0, pE 200.
+  await castAudienceVotes(db, { 11: 10, 12: 90, 13: 25, 14: 0, 15: 200 });
   const judge = { 11: 10, 12: 8, 13: 5, 14: 6 }; // pE 는 무점수
   for (const [pid, s] of Object.entries(judge))
     for (const J of [J1, J2])
@@ -94,6 +104,21 @@ async function setup({ finalistCount = 4 } = {}) {
 
   await db.exec(extractViewSql(migration));
   return db;
+}
+
+// 팀별 득표수만큼 서로 다른 투표권으로 표를 넣는다.
+async function castAudienceVotes(db, votesByProject) {
+  let n = 0;
+  for (const [pid, count] of Object.entries(votesByProject)) {
+    for (let i = 0; i < count; i++) {
+      const code = `B${String(n++).padStart(7, "0")}`;
+      await db.query(`insert into audience_ballots(code) values ($1)`, [code]);
+      await db.query(
+        `insert into audience_votes(ballot_code, project_id) values ($1, $2)`,
+        [code, U(pid)]
+      );
+    }
+  }
 }
 
 // 1차 점수 = (심사×0.5 + 팀×0.25) / 0.75
