@@ -311,15 +311,15 @@ export default async function Home() {
             </a>
 
             {/* 포스터와 위아래 끝을 맞춘다 — 그리드 기본 stretch 에 기대고
-                카드가 열 높이를 그대로 채우게 둔다. 세로가 남으면 목록이
-                위쪽에 몰려 허전해지므로 가운데로 모은다. */}
+                카드가 열 높이를 그대로 채우게 둔다. 남는 세로는 목록 줄
+                사이로 나눠 준다(가운데로 모으면 글자만 뭉쳐 보인다). */}
             <div className="flex flex-col gap-4">
-              <div className="card flex flex-1 flex-col justify-center">
+              <div className="card flex flex-1 flex-col">
                 <h3 className="mb-3 font-bold">한눈에 보기</h3>
                 {/* 히어로 타임라인과 같은 milestones 를 쓴다. 여기에 날짜를
                     다시 적어두면 관리자가 일정을 고쳐도 이 목록만 옛 날짜로
                     남는다 — 참가자가 가장 자주 옮겨 적는 자리라 위험하다. */}
-                <ul className="flex flex-col gap-1.5 text-sm text-[var(--muted)]">
+                <ul className="flex flex-1 flex-col justify-around gap-1.5 text-sm text-[var(--muted)]">
                   {timeline.map((m) => (
                     <li key={m.label}>
                       · {m.label}{" "}
