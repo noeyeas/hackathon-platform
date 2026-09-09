@@ -23,10 +23,11 @@ const ORGS: Org[] = [
 ];
 
 function Item({ org }: { org: Org }) {
-  // 후원·협력 기관 로고는 원본 색 그대로 둔다. 흑백/반투명 처리는 보기엔
-  // 깔끔하지만 대부분의 BI 가이드가 금지하는 변형이고, 후원사 입장에서
-  // "우리 로고만 흐리다"로 읽힌다.
-  const reveal = "flex-none transition duration-500 hover:scale-105";
+  // 기관마다 원색이 제각각이라 스트립이 산만해져서 흑백으로 통일한다.
+  // 대신 호버하면 원본 색으로 돌아온다. 불투명도는 100 으로 둔다 — 흑백에
+  // 반투명까지 겹치면 노원구 CI 처럼 밝은 색 로고가 거의 안 보인다.
+  const reveal =
+    "flex-none grayscale transition duration-500 hover:grayscale-0 hover:scale-105";
   return (
     <div className="flex flex-none items-center px-10">
       {org.img ? (
@@ -36,7 +37,7 @@ function Item({ org }: { org: Org }) {
           title={`${org.role} · ${org.name}`}
           className={
             org.contain
-              ? `${reveal} h-7 w-auto max-w-[9rem] object-contain`
+              ? `${reveal} h-7 w-auto max-w-[4.5rem] object-contain`
               : `${reveal} h-7 w-7 rounded-full object-cover`
           }
         />

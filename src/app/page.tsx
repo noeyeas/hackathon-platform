@@ -11,13 +11,14 @@ import { formatMonthDayRange, formatMonthDayWeekdayRange } from "@/lib/format";
 // 비워두면 "준비 중" 비활성 버튼으로 표시된다.
 const APPLY_FORM_URL = "https://forms.gle/KDkrR7bC9GgssgAa7";
 
-// 4개 주제 카드(기획(안) II-☐해커톤 주제). 순서·명칭은 기획(안)을 따른다.
+// 5개 주제 카드(모집 공고 ■주제). 순서·명칭은 공고를 따른다.
 // 배경은 웜 아이보리 계열로 낮추고 강조색만 주제별로 다르게 둔다.
 const THEMES = [
   { icon: "🏪", t: "상권 활성화", en: "Local Commerce", d: "소상공인과 주민을 디지털로 연결해 월계1동 골목상권의 경쟁력 강화", tint: "#faf4e8", ring: "#ece0c6", chip: "#f1e6cf", accent: "#8a6a12" },
-  { icon: "🛡️", t: "생활안전", en: "Public Safety", d: "보행·야간 안전, 재난 대응 등 주민의 일상 안전을 기술로 보완", tint: "#f9f0ee", ring: "#ecd9d3", chip: "#f1e2dd", accent: "#a53a1c" },
   { icon: "♻️", t: "탄소중립 및 ESG", en: "Carbon Neutral", d: "탄소 배출 저감·자원 순환·친환경 생활을 유도하는 플랫폼으로 일상 속 ESG 실현", tint: "#f2f5ef", ring: "#dfe6d8", chip: "#e5ecdd", accent: "#3f6b3a" },
-  { icon: "🧩", t: "기타 (지역 연계형)", en: "Open Track", d: "위 세 분야에 속하지 않더라도 월계1동과 연계된 문제라면 자유롭게 제안", tint: "#eff1f7", ring: "#d9dee9", chip: "#e2e7f0", accent: "#2c3767" },
+  { icon: "🤝", t: "청년·지역 상생", en: "Youth & Community", d: "청년과 지역 주민이 함께 성장하도록 잇는 서비스", tint: "#f9f0ee", ring: "#ecd9d3", chip: "#f1e2dd", accent: "#a53a1c" },
+  { icon: "🦽", t: "배리어프리 및 생활 편의", en: "Barrier-free", d: "이동 약자의 접근성과 주민의 일상 편의를 기술로 보완", tint: "#eef4f4", ring: "#d6e3e3", chip: "#dfeaea", accent: "#1f5f5b" },
+  { icon: "🧩", t: "기타", en: "Open Track", d: "위 분야에 속하지 않더라도 월계1동과 연계된 문제라면 자유롭게 제안", tint: "#eff1f7", ring: "#d9dee9", chip: "#e2e7f0", accent: "#2c3767" },
 ];
 
 // 시상 내역(기획(안) II-☐수상작 시상). 상금 액수는 기획(안) 예산안 기준.
@@ -50,7 +51,7 @@ const FAQ = [
   },
   {
     q: "팀은 몇 명으로 구성해야 하나요?",
-    a: "팀당 최소 2인 ~ 최대 4인입니다. 개인 신청은 받지 않으며, 전공 다양성과 4인 구성에는 가산점이 있습니다.",
+    a: "팀당 최소 2인 ~ 최대 4인입니다. 참가 대상은 광운대학교 재학생 및 휴학생이며, 개인 신청은 받지 않습니다. 전공 다양성과 4인 구성에는 가산점이 있습니다.",
   },
   {
     q: "참가비가 있나요? 돌려받을 수 있나요?",
@@ -58,11 +59,11 @@ const FAQ = [
   },
   {
     q: "몇 팀을 뽑고, 선정 기준은 무엇인가요?",
-    a: "25~30팀을 선정합니다. 신청이 초과되면 전공 다양성과 인원수(4명) 가산점을 기준으로 선정합니다.",
+    a: "총 30팀을 선정합니다. 신청이 초과되면 전공 다양성과 인원수(4명) 가산점을 기준으로 선정합니다.",
   },
   {
     q: "어떤 주제로 개발하나요?",
-    a: "월계1동 지역사회 문제를 해결하는 웹·애플리케이션을 만듭니다. 상권 활성화, 생활안전, 탄소중립 및 ESG, 기타(지역 연계형) — 4개 분야 중에서 정하면 됩니다. 특정 분야에 쏠리지 않도록 주제당 10팀으로 제한할 예정입니다.",
+    a: "월계1동 지역사회 문제를 해결하는 웹·애플리케이션을 만듭니다. 상권 활성화, 탄소중립 및 ESG, 청년·지역 상생, 배리어프리 및 생활 편의, 기타 — 5개 분야 중에서 정하면 됩니다.",
   },
   {
     q: "무엇을 제출해야 하나요?",
@@ -70,7 +71,7 @@ const FAQ = [
   },
   {
     q: "순위는 어떻게 정해지나요?",
-    a: "두 단계로 나뉩니다. 먼저 10.9 최종발표에서 심사위원 평가와 참가 팀 간 상호 평가(2:1)를 합산해 상위 4팀을 선정합니다. 이어서 10.10–10.12 전시 기간에 그 4팀만을 대상으로 주민투표를 진행해, 가장 많은 표를 받은 1팀이 노원구청장 표창을 받고 나머지 3팀이 광운대학교 총장상을 받습니다. 공정성을 위해 실시간 순위·점수는 대회가 끝난 뒤에 공개됩니다.",
+    a: "두 단계로 나뉩니다. 먼저 10.9 최종발표에서 심사위원 평가와 참가 팀 간 상호 평가(2:1)를 합산해 상위 4팀을 선정합니다. 이어서 10.11–10.13 전시 기간에 그 4팀만을 대상으로 주민투표를 진행해, 가장 많은 표를 받은 1팀이 노원구청장 표창을 받고 나머지 3팀이 광운대학교 총장상을 받습니다. 공정성을 위해 실시간 순위·점수는 대회가 끝난 뒤에 공개됩니다.",
   },
 ];
 
@@ -257,7 +258,8 @@ export default async function Home() {
             <h3 className="mb-3 font-bold">팀 구성</h3>
             <ul className="flex flex-col gap-1.5 text-sm text-[var(--muted)]">
               <li>· 팀당 <b className="text-ink">최소 2인 ~ 최대 4인</b></li>
-              <li>· 총 <b className="text-ink">25~30팀</b> 선정</li>
+              <li>· 총 <b className="text-ink">30팀</b> 선정</li>
+              <li>· 광운대학교 재학생·휴학생</li>
               <li>· 개인 신청 불가</li>
               <li>· 전공 다양성·인원수(4명) 가산점</li>
               <li>· 초과 시 가산점 기준으로 선정</li>
@@ -272,7 +274,7 @@ export default async function Home() {
           </div>
           <div className="card h-full">
             <h3 className="mb-3 font-bold">모집 기간</h3>
-            <p className="text-2xl font-bold">9.7 – 9.14</p>
+            <p className="text-2xl font-bold">9.9 – 9.14</p>
             <ApplyButton
               className="btn-primary mt-3 w-full"
               label="신청 폼 열기"
@@ -411,7 +413,7 @@ export default async function Home() {
                 <b className="text-ink">상위 4팀</b> 선정
               </li>
               <li>
-                <b className="text-ink">2차 · 10.10–10.12 전시</b> — 선정된 4팀을
+                <b className="text-ink">2차 · 10.11–10.13 전시</b> — 선정된 4팀을
                 대상으로 주민투표. 1위가 노원구청장 표창, 나머지 3팀이 총장상
               </li>
             </ol>
