@@ -71,7 +71,7 @@ const FAQ = [
   },
   {
     q: "순위는 어떻게 정해지나요?",
-    a: "두 단계로 나뉩니다. 먼저 10.9 최종발표에서 심사위원 평가와 참가 팀 간 상호 평가(2:1)를 합산해 상위 10~15팀을 전시 진출팀으로 선정합니다. 이어서 10.11–10.13 전시 기간에 전시 진출팀을 대상으로 주민투표를 진행해, 가장 많은 표를 받은 1팀이 노원구청장 표창을 받고 2~4위 3팀이 광운대학교 총장상을 받습니다. 공정성을 위해 실시간 순위·점수는 대회가 끝난 뒤에 공개됩니다.",
+    a: "두 단계로 나뉩니다. 먼저 10.9 최종발표에서 심사위원 평가와 참가 팀 간 상호 평가(2:1)를 합산해 상위 10~15팀을 전시 진출팀으로 선정합니다. 이어서 10.11–10.13 전시 기간에 전시 진출팀을 대상으로 주민투표를 진행해, 가장 많은 표를 받은 1팀이 노원구청장 표창을 받고 2~4위 3팀이 광운대학교 총장상을 받습니다. 수상하지 못하더라도 전시 진출팀 전원에게는 전시 진출 확인서를 발급합니다. 공정성을 위해 실시간 순위·점수는 대회가 끝난 뒤에 공개됩니다.",
   },
 ];
 
@@ -332,54 +332,7 @@ export default async function Home() {
                   ) : null}
                 </ul>
               </div>
-              {/* 포스터 원본은 위 이미지 클릭으로 열리므로, 이 자리는
-                  더 자세한 정보를 원하는 사람을 위한 기획(안)으로 둔다. */}
             </div>
-          </div>
-        </Reveal>
-
-        {/* 기획(안)은 링크로 걸면 잘 눌리지 않는다. 페이지 안에서 바로 넘겨
-            볼 수 있게 붙인다.
-            <object> 를 쓰는 이유 — iOS/안드로이드 일부 브라우저는 PDF 를
-            인라인으로 못 그린다. 그때 내부 자식 요소가 대체 화면으로 뜬다
-            (iframe 은 그냥 빈 화면이 된다). */}
-        <Reveal>
-          <div className="overflow-hidden rounded-lg border border-[var(--line)] bg-paper">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] px-4 py-2.5">
-              <p className="text-sm font-semibold">KW해커톤 기획(안)</p>
-              <a
-                href="/2026_KW해커톤_기획안.pdf"
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm font-medium text-navy hover:underline"
-              >
-                전체 화면으로 보기 ↗
-                <span className="ml-1.5 text-xs font-normal text-[var(--muted)]">
-                  PDF · 120KB
-                </span>
-              </a>
-            </div>
-
-            <object
-              data="/2026_KW해커톤_기획안.pdf#view=FitH"
-              type="application/pdf"
-              aria-label="2026 광운대학교 KW해커톤 기획(안)"
-              className="h-[70vh] max-h-[900px] min-h-[420px] w-full bg-white"
-            >
-              <div className="flex flex-col items-center gap-3 px-5 py-12 text-center">
-                <p className="text-sm text-[var(--muted)]">
-                  이 브라우저에서는 문서를 바로 볼 수 없어요.
-                </p>
-                <a
-                  href="/2026_KW해커톤_기획안.pdf"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-primary"
-                >
-                  기획(안) 열기 (PDF)
-                </a>
-              </div>
-            </object>
           </div>
         </Reveal>
       </Section>
@@ -415,6 +368,10 @@ export default async function Home() {
               <li>
                 <b className="text-ink">2차 · 10.11–10.13 전시</b> — 전시 진출팀을
                 대상으로 주민투표. 1위가 노원구청장 표창, 2~4위가 총장상
+              </li>
+              <li>
+                수상 여부와 무관하게 <b className="text-ink">전시 진출팀 전원</b>에게
+                전시 진출 확인서를 발급합니다
               </li>
             </ol>
 
