@@ -19,7 +19,7 @@ export function TeamName({
       {membersNote && (
         <span
           role="tooltip"
-          className="pointer-events-none absolute left-0 top-full z-30 mt-1.5 hidden w-max max-w-[240px] whitespace-pre-wrap rounded-lg bg-ink px-3 py-2 text-left text-xs leading-relaxed text-white shadow-lg group-hover/team:block"
+          className="pointer-events-none absolute bottom-full left-0 z-30 mb-1.5 hidden w-max max-w-[240px] whitespace-pre-wrap rounded-lg bg-ink px-3 py-2 text-left text-xs leading-relaxed text-white shadow-lg group-hover/team:block"
         >
           <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-white/50">
             팀원 구성
