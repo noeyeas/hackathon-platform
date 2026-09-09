@@ -11,17 +11,6 @@ export function formatDateTime(iso: string): string {
   });
 }
 
-// 일정 항목 표시용: 날짜 라벨(time_label)이 있으면 우선 사용,
-// 없으면 starts_at 을 시:분까지 포맷 (관리자 UI 로 추가한 시간 단위 일정)
-export function scheduleWhen(
-  timeLabel: string | null | undefined,
-  startsAt: string | null | undefined
-): string {
-  if (timeLabel && timeLabel.trim()) return timeLabel;
-  if (startsAt) return formatDateTime(startsAt);
-  return "—";
-}
-
 // KST 기준 "M.D" 라벨 (예: "9.18"). 홈 타임라인 노드 날짜 표시용.
 export function formatMonthDay(iso: string): string {
   const ymd = new Date(iso).toLocaleDateString("en-CA", {
