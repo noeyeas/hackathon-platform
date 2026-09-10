@@ -199,7 +199,7 @@ export default async function Home() {
                 className="text-transparent"
                 style={{ WebkitTextStroke: "1.5px rgba(255,255,255,0.9)" }}
               >
-                HACKATHON
+                KW HACKATHON
               </span>
             </h1>
             <p className="max-w-xl text-lg font-medium text-white/90 sm:text-xl">
