@@ -222,11 +222,6 @@ export default async function AdminPage() {
             title="공지 발행"
             desc="공지 작성·관리"
           />
-          <AdminLink
-            href="/admin/schedule"
-            title="홈 타임라인"
-            desc="타임라인 단계·D-day·장소"
-          />
         </div>
       </section>
     </div>
