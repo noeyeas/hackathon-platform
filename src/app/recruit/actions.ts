@@ -49,14 +49,11 @@ export async function createRecruitPost(formData: FormData) {
     contact: contact || null,
   };
 
-  let payload;
-  if (kind === "team") {
-    if (!teamId)
-      return { error: "팀원을 모집하려면 먼저 팀을 만들어 주세요." };
-    payload = { ...base, team_id: teamId, kind: "team" };
-  } else {
-    payload = { ...base, team_id: null, kind: "individual" };
-  }
+  // 팀 소속 여부와 무관하게 누구나 올릴 수 있다. 팀이 있으면 글을 팀에 연결한다.
+  const payload =
+    kind === "team"
+      ? { ...base, team_id: teamId, kind: "team" }
+      : { ...base, team_id: null, kind: "individual" };
 
   const { error } = await supabase.from("recruit_posts").insert(payload);
   if (error)

@@ -69,16 +69,6 @@ export function RecruitModal({
               />
             </div>
 
-            {isTeam && !hasTeam && (
-              <p className="mb-3 rounded-md border border-gold/30 bg-gold-soft px-3 py-2 text-sm text-gold-ink">
-                팀원 구함 글은 먼저{" "}
-                <Link href="/team" className="font-semibold underline">
-                  팀을 만든 뒤
-                </Link>{" "}
-                올릴 수 있어요.
-              </p>
-            )}
-
             <ActionForm
               action={createRecruitPost}
               submitLabel="등록하기"
