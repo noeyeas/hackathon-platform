@@ -67,7 +67,7 @@ export function BallotForm({
     return (
       <div className="card mx-auto max-w-md text-center">
         <p className="text-4xl">🎉</p>
-        <h1 className="display mt-3 text-xl">투표해 주셔서 고맙습니다!</h1>
+        <h1 className="display mt-3 text-xl">투표해 주셔서 감사합니다!</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
           소중한 한 표가 반영되었습니다. 결과는 전시가 끝난 뒤 공개됩니다.
         </p>

@@ -56,7 +56,7 @@ export default async function ExhibitVotePage({
   if (ballot.used_at)
     return (
       <Notice
-        title="투표해 주셔서 고맙습니다 🎉"
+        title="투표해 주셔서 감사합니다 🎉"
         body="이 투표권은 이미 사용되었습니다. 결과는 전시가 끝난 뒤 공개됩니다."
         gallery
       />
