@@ -288,7 +288,6 @@ export default async function Home() {
       <Section
         eyebrow="Poster"
         title="공식 포스터"
-        desc="행사 정보를 한 장으로 정리했습니다. 주변에 공유해 주세요."
       >
         <Reveal>
           <div className="grid gap-5 sm:grid-cols-[minmax(0,22rem)_1fr]">
