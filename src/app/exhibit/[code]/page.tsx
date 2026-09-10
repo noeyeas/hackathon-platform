@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/server";
-import { normalizeBallotCode } from "@/lib/ballot";
+import { normalizeBallotCode, DEVICE_COOKIE } from "@/lib/ballot";
 import { PROJECT_TRACK_LABEL, toProjectTrack, type Ranking } from "@/lib/types";
 import { BallotForm, type Candidate } from "./BallotForm";
 import { castAudienceVotes } from "./actions";
@@ -31,7 +32,7 @@ export default async function ExhibitVotePage({
       .single(),
     admin
       .from("audience_ballots")
-      .select("code, used_at")
+      .select("code, used_at, allow_shared_device")
       .eq("code", code)
       .maybeSingle(),
   ]);
@@ -60,6 +61,28 @@ export default async function ExhibitVotePage({
         gallery
       />
     );
+
+  // 이 폰이 이미 다른 투표권으로 투표했다면 후보를 보여주지 않는다(0048).
+  // 고르게 해놓고 제출 순간에 막으면, 전시장에서 한참 들여다본 사람이
+  // 헛수고를 한 셈이 된다 — 들어오는 길목에서 알려준다.
+  const deviceId = (await cookies()).get(DEVICE_COOKIE)?.value;
+  if (deviceId && !ballot.allow_shared_device) {
+    const { data: priorUse } = await admin
+      .from("audience_ballots")
+      .select("code")
+      .eq("device_id", deviceId)
+      .not("used_at", "is", null)
+      .neq("code", code)
+      .limit(1);
+    if (priorUse && priorUse.length > 0)
+      return (
+        <Notice
+          title="이 기기에서는 이미 투표하셨습니다"
+          body="투표권은 한 분당 한 장입니다. 아직 투표하지 않으셨다면 안내데스크에 말씀해 주세요."
+          gallery
+        />
+      );
+  }
 
   // 전시 진출팀만 후보. rankings 는 서비스 롤 전용이라(0022) 여기서 읽고
   // 점수·순위는 화면으로 내보내지 않는다 — 투표 중에 순위가 새면 안 된다.

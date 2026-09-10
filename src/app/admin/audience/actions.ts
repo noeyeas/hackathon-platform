@@ -3,12 +3,8 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
-import { generateBallotCode } from "@/lib/ballot";
+import { generateBallotCode, MAX_ISSUE_AT_ONCE } from "@/lib/ballot";
 import { revalidatePath } from "next/cache";
-
-// 한 번에 뽑는 투표권 매수 상한. 전시 3일 규모라 이 정도면 충분하고,
-// 실수로 0 을 하나 더 붙였을 때 수만 장이 생기는 것을 막는다.
-export const MAX_ISSUE_AT_ONCE = 500;
 
 // 주민투표 열림/닫힘. 참가 팀 상호평가(voting_open)와는 별개 스위치다 —
 // 전시는 최종발표가 끝난 뒤에 열리므로 같이 묶으면 둘 중 하나를 반드시 잘못 연다.
@@ -51,7 +47,15 @@ export async function setVotesPerBallot(n: number) {
 }
 
 // 투표권 발급 — 코드를 만들어 저장하고, 인쇄용으로 그대로 돌려준다.
-export async function issueBallots(count: number, batch: string) {
+//
+// allowSharedDevice 는 안내데스크 예외용이다(0048). 보통 투표권은 한 폰에서
+// 한 장만 쓸 수 있는데, 한 폰으로 가족 몫까지 찍어드리는 정상 상황까지
+// 막히므로 그때 내줄 장을 따로 뽑는다.
+export async function issueBallots(
+  count: number,
+  batch: string,
+  allowSharedDevice = false
+) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const n = Math.round(Number(count));
   if (!Number.isFinite(n) || n < 1)
@@ -66,7 +70,11 @@ export async function issueBallots(count: number, batch: string) {
   // 실패로 알리는 편이 낫다 — 운영진이 다시 누르면 된다).
   const codes = new Set<string>();
   while (codes.size < n) codes.add(generateBallotCode());
-  const rows = [...codes].map((code) => ({ code, batch: label }));
+  const rows = [...codes].map((code) => ({
+    code,
+    batch: label,
+    allow_shared_device: allowSharedDevice,
+  }));
 
   const admin = createAdminClient();
   const { error } = await admin.from("audience_ballots").insert(rows);

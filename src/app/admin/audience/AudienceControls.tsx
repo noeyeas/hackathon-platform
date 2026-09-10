@@ -7,8 +7,8 @@ import {
   setVotesPerBallot,
   issueBallots,
   deleteUnusedBallots,
-  MAX_ISSUE_AT_ONCE,
 } from "./actions";
+import { MAX_ISSUE_AT_ONCE } from "@/lib/ballot";
 
 export type Batch = {
   label: string; // 표시용 ("(라벨 없음)")
@@ -125,6 +125,7 @@ function PerBallot({ value, locked }: { value: number; locked: boolean }) {
 function IssueForm() {
   const [count, setCount] = useState("100");
   const [batch, setBatch] = useState("");
+  const [shared, setShared] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<number | null>(null);
@@ -163,7 +164,7 @@ function IssueForm() {
             setError(null);
             setDone(null);
             startTransition(async () => {
-              const res = await issueBallots(Number(count), batch);
+              const res = await issueBallots(Number(count), batch, shared);
               if (res?.error) {
                 setError(res.error);
                 return;
@@ -177,6 +178,22 @@ function IssueForm() {
           {pending ? "발급 중…" : "발급"}
         </button>
       </div>
+      <label className="mt-3 flex items-start gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={shared}
+          onChange={(e) => setShared(e.target.checked)}
+          className="mt-0.5"
+        />
+        <span>
+          공용 기기 허용 (안내데스크 예외용)
+          <span className="mt-0.5 block text-xs text-[var(--muted)]">
+            보통 투표권은 한 폰에서 한 장만 쓸 수 있습니다. 한 폰으로 가족
+            몫까지 찍어드려야 할 때 이 묶음을 내주세요.
+          </span>
+        </span>
+      </label>
+
       {error && (
         <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
           {error}
