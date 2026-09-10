@@ -8,7 +8,7 @@
 
 ## 📌 1. 프로젝트 개요 (Overview)
 
-- **개발 기간**: 2026.07 ~ (운영 중) · 커밋 191개 · 마이그레이션 37개
+- **개발 기간**: 2026.07 ~ (운영 중) · 커밋 242개 · 마이그레이션 49개
 - **배경 및 목적**: 30팀 규모 오프라인 해커톤의 운영을 구글 폼 + 스프레드시트 + 단톡방 조합으로 처리하던 방식을 하나의 웹 플랫폼으로 통합했습니다.
 
   기존 방식에서는 **① 신청·팀 편성·제출물이 서로 다른 문서에 흩어져 대조가 필요했고, ② 심사위원이 종이에 매긴 점수를 운영진이 옮겨 적어 계산 실수가 생겼으며, ③ 중간 순위가 새면 이후 평가가 흔들리고, ④ 대회 당일 공지·일정 변경이 단톡방에 묻혔습니다.**
@@ -82,14 +82,15 @@
 ```
 src/
 ├── app/
-│   ├── (참가자)  page · recruit · team · submit · gallery · vote · mypage · notice
+│   ├── (참가자)  page · recruit · team · submit · gallery · vote · mypage · notice · results
+│   ├── login · auth/  매직링크 / Google OAuth 콜백
 │   ├── exhibit/  [code]  전시장 QR 주민투표 (로그인 없음)
 │   ├── judge/    심사위원 채점
 │   ├── admin/    teams · scoring · audience · announcements · schedule · voting
 │   └── api/health  Supabase 자동 일시중단 방지용 크론 엔드포인트
-├── components/   Nav · Toast · Reveal · ScheduleBoard · LikeButton …
-└── lib/          auth · authGate · ballot · scoring · format · linkLeader · remoteData
-supabase/migrations/  0001 → 0037 (스키마 = 보안 정책 이력)
+├── components/   Nav · Toast · Reveal · HeroTimeline · LikeButton · ViewPing …
+└── lib/          auth · authGate · ballot · scoring · submitWindow · teamEdit · viewerHash · format …
+supabase/migrations/  0001 → 0049 (스키마 = 보안 정책 이력)
 test/                 rankings · scoring · submitWindow · viewerHash · format · authGate · ballot
 ```
 
@@ -145,6 +146,18 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
 - **문제**: 대회 준비 기간에 트래픽이 없으면 Supabase 프로젝트가 일시중단돼, 정작 필요한 날 DB 가 죽어 있을 위험이 있었습니다.
 - **해결**: `CRON_SECRET` 으로 인증되는 `/api/health` 엔드포인트를 두고 크론으로 주기 호출합니다. 시크릿 미설정 시 401 로 닫히므로 **설정 누락이 곧 방어 실패**임을 README 에 명시했습니다.
 
+### 8) 프로필 한 줄 때문에 로그인 자체가 막힌 문제 (0047)
+
+- **문제**: Google 로그인이 `500 unexpected_failure` 로 끝났습니다. 가입 트리거(`handle_new_user`)가 `on conflict (id)` 만 처리해, 같은 이메일이 다른 id 로 이미 있으면 `users.email` UNIQUE 위반이 났습니다. 트리거는 `auth.users` insert 와 같은 트랜잭션이라 **가입 전체가 롤백**되고 그 사용자는 영구히 로그인할 수 없었습니다.
+- **해결**: 프로필 생성 실패를 경고로 내리고 로그인은 통과시켰습니다. 대신 프로필 행이 없는 사용자가 생길 수 있어, 마이그레이션에 고아 행 점검 쿼리를 함께 남겼습니다.
+- **배움**: 인증 경로에 걸린 트리거는 **실패해도 인증을 막지 않아야** 합니다.
+
+### 9) 투표권 한 장 단위여서 한 사람이 여러 장을 쓸 수 있던 문제 (0048)
+
+- **문제**: 0045 의 중복 방지 단위는 "사람"이 아니라 "투표권 한 장"입니다. 전시장에서 QR 은 각자 폰으로 흩어져 찍히니, 두 장 집어가는 것을 배부자의 눈으로 잡을 수 없었습니다.
+- **해결**: 투표한 기기에 무작위 쿠키 표시를 남겨 투표권에 기록하고, 같은 기기가 다른 투표권을 찍으면 거절합니다. IP 를 쓰지 않은 이유는 전시장 와이파이가 모두 같은 IP 라 정상 투표까지 막히기 때문입니다. 한 폰으로 대신 찍어드리는 경우를 위해 **예외 투표권**을 남겼습니다.
+- **한계**: 시크릿창·폰 두 대면 우회됩니다. 목표는 가벼운 중복을 걷어내는 것이고, 작정한 조작은 배부 통제(1인 1장)로 막습니다.
+
 ---
 
 ## 📊 6. 점수 산정
@@ -155,13 +168,13 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
 1차 (최종발표)  점수 = 심사(100점 환산)·w_judge + 팀 상호 평가(100점 환산)·w_team
                        ─────────────────────────────────────────────────────
                                      w_judge + w_team          ← 만점이 100 이 되도록 되돌림
-                → 상위 finalist_count(기본 4)팀이 전시 진출
+                → 상위 finalist_count(기본 15)팀이 전시 진출
 
 2차 (전시)      진출팀만 대상으로 주민투표 득표수 순
-                → 1위 노원구청장 표창, 나머지 광운대학교 총장상
+                → 1위 노원구청장 표창, 2~4위 광운대학교 우수상
 ```
 
-가중치(`weights`)와 진출 팀 수(`finalist_count`)는 `/admin` 에서 조정합니다. 기본값 **심사 0.5 / 팀 상호 0.25**.
+가중치(`weights`)와 진출 팀 수(`finalist_count`)는 `/admin` 에서 조정합니다. 기본값 **심사 0.5 / 팀 상호 0.25** (2:1), 진출 팀 수 기본 **15** (0049).
 
 ### 무엇을 DB 가 막고, 무엇을 사람이 챙기는가
 
@@ -179,7 +192,7 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
 
 **사람이 챙겨야 하는 것**
 
-- **투표권 배부는 사람이 챙깁니다.** 코드 자체가 유일한 인증 수단이라, 한 사람이 여러 장을 받아가면 DB 는 그것을 구분하지 못합니다. 안내데스크에서 1인 1장 배부를 지켜야 합니다
+- **투표권 배부는 사람이 챙깁니다.** 기기 단위 차단(0048)이 가벼운 중복은 걷어내지만 시크릿창·다른 폰이면 우회됩니다. 안내데스크에서 1인 1장 배부를 지켜야 합니다
 - **투표권당 표 수는 투표를 열기 전에 정하세요.** 열려 있는 동안에는 바꿀 수 없습니다 — 앞사람이 더 많은 표를 쓴 셈이 되기 때문입니다
 - **팀 인원(2~4명) 검증은 완화돼 있습니다** (0019). 운영진이 확인하세요
 - **팀 생성·팀장 이메일 등록은 운영진 전용**입니다. 참가자는 팀장 이메일로 로그인할 때 자동 연결만 됩니다
