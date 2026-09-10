@@ -24,7 +24,7 @@ const archivo = localFont({
 
 export const metadata: Metadata = {
   // 상대 경로 이미지(og:image)를 절대 URL로 변환하는 기준. 공유 미리보기 필수.
-  metadataBase: new URL("https://hackathon-platform-sy04.vercel.app"),
+  metadataBase: new URL("https://www.kw-hackathon.co.kr"),
   title: "KW해커톤",
   description: "기술을 통해 월계1동의 내일을 그리다",
   openGraph: {
