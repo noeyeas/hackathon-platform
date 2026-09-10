@@ -24,7 +24,7 @@ async function requireLeaderTeam(
   return { teamId: membership.team_id as string };
 }
 
-// 항목 하나만 인라인 수정 (팀장, 마감 전). 팀 이름은 운영진 등록값으로 고정.
+// 항목 하나만 인라인 수정 (팀장, 수정이 열려 있을 때). 팀 이름은 운영진 등록값으로 고정.
 export async function updateTeamField(field: string, value: string) {
   const supabase = await createClient();
   const res = await requireLeaderTeam(supabase);
@@ -32,10 +32,10 @@ export async function updateTeamField(field: string, value: string) {
 
   const { data: settings } = await supabase
     .from("event_settings")
-    .select("team_edit_deadline")
+    .select("team_edit_open")
     .single();
-  if (!canEditTeam(settings?.team_edit_deadline))
-    return { error: "수정 기간이 종료되었습니다" };
+  if (!canEditTeam(settings?.team_edit_open))
+    return { error: "팀 정보 수정이 닫혀 있습니다" };
 
   const allowed = ["tagline", "members_note"];
   if (!allowed.includes(field))

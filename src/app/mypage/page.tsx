@@ -46,7 +46,7 @@ export default async function MyPage() {
       selectMembership(),
       supabase
         .from("event_settings")
-        .select("team_edit_deadline, submit_deadline")
+        .select("team_edit_open, project_submit_open")
         .single(),
     ]);
 
@@ -105,8 +105,8 @@ export default async function MyPage() {
     latestCommentAt = latest?.created_at ?? null;
   }
 
-  const canEdit = isLeader && canEditTeam(editSettings?.team_edit_deadline);
-  const canSubmit = canSubmitProject(editSettings?.submit_deadline);
+  const canEdit = isLeader && canEditTeam(editSettings?.team_edit_open);
+  const canSubmit = canSubmitProject(editSettings?.project_submit_open);
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5">
@@ -168,7 +168,7 @@ export default async function MyPage() {
                 />
                 {isLeader && !canEdit && (
                   <p className="text-xs text-[var(--muted)]">
-                    수정 기간이 종료되어 팀 정보를 변경할 수 없습니다.
+                    팀 정보 수정이 닫혀 있습니다. 수정이 필요하면 운영진에게 문의해 주세요.
                   </p>
                 )}
               </div>

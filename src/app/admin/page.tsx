@@ -5,6 +5,7 @@ import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { AdminPageHeader } from "./AdminPageHeader";
+import { OpenControls } from "./OpenControls";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,10 @@ export default async function AdminPage() {
     { data: judgeScores },
     { data: teamScores },
   ] = await Promise.all([
-    admin.from("event_settings").select("phase").single(),
+    admin
+      .from("event_settings")
+      .select("phase, team_edit_open, project_submit_open")
+      .single(),
     admin.from("teams").select("id, name").order("name"),
     admin.from("projects").select("team_id"),
     admin.from("criteria").select("id"),
@@ -99,6 +103,17 @@ export default async function AdminPage() {
           </Link>
         }
       />
+
+      {/* 참가자 화면 열고 닫기 — 날짜가 아니라 이 스위치가 유일한 기준이다(0046). */}
+      <section>
+        <h2 className="mb-3 font-title text-lg font-bold text-ink">
+          참가자 화면 열고 닫기
+        </h2>
+        <OpenControls
+          teamEditOpen={settings?.team_edit_open ?? true}
+          submitOpen={settings?.project_submit_open ?? true}
+        />
+      </section>
 
       {/* 한눈에 보는 진행률 — 숫자보다 "얼마나 남았나"가 먼저 읽히도록 바를 함께 둔다. */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
