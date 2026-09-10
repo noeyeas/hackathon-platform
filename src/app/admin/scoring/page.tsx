@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
-import { type Ranking } from "@/lib/types";
+import { AWARD_LABELS, type Ranking } from "@/lib/types";
 import { VotingControls } from "../voting/VotingControls";
 import { ResultsToggle } from "./ResultsToggle";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
@@ -158,7 +158,7 @@ export default async function ScoringProgressPage() {
       <Section title="실시간 집계">
         <p className="mb-3 text-xs text-[var(--muted)]">
           1차 점수 = 심사 · 팀 상호평가(2:1). 주민표(전시 QR 투표)는 섞이지
-          않고, 선정된 4팀 안에서 순서만 가릅니다 — 표는 시상 순서대로
+          않고, 전시 진출팀 안에서 순서만 가릅니다 — 표는 시상 순서대로
           정렬됩니다.
         </p>
         {rankings && rankings.length > 0 ? (
@@ -187,9 +187,12 @@ export default async function ScoringProgressPage() {
                     <td className="num font-bold text-navy">{r.final_score}</td>
                     <td>
                       {r.is_finalist ? (
-                        <span className="badge-gold">
-                          {i === 0 ? "대상" : "우수상"}
-                        </span>
+                        // 진출팀은 최대 15팀이지만 상은 상위 4팀뿐이다.
+                        i < AWARD_LABELS.length ? (
+                          <span className="badge-gold">{AWARD_LABELS[i]}</span>
+                        ) : (
+                          <span className="badge-line">전시 진출</span>
+                        )
                       ) : (
                         <span className="text-xs text-[var(--muted)]">—</span>
                       )}

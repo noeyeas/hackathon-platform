@@ -63,8 +63,9 @@ export const SCORE_WEIGHTS = {
   audience: 0.25,
 } as const;
 
-// 1차 선정 팀 수. DB 의 event_settings.finalist_count 기본값과 같아야 한다.
-export const FINALIST_COUNT = 4;
+// 1차 선정(전시 진출) 팀 수. DB 의 event_settings.finalist_count 기본값과
+// 같아야 한다(0049). 운영진이 10~15 사이에서 조정할 수 있고 상한이 기본값이다.
+export const FINALIST_COUNT = 15;
 
 // 공지 분류 — DB 의 announcements.category 체크 제약과 같은 집합을 쓴다.
 export type NoticeCategory = "general" | "schedule" | "rule" | "submit";
@@ -120,7 +121,8 @@ export function toProjectTrack(value: unknown): ProjectTrack | null {
 
 // 상위 3팀 시상 이름 (결과 공개 후 갤러리·결과 페이지에서 공통 사용)
 // 시상 순서 = rankings 뷰의 표시 순서(0040).
-// 1차 상위 4팀 중 주민투표 1위가 대상, 나머지 셋이 우수상이다.
+// 전시 진출팀(최대 15팀) 중 주민투표 1위가 대상, 2~4위가 우수상이다.
+// 즉 시상은 선정 팀 수와 무관하게 언제나 4팀이다.
 export const AWARD_LABELS = ["대상", "우수상", "우수상", "우수상"] as const;
 
 
