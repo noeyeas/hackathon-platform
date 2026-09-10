@@ -188,7 +188,7 @@ export default async function ScoringProgressPage() {
                     <td>
                       {r.is_finalist ? (
                         <span className="badge-gold">
-                          {i === 0 ? "대상" : "총장상"}
+                          {i === 0 ? "대상" : "우수상"}
                         </span>
                       ) : (
                         <span className="text-xs text-[var(--muted)]">—</span>

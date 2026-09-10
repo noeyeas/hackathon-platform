@@ -120,8 +120,8 @@ export function toProjectTrack(value: unknown): ProjectTrack | null {
 
 // 상위 3팀 시상 이름 (결과 공개 후 갤러리·결과 페이지에서 공통 사용)
 // 시상 순서 = rankings 뷰의 표시 순서(0040).
-// 1차 상위 4팀 중 주민투표 1위가 대상, 나머지 셋이 총장상이다.
-export const AWARD_LABELS = ["대상", "총장상", "총장상", "총장상"] as const;
+// 1차 상위 4팀 중 주민투표 1위가 대상, 나머지 셋이 우수상이다.
+export const AWARD_LABELS = ["대상", "우수상", "우수상", "우수상"] as const;
 
 
 export const PHASE_LABEL: Record<EventPhase, string> = {
