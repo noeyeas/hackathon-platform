@@ -1,12 +1,8 @@
-// 팀 정보(이름·한줄설명·팀원) 수정 마감.
-// 원천은 DB event_settings.team_edit_deadline. DB 값이 없을 때만 아래 기본값
-// 사용(안전 폴백). 날짜 변경은 코드 재배포 없이 event_settings 수정으로 처리.
-export const DEFAULT_TEAM_EDIT_DEADLINE = "2026-09-03T00:00:00+09:00";
-
-export function canEditTeam(
-  deadlineIso?: string | null,
-  now: Date = new Date()
-): boolean {
-  const deadline = deadlineIso ?? DEFAULT_TEAM_EDIT_DEADLINE;
-  return now.getTime() < new Date(deadline).getTime();
+// 팀 정보(한줄설명·팀원) 수정 열림 여부.
+// 원천은 DB event_settings.team_edit_open — 운영 대시보드의 토글이 곧 이 값이다.
+// 값을 못 읽었으면(null) 열어둔다. 조회 실패나 컬럼 누락 때문에 참가자가
+// 아무것도 못 하게 되는 쪽이, 잠깐 더 열려 있는 쪽보다 사고가 크다.
+// 닫는 판단은 언제나 운영진이 한다.
+export function canEditTeam(open?: boolean | null): boolean {
+  return open ?? true;
 }

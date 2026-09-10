@@ -29,7 +29,7 @@ export default async function ScoringProgressPage() {
     admin.from("criteria").select("id"),
     admin
       .from("projects")
-      .select("id, team_id, title, audience_votes_manual, teams(name)")
+      .select("id, team_id, title, teams(name)")
       .order("submitted_at"),
     admin.from("users").select("id, name, email").eq("role", "judge").order("name"),
     admin.from("judge_scores").select("judge_id, project_id, criteria_id"),
@@ -75,14 +75,6 @@ export default async function ScoringProgressPage() {
   const judgeComplete = judgeRows.filter((r) => r.complete).length;
   const teamCompleteCount = teamRows.filter((r) => r.complete).length;
 
-  // 주민 수기 입력용 행
-  const voteRows = projectList.map((p) => ({
-    id: p.id,
-    team: (p.teams as unknown as { name: string } | null)?.name ?? "",
-    title: p.title,
-    audience: p.audience_votes_manual ?? 0,
-  }));
-
   return (
     <div className="mx-auto max-w-2xl lg:mx-0">
       <AdminPageHeader
@@ -100,12 +92,9 @@ export default async function ScoringProgressPage() {
         }
       />
 
-      {/* 온라인 투표 ON/OFF + 주민 수기 입력 (수기 입력은 자체 토글) */}
+      {/* 심사·팀 상호평가 ON/OFF (전시 주민투표는 /admin/audience) */}
       <div className="mt-6">
-        <VotingControls
-          votingOpen={settings?.voting_open ?? false}
-          rows={voteRows}
-        />
+        <VotingControls votingOpen={settings?.voting_open ?? false} />
       </div>
 
       {/* 결과 공개 ON/OFF */}
@@ -168,8 +157,9 @@ export default async function ScoringProgressPage() {
       {/* 실시간 집계 */}
       <Section title="실시간 집계">
         <p className="mb-3 text-xs text-[var(--muted)]">
-          1차 점수 = 심사 · 팀 상호평가(2:1). 주민표는 섞이지 않고, 선정된
-          4팀 안에서 순서만 가릅니다 — 표는 시상 순서대로 정렬됩니다.
+          1차 점수 = 심사 · 팀 상호평가(2:1). 주민표(전시 QR 투표)는 섞이지
+          않고, 선정된 4팀 안에서 순서만 가릅니다 — 표는 시상 순서대로
+          정렬됩니다.
         </p>
         {rankings && rankings.length > 0 ? (
           <div className="overflow-x-auto">

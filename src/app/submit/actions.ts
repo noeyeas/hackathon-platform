@@ -22,13 +22,13 @@ export async function saveProject(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "로그인이 필요합니다" };
 
-  // 마감 후 수정 차단. 심사가 진행되는 중에 제출물이 바뀌면 채점 근거가
-  // 흔들리므로, 화면 숨김이 아니라 여기서 막아야 한다(RLS 로도 이중 방어).
+  // 제출이 닫힌 뒤의 수정 차단. 심사가 진행되는 중에 제출물이 바뀌면 채점
+  // 근거가 흔들리므로, 화면 숨김이 아니라 여기서 막아야 한다(RLS 로도 이중 방어).
   const { data: settings } = await supabase
     .from("event_settings")
-    .select("submit_deadline")
+    .select("project_submit_open")
     .single();
-  if (!canSubmitProject(settings?.submit_deadline))
+  if (!canSubmitProject(settings?.project_submit_open))
     return { error: "제출이 마감되었습니다" };
 
   const { data: membership } = await supabase

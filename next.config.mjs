@@ -5,6 +5,18 @@ const nextConfig = {
   // 기본 바디 한도(1MB)로는 업로드가 막히므로 여유를 둬 올린다.
   experimental: { serverActions: { bodySizeLimit: "6mb" } },
 
+  // 개발 중 같은 와이파이의 폰으로 확인할 때 쓰는 LAN 주소.
+  //
+  // 전시 주민투표(/exhibit)는 폰으로 QR 을 찍는 화면이라 실제 기기에서
+  // 눌러봐야 한다. 그런데 Next 15 부터 dev 리소스(JS 청크·폰트)에 대한
+  // 교차 출처 요청을 기본 차단해서, LAN 주소로 열면 HTML 은 그려지지만
+  // 하이드레이션이 안 돼 아무것도 눌리지 않는다 — 화면은 멀쩡해 보이므로
+  // 원인을 찾기 어렵다.
+  //
+  // 개발 전용 설정이라 배포 빌드에는 영향이 없다. 공유기에서 주소를 새로
+  // 받으면(DHCP) 여기 값을 함께 고쳐야 한다.
+  allowedDevOrigins: ["172.100.1.11"],
+
   // 예시 이미지는 Supabase Storage 공개 URL에서 온다.
   images: {
     remotePatterns: [{ protocol: "https", hostname: "*.supabase.co" }],

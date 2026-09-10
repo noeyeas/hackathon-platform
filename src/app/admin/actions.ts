@@ -57,3 +57,33 @@ export async function setWeights(formData: FormData) {
   revalidatePath("/results");
   return { ok: true };
 }
+
+// 팀 정보 수정 열림/닫힘. 날짜가 아니라 이 스위치가 유일한 기준이다(0046).
+export async function setTeamEditOpen(open: boolean) {
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("event_settings")
+    .update({ team_edit_open: open })
+    .eq("id", 1);
+  if (error) return { error: adminError(error) };
+  revalidatePath("/admin");
+  revalidatePath("/team");
+  revalidatePath("/mypage");
+  return { ok: true };
+}
+
+// 프로젝트 제출 열림/닫힘.
+export async function setSubmitOpen(open: boolean) {
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("event_settings")
+    .update({ project_submit_open: open })
+    .eq("id", 1);
+  if (error) return { error: adminError(error) };
+  revalidatePath("/admin");
+  revalidatePath("/submit");
+  revalidatePath("/mypage");
+  return { ok: true };
+}

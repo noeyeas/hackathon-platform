@@ -52,7 +52,7 @@ export default async function TeamPage() {
     );
   }
 
-  // 팀 상세 · 제출작 · 수정 마감 설정은 서로 무관 — 한 번에 조회한다.
+  // 팀 상세 · 제출작 · 수정 스위치는 서로 무관 — 한 번에 조회한다.
   const [{ data: team }, { data: project }, { data: settings }] =
     await Promise.all([
       supabase
@@ -65,11 +65,11 @@ export default async function TeamPage() {
         .select("id, title")
         .eq("team_id", membership.team_id)
         .maybeSingle(),
-      // 팀장이 마감(event_settings.team_edit_deadline) 전이면 팀 정보를 수정할 수 있다.
-      supabase.from("event_settings").select("team_edit_deadline").single(),
+      // 운영진이 팀 수정을 열어 뒀으면(event_settings.team_edit_open) 팀장이 고칠 수 있다.
+      supabase.from("event_settings").select("team_edit_open").single(),
     ]);
   const canEdit =
-    membership.is_leader && canEditTeam(settings?.team_edit_deadline);
+    membership.is_leader && canEditTeam(settings?.team_edit_open);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-5">

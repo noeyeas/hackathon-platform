@@ -26,9 +26,13 @@
 - **매직링크 / Google 로그인** — 비밀번호 없이 이메일만으로 참여
 - **팀 자동 연결** — 운영진이 등록한 팀장 이메일로 로그인하면 팀에 자동 연결
 - **팀원 모집 게시판** (`/recruit`) — 포지션별 모집글, 연락처는 로그인 사용자에게만 공개
-- **제출** (`/submit`) — 레포·데모·영상·발표자료 링크 제출, **마감 시각 이후 수정 불가**
+- **제출** (`/submit`) — 레포·데모·영상·발표자료 링크 제출, 운영진이 **제출을 닫으면 수정 불가**
 - **갤러리** (`/gallery`) — 전 팀 제출물 열람, 응원(좋아요) · 댓글 · 조회수
 - **팀 상호 평가** (`/vote`) — 팀장이 자기 팀을 제외한 팀에 채점
+
+### 🙋 전시장 주민
+
+- **주민투표** (`/exhibit/<코드>`) — 로그인 없이 전시장에서 받은 1회용 QR 투표권으로 진출팀에 투표
 
 ### ⚖️ 심사위원
 
@@ -38,7 +42,9 @@
 
 - **단계 제어** (`/admin`) — 참가 신청 → 개발 진행 → 평가 → 종료. 단계에 따라 전 사이트 화면이 바뀜
 - **팀 관리 · 공지 · 일정** — 팀/팀장 등록, 공지 발행, 마일스톤 타임라인 편집
-- **집계 콘솔** (`/admin/scoring`) — 심사·상호평가 자동 집계 + 주민 스티커 투표 수기 입력, 가중치 조정
+- **집계 콘솔** (`/admin/scoring`) — 심사·상호평가 자동 집계, 가중치 조정
+- **전시 주민투표** (`/admin/audience`) — QR 투표권 발급·인쇄·회수, 투표 열고 닫기, 투표권당 표 수
+- **참가자 화면 열고 닫기** (`/admin`) — 팀 정보 수정·프로젝트 제출 스위치 (날짜가 아니라 이 토글이 유일한 기준)
 - **결과 공개 제어** — 종료 단계 전까지 순위·득표수는 **DB 레벨에서** 차단
 
 ---
@@ -77,13 +83,14 @@
 src/
 ├── app/
 │   ├── (참가자)  page · recruit · team · submit · gallery · vote · mypage · notice
+│   ├── exhibit/  [code]  전시장 QR 주민투표 (로그인 없음)
 │   ├── judge/    심사위원 채점
-│   ├── admin/    teams · scoring · announcements · schedule · voting
+│   ├── admin/    teams · scoring · audience · announcements · schedule · voting
 │   └── api/health  Supabase 자동 일시중단 방지용 크론 엔드포인트
 ├── components/   Nav · Toast · Reveal · ScheduleBoard · LikeButton …
-└── lib/          auth · scoring · format · linkLeader · remoteData
+└── lib/          auth · authGate · ballot · scoring · format · linkLeader · remoteData
 supabase/migrations/  0001 → 0037 (스키마 = 보안 정책 이력)
-test/                 rankings · scoring · submitWindow · viewerHash · format
+test/                 rankings · scoring · submitWindow · viewerHash · format · authGate · ballot
 ```
 
 ### 왜 이 구조인가 (설계 의사결정)
@@ -92,7 +99,7 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
 | :--- | :--- |
 | **앱 검증이 아닌 RLS 로 방어** | `anon` 키가 클라이언트에 노출되는 구조라 누구나 PostgREST 를 직접 호출할 수 있습니다. 앱 코드의 검증은 우회 가능하므로 최종 방어선을 DB 에 뒀습니다. |
 | **Service Role 은 서버 전용** | 순위·주민 득표수처럼 종료 전까지 새면 안 되는 값은 RLS 로 완전히 잠그고, 운영진 화면만 서버에서 Service Role 로 읽습니다. |
-| **주민 투표는 수기 집계** | 온라인 투표는 오프라인 현장에서 중복 투표를 막을 방법이 없었습니다. 실물 스티커로 1인 1표를 보장하고 결과만 입력합니다. |
+| **주민 투표는 1회용 QR 투표권** | 로그인을 요구하면 전시장에서 아무도 투표하지 않고, 그냥 열어두면 중복 투표를 막을 수 없습니다. 종이 투표권 한 장 = 코드 한 개로 1인 n표를 DB 가 보장합니다 (0045). 스티커 수기 집계는 이 경로로 대체됐습니다. |
 | **PGlite 로 테스트** | RLS·집계 로직은 목(mock)으로는 검증이 안 됩니다. 인메모리 Postgres 에 실제 마이그레이션을 얹어 정책 자체를 테스트합니다. |
 | **단계(phase) 하나로 전 사이트 제어** | 대회 당일 운영진이 만질 스위치를 하나로 줄여, 화면별 개별 토글을 잘못 건드릴 여지를 없앴습니다. |
 
@@ -142,13 +149,19 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
 
 ## 📊 6. 점수 산정
 
+2단계로 나눠 뽑습니다 (0040). 주민 투표는 총점에 섞이지 않고, 진출팀 안에서 순서만 가릅니다.
+
 ```
-최종 = 심사(가중평균 100점 환산)·w1
-     + 팀 상호 평가(최고점 = 100 정규화)·w2
-     + 주민 투표(최다 득표 = 100 정규화)·w3
+1차 (최종발표)  점수 = 심사(100점 환산)·w_judge + 팀 상호 평가(100점 환산)·w_team
+                       ─────────────────────────────────────────────────────
+                                     w_judge + w_team          ← 만점이 100 이 되도록 되돌림
+                → 상위 finalist_count(기본 4)팀이 전시 진출
+
+2차 (전시)      진출팀만 대상으로 주민투표 득표수 순
+                → 1위 노원구청장 표창, 나머지 광운대학교 총장상
 ```
 
-가중치(`w1/w2/w3`)는 `/admin` 에서 조정합니다. 기본값 **50 / 25 / 25**.
+가중치(`weights`)와 진출 팀 수(`finalist_count`)는 `/admin` 에서 조정합니다. 기본값 **심사 0.5 / 팀 상호 0.25**.
 
 ### 무엇을 DB 가 막고, 무엇을 사람이 챙기는가
 
@@ -158,14 +171,16 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
 
 - **심사 점수** — `judge_scores` 는 `(project_id, judge_id, criteria_id)` 단위로 덮어써지고, RLS 상 본인 것과 운영진만 읽습니다
 - **팀 상호 평가** — `team_scores` 는 `(project_id, voter_team_id, criteria_id)` UNIQUE. 자기 팀 평가·팀장 여부는 서버 액션이 검증합니다
-- **제출 마감** — `submit_open()` 조건이 `projects` 쓰기 정책에 걸려 있어 마감 후에는 REST 를 직접 호출해도 수정되지 않습니다 (0033)
+- **제출·팀 수정 잠금** — `submit_open()` / `team_edit_open()` 조건이 `projects` · `teams` 쓰기 정책에 걸려 있어, 운영진이 닫으면 REST 를 직접 호출해도 수정되지 않습니다 (0033 · 0046)
 - **권한 상승** — `users.role` 등은 컬럼 권한 자체가 회수돼 있습니다 (0024)
-- **실시간 순위·집계** — `rankings` 뷰(0022)와 주민 득표수 컬럼(0035)은 Service Role 전용이라 종료 전에는 새지 않습니다
+- **실시간 순위·집계** — `rankings` 뷰(0022)와 주민투표 테이블(`audience_ballots` · `audience_votes`, 0045)은 Service Role 전용이라 종료 전에는 새지 않습니다
+- **주민 중복 투표** — `audience_votes` 의 `(ballot_code, project_id)` PK 가 같은 팀 두 표를 막고, 트리거가 투표권당 표 수 상한과 사용 여부를 지킵니다 (0045)
 - **조회수 중복** — 방문자 해시 기준으로 1회만 집계됩니다 (0034)
 
 **사람이 챙겨야 하는 것**
 
-- **주민 투표는 운영진 수기 집계입니다** (`projects.audience_votes_manual`). QR·실시간 투표 경로는 0022 에서 제거됐으므로 **중복 투표를 DB 가 걸러주지 않습니다.** 현장 스티커 배부·집계 단계에 검증이 필요합니다
+- **투표권 배부는 사람이 챙깁니다.** 코드 자체가 유일한 인증 수단이라, 한 사람이 여러 장을 받아가면 DB 는 그것을 구분하지 못합니다. 안내데스크에서 1인 1장 배부를 지켜야 합니다
+- **투표권당 표 수는 투표를 열기 전에 정하세요.** 열려 있는 동안에는 바꿀 수 없습니다 — 앞사람이 더 많은 표를 쓴 셈이 되기 때문입니다
 - **팀 인원(2~4명) 검증은 완화돼 있습니다** (0019). 운영진이 확인하세요
 - **팀 생성·팀장 이메일 등록은 운영진 전용**입니다. 참가자는 팀장 이메일로 로그인할 때 자동 연결만 됩니다
 
@@ -213,7 +228,7 @@ npm test        # RLS·집계 테스트 (PGlite)
 
 1. `/admin` 에서 단계를 **참가 신청** 으로 시작
 2. `/admin/teams` 에서 선정된 팀과 **팀장 이메일** 등록 → 팀장이 그 이메일로 로그인하면 자동 연결
-3. 단계를 **개발 진행** 으로, 팀장은 `/submit` 에서 프로젝트 제출 (마감 시각은 `event_settings.submit_deadline`)
+3. 단계를 **개발 진행** 으로, 팀장은 `/submit` 에서 프로젝트 제출 (`/admin` 의 **프로젝트 제출** 스위치로 열고 닫습니다)
 4. 발표 후 `/admin/scoring` 에서 **온라인 평가 열기** → 심사위원은 `/judge`, 팀장은 `/vote` 에서 채점
-5. 주민 스티커를 집계해 `/admin/scoring` 에 **수기 입력**
+5. 전시 기간에 `/admin/audience` 에서 **QR 투표권을 발급·인쇄**해 배부하고 **주민투표 열기** → 주민은 `/exhibit/<코드>` 에서 진출팀에 투표
 6. 단계를 **종료** 로 → `/results` 에서 최종 순위 확정
