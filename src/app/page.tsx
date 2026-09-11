@@ -180,7 +180,7 @@ export default async function Home() {
     <div className="flex flex-col gap-24">
       {/* ===== 히어로 + 하단 마퀴 ===== */}
       <div>
-        <section className="bleed relative -mt-10 flex min-h-[420px] flex-col items-center justify-center overflow-hidden px-5 pb-28 pt-12 text-center sm:min-h-[500px] sm:pb-32">
+        <section className="bleed relative -mt-10 flex min-h-[420px] flex-col items-center justify-center overflow-hidden px-5 pb-0 pt-12 text-center sm:min-h-[500px] sm:pb-32">
           <Image
             src="/campus.jpg"
             alt=""

@@ -31,7 +31,7 @@ export function HeroTimeline({ nodes }: { nodes: TimelineNode[] }) {
   const frac = done <= 0 ? 0 : Math.min(done - 1, last) / Math.max(last, 1);
 
   return (
-    <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-5 pb-6 pt-12 text-white">
+    <div className="pointer-events-none relative z-10 -mx-5 mt-10 self-stretch bg-gradient-to-t from-black/70 via-black/40 to-transparent px-5 pb-6 pt-12 text-white sm:absolute sm:inset-x-0 sm:bottom-0 sm:mx-0 sm:mt-0">
       <div className="relative mx-auto w-full max-w-3xl">
         {/* 배경선 (첫 노드 중심 ~ 끝 노드 중심) */}
         <div className="absolute left-[12.5%] right-[12.5%] top-[7px] h-px bg-white/25" />
