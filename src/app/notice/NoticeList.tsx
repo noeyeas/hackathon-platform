@@ -136,12 +136,8 @@ export default function NoticeList({ list }: { list: Announcement[] }) {
                 <span className="block font-title text-lg font-bold leading-snug sm:text-xl">
                   {a.title}
                 </span>
-                {a.body && (
-                  <span
-                    className={`mt-1.5 block text-sm leading-relaxed text-white/70 ${
-                      open ? "whitespace-pre-wrap" : "line-clamp-2"
-                    }`}
-                  >
+                {open && a.body && (
+                  <span className="mt-1.5 block whitespace-pre-wrap text-sm leading-relaxed text-white/70">
                     {a.body}
                   </span>
                 )}
@@ -181,18 +177,14 @@ export default function NoticeList({ list }: { list: Announcement[] }) {
                     <span className="block font-bold leading-snug text-ink">
                       {a.title}
                     </span>
-                    {a.body && (
-                      <span
-                        className={`mt-1 block text-sm leading-relaxed text-[var(--muted)] ${
-                          open ? "whitespace-pre-wrap" : "line-clamp-1"
-                        }`}
-                      >
+                    {open && a.body && (
+                      <span className="mt-1 block whitespace-pre-wrap text-sm leading-relaxed text-[var(--muted)]">
                         {a.body}
                       </span>
                     )}
                   </span>
                   <span className="flex flex-none items-center gap-2 text-xs text-[var(--muted)]">
-                    <time dateTime={a.created_at} className="max-sm:hidden">
+                    <time dateTime={a.created_at}>
                       {longDate(a.created_at)}
                     </time>
                     {a.body && <Chevron open={open} />}
