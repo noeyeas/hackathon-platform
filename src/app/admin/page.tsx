@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
-import { PHASE_LABEL, type EventPhase } from "@/lib/types";
+import { PHASE_LABEL, PHASE_ORDER, type EventPhase } from "@/lib/types";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { AdminPageHeader } from "./AdminPageHeader";
 import { OpenControls } from "./OpenControls";
+import { PhaseControl } from "./PhaseControl";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +113,17 @@ export default async function AdminPage() {
         <OpenControls
           teamEditOpen={settings?.team_edit_open ?? true}
           submitOpen={settings?.project_submit_open ?? true}
+        />
+      </section>
+
+      {/* 현재 진행 단계 — 표시용 값이라 참가자 화면 스위치 아래에 둔다. */}
+      <section>
+        <h2 className="mb-3 font-title text-lg font-bold text-ink">
+          현재 진행 단계
+        </h2>
+        <PhaseControl
+          current={(settings?.phase as EventPhase) ?? "signup"}
+          phases={PHASE_ORDER}
         />
       </section>
 

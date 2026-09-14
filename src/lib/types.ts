@@ -126,6 +126,16 @@ export function toProjectTrack(value: unknown): ProjectTrack | null {
 export const AWARD_LABELS = ["대상", "우수상", "우수상", "우수상"] as const;
 
 
+// 운영 콘솔에서 버튼을 늘어놓는 순서 = 대회가 실제로 흘러가는 순서.
+export const PHASE_ORDER: EventPhase[] = [
+  "signup",
+  "team_building",
+  "building",
+  "submitted",
+  "voting",
+  "closed",
+];
+
 export const PHASE_LABEL: Record<EventPhase, string> = {
   signup: "참가 신청",
   team_building: "팀 빌딩",
