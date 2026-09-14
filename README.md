@@ -90,7 +90,7 @@ src/
 │   └── api/health  Supabase 자동 일시중단 방지용 크론 엔드포인트
 ├── components/   Nav · Toast · Reveal · HeroTimeline · LikeButton · ViewPing …
 └── lib/          auth · authGate · ballot · scoring · submitWindow · teamEdit · viewerHash · format …
-supabase/migrations/  0001 → 0049 (스키마 = 보안 정책 이력)
+supabase/migrations/  0001 → 0050 (스키마 = 보안 정책 이력)
 test/                 rankings · scoring · submitWindow · viewerHash · format · authGate · ballot
 ```
 
@@ -162,7 +162,7 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
 
 ## 📊 6. 점수 산정
 
-2단계로 나눠 뽑습니다 (0040). 주민 투표는 총점에 섞이지 않고, 진출팀 안에서 순서만 가릅니다.
+2단계로 나눠 뽑습니다 (0040). 진출팀의 최종 순위는 심사점수에 주민투표를 합산해 정합니다 (0050).
 
 ```
 1차 (최종발표)  점수 = 심사(100점 환산)·w_judge + 팀 상호 평가(100점 환산)·w_team
@@ -170,11 +170,12 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
                                      w_judge + w_team          ← 만점이 100 이 되도록 되돌림
                 → 상위 finalist_count(기본 15)팀이 전시 진출
 
-2차 (전시)      진출팀만 대상으로 주민투표 득표수 순
-                → 1위 노원구청장 표창, 2~4위 광운대학교 우수상
+2차 (전시)      진출팀 최종 점수 = 심사(100점 환산)·w_judge + 팀 상호(100점 환산)·w_team
+                                  + 주민표(진출팀 최다 득표 = 100점)·w_audience
+                → 합산 1위 노원구청장상, 2~4위 광운대학교 우수상
 ```
 
-가중치(`weights`)와 진출 팀 수(`finalist_count`)는 `/admin` 에서 조정합니다. 기본값 **심사 0.5 / 팀 상호 0.25** (2:1), 진출 팀 수 기본 **15** (0049).
+가중치(`weights`)와 진출 팀 수(`finalist_count`)는 `/admin` 에서 조정합니다. 기본값 **심사 0.5 / 팀 상호 0.25 / 주민 0.25**, 진출 팀 수 기본 **15** (0049).
 
 ### 무엇을 DB 가 막고, 무엇을 사람이 챙기는가
 

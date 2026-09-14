@@ -23,8 +23,8 @@ const THEMES = [
 
 // 시상 내역(기획(안) II-☐수상작 시상). 상금 액수는 기획(안) 예산안 기준.
 const AWARDS = [
-  { medal: "🥇", t: "노원구청장 표창", n: "1팀", money: "100만원", d: "전시 진출팀 중 주민투표 1위" },
-  { medal: "🥈", t: "광운대학교 우수상", n: "3팀", money: "각 50만원", d: "전시 진출팀 중 주민투표 2~4위" },
+  { medal: "🥇", t: "노원구청장상", n: "1팀", money: "100만원", d: "전시 진출팀 중 심사·주민투표 합산 1위" },
+  { medal: "🥈", t: "광운대학교 우수상", n: "3팀", money: "각 50만원", d: "전시 진출팀 중 심사·주민투표 합산 2~4위" },
   { medal: "🎁", t: "매니패스트상", n: "1팀", money: "10만원", d: "매니패스트 Pro 플랜 연장 지급 예정" },
 ];
 
@@ -71,7 +71,7 @@ const FAQ = [
   },
   {
     q: "순위는 어떻게 정해지나요?",
-    a: "두 단계로 나뉩니다. 먼저 10.9 최종발표에서 심사위원 평가와 참가 팀 간 상호 평가(2:1)를 합산해 상위 10~15팀을 전시 진출팀으로 선정합니다. 이어서 10.11–10.13 전시 기간에 전시 진출팀을 대상으로 주민투표를 진행합니다 — 전시장에서 투표권(QR)을 받아 휴대폰으로 마음에 든 팀에 투표하시면 됩니다. 가장 많은 표를 받은 1팀이 노원구청장 표창을 받고 2~4위 3팀이 광운대학교 우수상을 받습니다. 공정성을 위해 실시간 순위·점수는 대회가 끝난 뒤에 공개됩니다.",
+    a: "두 단계로 나뉩니다. 먼저 10.9 최종발표에서 심사위원 평가와 참가 팀 간 상호 평가(2:1)를 합산해 상위 10~15팀을 전시 진출팀으로 선정합니다. 이어서 10.11–10.13 전시 기간에 전시 진출팀을 대상으로 주민투표를 진행합니다 — 전시장에서 투표권(QR)을 받아 휴대폰으로 마음에 든 팀에 투표하시면 됩니다. 최종 순위는 심사점수에 주민투표 점수를 합산해 정합니다. 합산 점수 1위 팀이 노원구청장상을 받고 2~4위 3팀이 광운대학교 우수상을 받습니다. 공정성을 위해 실시간 순위·점수는 대회가 끝난 뒤에 공개됩니다.",
   },
 ];
 
@@ -157,13 +157,18 @@ function InstagramIcon() {
 
 export default async function Home() {
   const timeline = await getTimeline();
-  // 대부분의 일정이 한 장소에서 열리므로 가장 많이 쓰인 place 를 대표 장소로
-  // 본다(비어 있으면 장소 줄 자체를 숨긴다).
+  // 대부분의 일정이 한 건물에서 열리므로 가장 많이 쓰인 건물을 대표 장소로
+  // 본다(비어 있으면 장소 줄 자체를 숨긴다). place 는 "80주년기념관 310호"
+  // 처럼 호실까지 적히므로 문자열 그대로 세면 전부 1표씩 갈려 엉뚱한
+  // 장소가 뽑힌다 — 첫 어절(건물)만 떼어 센다.
+  const building = (p: string) => p.trim().split(/\s+/)[0];
   const venue = timeline.reduce<string | null>((best, m) => {
     if (!m.place) return best;
-    if (!best) return m.place;
-    const count = (p: string) => timeline.filter((x) => x.place === p).length;
-    return count(m.place) > count(best) ? m.place : best;
+    const b = building(m.place);
+    if (!best) return b;
+    const count = (name: string) =>
+      timeline.filter((x) => x.place && building(x.place) === name).length;
+    return count(b) > count(best) ? b : best;
   }, null);
   const faq = [
     ...FAQ,
@@ -377,7 +382,8 @@ export default async function Home() {
               </li>
               <li>
                 <b className="text-ink">2차 · 10.11–10.13 전시</b> — 전시 진출팀을
-                대상으로 주민투표. 1위가 노원구청장 표창, 2~4위가 우수상
+                대상으로 주민투표. 심사점수에 주민투표 점수를 합산해 1위가
+                노원구청장상, 2~4위가 우수상
               </li>
               <li>
                 수상팀에는 상금과 별도로{" "}

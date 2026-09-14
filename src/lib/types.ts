@@ -45,18 +45,18 @@ export type Ranking = {
   judge_score: number;
   team_votes: number;
   audience_votes: number;
-  // 1차 점수(심사 + 팀 상호평가). 주민표는 섞이지 않는다.
+  // 진출팀은 심사 + 팀 상호평가 + 주민투표 합산 점수, 나머지는 1차 점수(0050).
   final_score: number;
   stage1_rank: number;
   is_finalist: boolean;
 };
 
-// 1차 선정 가중치 (심사 / 팀 상호). 주민(audience)은 1차 점수에 들어가지
-// 않지만, 예전 설정값과 모양을 맞추려고 키는 남겨둔다.
+// 점수 가중치 (심사 / 팀 상호 / 주민투표). 합이 1 이어야 한다.
 //
-// 2단계 구조라 이 두 값의 "비율"만 의미가 있다 — rankings 뷰(0040)가
-// (judge + team) 으로 나눠 다시 100점으로 되돌리기 때문이다. 0.5 : 0.25 는
-// 곧 2 : 1 이다.
+// 1차 선정(전시 진출)은 judge : team 비율만 쓴다 — rankings 뷰가
+// (judge + team) 으로 나눠 다시 100점으로 되돌린다. 0.5 : 0.25 는 곧 2 : 1.
+// 진출팀의 최종 점수는 세 값을 그대로 합산한다(0050). 주민표는 진출팀
+// 최다 득표를 100점으로 환산한다.
 export const SCORE_WEIGHTS = {
   judge: 0.5,
   team: 0.25,

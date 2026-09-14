@@ -98,7 +98,7 @@ export default async function ResultsPage() {
             1차 심사 {pct(weights.judge / (weights.judge + weights.team))} 심사위원
             {" / "}
             {pct(weights.team / (weights.judge + weights.team))} 팀 상호평가 →
-            상위 {finalistCount}팀 · 주민투표로 대상 선정
+            상위 {finalistCount}팀 → 심사점수에 주민투표를 합산해 대상 선정
             {!showFinal && " · 투표 종료 후 최종 순위가 공개됩니다."}
           </>
         }
@@ -207,14 +207,14 @@ export default async function ResultsPage() {
                   <th className="!text-right">심사</th>
                   <th className="!text-right">팀 점수</th>
                   <th className="!text-right">주민표</th>
-                  <th className="!text-right">1차 점수</th>
+                  <th className="!text-right">점수</th>
                 </tr>
               </thead>
               <tbody>
                 {rankings?.map((r, i) => {
                   // 시상 배지는 순번이 아니라 선정 여부로 결정한다.
                   // 뷰가 이미 시상 순서로 정렬해 주므로(선정팀 먼저, 그 안에서
-                  // 주민표 순) 선정팀의 i 가 곧 상 순서가 된다.
+                  // 합산 점수 순) 선정팀의 i 가 곧 상 순서가 된다.
                   const award =
                     r.is_finalist && i < AWARD_LABELS.length
                       ? AWARD_LABELS[i]

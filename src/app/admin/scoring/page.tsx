@@ -157,9 +157,9 @@ export default async function ScoringProgressPage() {
       {/* 실시간 집계 */}
       <Section title="실시간 집계">
         <p className="mb-3 text-xs text-[var(--muted)]">
-          1차 점수 = 심사 · 팀 상호평가(2:1). 주민표(전시 QR 투표)는 섞이지
-          않고, 전시 진출팀 안에서 순서만 가릅니다 — 표는 시상 순서대로
-          정렬됩니다.
+          1차 점수 = 심사 · 팀 상호평가(2:1)로 전시 진출팀을 뽑고, 진출팀의
+          최종 점수는 여기에 주민표(전시 QR 투표, 최다 득표 = 100점)를 합산합니다
+          — 표는 시상 순서대로 정렬됩니다.
         </p>
         {rankings && rankings.length > 0 ? (
           <div className="overflow-x-auto">
@@ -170,7 +170,7 @@ export default async function ScoringProgressPage() {
                   <th className="!text-right">심사</th>
                   <th className="!text-right">팀 점수</th>
                   <th className="!text-right">주민</th>
-                  <th className="!text-right">1차 점수</th>
+                  <th className="!text-right">점수</th>
                   <th>선정</th>
                 </tr>
               </thead>
