@@ -27,7 +27,6 @@ export default async function NoticePage() {
       <PageHeader
         eyebrow="Notice"
         title="공지사항"
-        desc="운영 일정과 규정 변경은 모두 여기에 먼저 올라갑니다."
       />
 
       <div className="mt-8">
