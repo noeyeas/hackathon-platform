@@ -7,17 +7,19 @@
 // 뺀 글자를 입력받았을 때 "아마 이걸 잘못 본 것"이라고 고쳐 읽지는 않는다.
 // 잘못 고치면 남의 투표권으로 조용히 투표해 버릴 수 있고, 그건 "유효하지 않은
 // 투표권입니다" 보다 훨씬 나쁜 결과다.
+import { randomInt } from "node:crypto";
+
 const ALPHABET = "23456789ABCDEFGHJKMNPRSTWXYZ"; // 28자 (0·1·I·L·O·Q·U·V 제외)
 export const BALLOT_CODE_LENGTH = 8;
 
 // 8자 × 28 = 약 3.8×10^11 가지. 수천 장을 발급해도 남의 코드를 찍어 맞힐
 // 확률은 사실상 0 이고, 그마저도 발급된 코드만 유효하다.
-export function generateBallotCode(
-  random: () => number = Math.random
-): string {
+// Math.random 은 앞 값들을 보면 다음 값을 예측할 수 있어(xorshift128+)
+// 투표권처럼 "맞히면 남의 표가 되는" 값에는 쓰지 않는다.
+export function generateBallotCode(): string {
   let out = "";
   for (let i = 0; i < BALLOT_CODE_LENGTH; i++) {
-    out += ALPHABET[Math.floor(random() * ALPHABET.length)];
+    out += ALPHABET[randomInt(ALPHABET.length)];
   }
   return out;
 }
