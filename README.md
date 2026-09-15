@@ -172,7 +172,7 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
 
 2차 (전시)      진출팀 최종 점수 = 심사(100점 환산)·w_judge + 팀 상호(100점 환산)·w_team
                                   + 주민표(진출팀 최다 득표 = 100점)·w_audience
-                → 합산 1위 노원구청장상, 2~4위 광운대학교 우수상
+                → 합산 1위 노원구청장상, 2~4위 광운대학교 총장상
 ```
 
 가중치(`weights`)와 진출 팀 수(`finalist_count`)는 `/admin` 에서 조정합니다. 기본값 **심사 0.5 / 팀 상호 0.25 / 주민 0.25**, 진출 팀 수 기본 **15** (0049).
