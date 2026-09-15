@@ -222,7 +222,7 @@ export default async function AdminPage() {
           <AdminLink
             href="/admin/teams"
             title="팀 등록"
-            desc="선정팀 등록·초대 코드"
+            desc="선정팀 등록·팀장 이메일 연결"
           />
           <AdminLink
             href="/admin/scoring"
