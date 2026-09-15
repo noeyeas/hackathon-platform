@@ -99,8 +99,8 @@ export default async function TeamPage() {
           />
           {canEdit && (
             <p className="text-xs text-[var(--muted)]">
-              소개·팀원 구성은 9월 3일 전까지 수정할 수 있어요. 팀 이름은 운영진
-              등록값으로 고정됩니다.
+              소개·팀원 구성은 운영진이 수정을 닫기 전까지 고칠 수 있어요. 팀 이름은
+              운영진 등록값으로 고정됩니다.
             </p>
           )}
         </div>

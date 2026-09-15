@@ -63,7 +63,7 @@ export default async function VotePage() {
     return (
       <Notice
         title="먼저 팀에 소속되어야 합니다"
-        body="팀을 만들거나 초대 코드로 합류한 뒤 다른 팀을 채점할 수 있어요."
+        body="신청 폼에 적은 팀장 이메일로 로그인하면 팀이 연결되고, 그 뒤 다른 팀을 채점할 수 있어요."
       />
     );
   }
