@@ -16,8 +16,7 @@ const ORGS: Org[] = [
   // 광운대 엠블럼은 정사각 캔버스를 꽉 채운 원형이라 가로형 로고와 같은
   // 규칙(contain)을 쓰면 24px 짜리 붉은 점이 된다. 학생회 로고와 같은 원형 규칙으로 둔다.
   { name: "광운대학교", role: "협력·후원", img: "/kwangwoon.jpeg" },
-  // 카카오페이 로고는 잠시 내려둔다(로고 사용 확인 전까지). 되살릴 때 주석만 풀면 된다.
-  // { name: "카카오페이", role: "협력·후원", img: "/Kakaopay_BI_Primary_Black.png", contain: true },
+  { name: "카카오페이", role: "협력·후원", img: "/Kakaopay_BI_Primary_Black.png", contain: true },
   { name: "봉사동아리 소원", role: "협력·후원", img: "/sowon.png", contain: true },
   { name: "매니패스트", role: "협력·후원", img: "/manifest.png", contain: true },
   // 원형 엠블럼이라 광운대·학생회와 같은 원형 규칙으로 둔다.
