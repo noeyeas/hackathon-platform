@@ -59,7 +59,7 @@ const FAQ = [
   },
   {
     q: "몇 팀을 뽑고, 선정 기준은 무엇인가요?",
-    a: "총 30팀을 선정합니다. 신청이 초과되면 전공 다양성과 인원수(4명) 가산점을 기준으로 선정합니다.",
+    a: "총 40팀을 선정합니다. 신청이 초과되면 전공 다양성과 인원수(4명) 가산점을 기준으로 선정합니다.",
   },
   {
     q: "어떤 주제로 개발하나요?",
@@ -271,7 +271,7 @@ export default async function Home() {
             <h3 className="mb-3 font-bold">팀 구성</h3>
             <ul className="flex flex-col gap-1.5 text-sm text-[var(--muted)]">
               <li>· 팀당 <b className="text-ink">최소 2인 ~ 최대 4인</b></li>
-              <li>· 총 <b className="text-ink">30팀</b> 선정</li>
+              <li>· 총 <b className="text-ink">40팀</b> 선정</li>
               <li>· 광운대학교 재학생·휴학생</li>
               <li>· 개인 신청 불가</li>
               <li>· 전공 다양성·인원수(4명) 가산점</li>

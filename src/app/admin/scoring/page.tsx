@@ -5,6 +5,7 @@ import { VotingControls } from "../voting/VotingControls";
 import { ResultsToggle } from "./ResultsToggle";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
+import { fetchAll } from "@/lib/fetchAll";
 import { AdminPageHeader } from "../AdminPageHeader";
 
 export const dynamic = "force-dynamic";
@@ -32,8 +33,13 @@ export default async function ScoringProgressPage() {
       .select("id, team_id, title, teams(name)")
       .order("submitted_at"),
     admin.from("users").select("id, name, email").eq("role", "judge").order("name"),
-    admin.from("judge_scores").select("judge_id, project_id, criteria_id"),
-    admin.from("team_scores").select("voter_team_id, project_id, criteria_id"),
+    // 채점 행은 1,000행을 넘기므로 끝까지 페이지를 넘겨 읽는다(fetchAll 주석 참고).
+    fetchAll(() =>
+      admin.from("judge_scores").select("judge_id, project_id, criteria_id")
+    ),
+    fetchAll(() =>
+      admin.from("team_scores").select("voter_team_id, project_id, criteria_id")
+    ),
     admin.from("rankings").select("*").returns<Ranking[]>(),
     // 제출하지 않은 팀도 다른 팀을 평가하므로 전체 팀을 가져온다
     admin.from("teams").select("id, name").order("name"),

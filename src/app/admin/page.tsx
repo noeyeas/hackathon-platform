@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { PHASE_LABEL, PHASE_ORDER, type EventPhase } from "@/lib/types";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
+import { fetchAll } from "@/lib/fetchAll";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { AdminPageHeader } from "./AdminPageHeader";
 import { OpenControls } from "./OpenControls";
@@ -37,8 +38,13 @@ export default async function AdminPage() {
       .select("id, name, email")
       .eq("role", "judge")
       .order("name"),
-    admin.from("judge_scores").select("judge_id, project_id, criteria_id"),
-    admin.from("team_scores").select("voter_team_id, project_id, criteria_id"),
+    // 채점 행은 1,000행을 넘기므로 끝까지 페이지를 넘겨 읽는다(fetchAll 주석 참고).
+    fetchAll(() =>
+      admin.from("judge_scores").select("judge_id, project_id, criteria_id")
+    ),
+    fetchAll(() =>
+      admin.from("team_scores").select("voter_team_id, project_id, criteria_id")
+    ),
   ]);
 
   const teamList = allTeams ?? [];
