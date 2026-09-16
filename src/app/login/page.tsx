@@ -51,8 +51,14 @@ export default function LoginPage() {
       options: { emailRedirectTo: callbackUrl() },
     });
     setLoading(false);
-    if (error) setError(error.message);
-    else setSent(true);
+    if (error) {
+      // Supabase 이메일 발송 한도(시간당 N통) 초과 시 영어 원문 대신 Google 로그인으로 안내
+      setError(
+        /rate limit/i.test(error.message)
+          ? "이메일 발송 한도를 초과해 지금은 링크를 보낼 수 없습니다. 위의 Google 계정 로그인을 이용해 주세요."
+          : error.message,
+      );
+    } else setSent(true);
   }
 
   return (
