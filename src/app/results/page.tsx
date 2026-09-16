@@ -4,6 +4,7 @@ import { safeUrl } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import {
   AWARD_LABELS,
+  FINAL_CRITERIA,
   FINALIST_COUNT,
   SCORE_WEIGHTS,
   type Ranking,
@@ -21,7 +22,6 @@ export default async function ResultsPage() {
     {
       data: { user },
     },
-    { data: criteria },
     { data: teamNotes },
   ] = await Promise.all([
     supabase
@@ -29,19 +29,6 @@ export default async function ResultsPage() {
       .select("phase, weights, finalist_count")
       .single(),
     supabase.auth.getUser(),
-    // 심사위원 배점 기준 (관리자에서 관리) — 결과 페이지에서 펼쳐볼 수 있게 노출
-    supabase
-      .from("criteria")
-      .select("name, weight, max_score, description")
-      .order("sort")
-      .returns<
-        {
-          name: string;
-          weight: number;
-          max_score: number;
-          description: string | null;
-        }[]
-      >(),
     // 팀별 팀원 구성 (팀 이름 hover 툴팁용)
     supabase.from("teams").select("id, members_note"),
   ]);
@@ -98,7 +85,7 @@ export default async function ResultsPage() {
             1차 심사 {pct(weights.judge / (weights.judge + weights.team))} 심사위원
             {" / "}
             {pct(weights.team / (weights.judge + weights.team))} 팀 상호평가 →
-            상위 {finalistCount}팀 → 심사점수에 주민투표를 합산해 대상 선정
+            상위 {finalistCount}팀 → 심사점수에 주민투표를 합산해 수상팀 선정
             {!showFinal && " · 투표 종료 후 최종 순위가 공개됩니다."}
           </>
         }
@@ -157,38 +144,34 @@ export default async function ResultsPage() {
       )}
 
       {/* ── 심사 기준 ── */}
-      {!!criteria?.length && (
-        <details className="group mt-6 rounded-lg border border-[var(--line)] bg-white">
-          <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-semibold">
-            <span>심사기준 {criteria.length}가지 보기</span>
-            <span className="text-[var(--muted)] transition group-open:rotate-180">
-              ⌄
-            </span>
-          </summary>
-          <ol className="flex flex-col border-t border-[var(--line)]">
-            {criteria.map((c, i) => (
-              <li
-                key={c.name}
-                className={`flex gap-3 px-4 py-3 ${
-                  i !== criteria.length - 1 ? "border-b border-[var(--line)]" : ""
-                }`}
-              >
-                <span className="mt-0.5 flex-none text-xs font-bold text-gold-ink">
-                  {pct(c.weight / 100)}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold">{c.name}</p>
-                  {c.description && (
-                    <p className="mt-0.5 text-xs text-[var(--muted)]">
-                      {c.description}
-                    </p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        </details>
-      )}
+      {/* DB criteria 는 심사위원 채점표(95점)라 공지의 100점 기준과 다르다.
+          참가자에게는 홈과 같은 공지 기준을 그대로 보여 준다. */}
+      <details className="group mt-6 rounded-lg border border-[var(--line)] bg-white">
+        <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-semibold">
+          <span>본선 심사기준 {FINAL_CRITERIA.length}가지 보기 · 합계 100점</span>
+          <span className="text-[var(--muted)] transition group-open:rotate-180">
+            ⌄
+          </span>
+        </summary>
+        <ol className="flex flex-col border-t border-[var(--line)]">
+          {FINAL_CRITERIA.map((c, i) => (
+            <li
+              key={c.t}
+              className={`flex gap-3 px-4 py-3 ${
+                i !== FINAL_CRITERIA.length - 1 ? "border-b border-[var(--line)]" : ""
+              }`}
+            >
+              <span className="mt-0.5 w-8 flex-none text-right text-xs font-bold tabular-nums text-gold-ink">
+                {c.p}점
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">{c.t}</p>
+                <p className="mt-0.5 text-xs text-[var(--muted)]">{c.d}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </details>
 
       {/* ── 최종 순위 ── */}
       {canSeeRankings ? (

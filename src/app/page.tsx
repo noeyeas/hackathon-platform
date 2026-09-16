@@ -6,6 +6,7 @@ import { Reveal } from "@/components/Reveal";
 import { RevealGroup } from "@/components/RevealGroup";
 import { getTimeline } from "@/lib/remoteData";
 import { formatMonthDayRange, formatMonthDayWeekdayRange } from "@/lib/format";
+import { FINAL_CRITERIA } from "@/lib/types";
 
 // 구글 신청 폼 주소. 채우면 아래 ApplyButton 이 자동으로 활성 링크가 되고,
 // 비워두면 "준비 중" 비활성 버튼으로 표시된다.
@@ -25,17 +26,11 @@ const THEMES = [
 const AWARDS = [
   { medal: "🥇", t: "노원구청장상", n: "1팀", money: "100만원", d: "전시 진출팀 중 심사·주민투표 합산 1위" },
   { medal: "🥈", t: "광운대학교 총장상", n: "3팀", money: "각 50만원", d: "전시 진출팀 중 심사·주민투표 합산 2~4위" },
-  { medal: "🎁", t: "매니패스트상", n: "1팀", money: "10만원", d: "매니패스트 Pro 플랜 연장 지급 예정" },
+  { medal: "🎁", t: "매니패스트상", n: "1팀", money: "10만원", d: "중간발표(9.28) 심사로 선정 · 매니패스트 이용권 연장" },
 ];
 
-// 최종 심사 기준(기획(안) II-☐심사 기준 및 위원, 나. 최종 심사 기준표). 합계 100점.
-const FINAL_CRITERIA = [
-  { t: "실현 & 상용화 가능성", p: 30, d: "실제 지역사회 적용 및 지속 운영 가능 여부" },
-  { t: "지역 문제 적합성", p: 20, d: "월계1동 실제 주민 수요 및 문제 해결 적합도" },
-  { t: "구현 완성도 & 기술력", p: 20, d: "실제 시연 동작 완성도, 코드 및 GitHub 관리 상태" },
-  { t: "창의성 & 차별성", p: 20, d: "아이디어의 독창성 및 기존 서비스 대비 차별점" },
-  { t: "발표", p: 10, d: "팀당 5분 발표 시간 엄수 (초과 시 감점)" },
-];
+// 참가자 전원 혜택(디스코드 공지 1️⃣-4). 수상과 무관하게 모두 받는다.
+const PARTICIPANT_BENEFIT = "매니패스트 Pro 플랜 + AI 크레딧 1개월 무료";
 
 const INSTAGRAM = [
   { label: "인공지능융합대학 하성", handle: "@kw_aiconv", href: "https://www.instagram.com/kw_aiconv/" },
@@ -372,6 +367,13 @@ export default async function Home() {
         </RevealGroup>
 
         <Reveal>
+          <p className="card flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
+            <b className="font-semibold">참가자 전원 혜택</b>
+            <span className="text-[var(--muted)]">{PARTICIPANT_BENEFIT}</span>
+          </p>
+        </Reveal>
+
+        <Reveal>
           <div className="card">
             <h3 className="mb-1 font-bold">선정 방식</h3>
             <ol className="mb-5 flex flex-col gap-2 text-sm text-[var(--muted)]">
@@ -383,7 +385,7 @@ export default async function Home() {
               <li>
                 <b className="text-ink">2차 · 10.11–10.13 전시</b> — 전시 진출팀을
                 대상으로 주민투표. 심사점수에 주민투표 점수를 합산해 1위가
-                노원구청장상, 2~4위가 우수상
+                노원구청장상, 2~4위가 광운대학교 총장상
               </li>
               <li>
                 수상팀에는 상금과 별도로{" "}
@@ -395,9 +397,12 @@ export default async function Home() {
               </li>
             </ol>
 
-            <h3 className="mb-1 font-bold">최종 심사 기준</h3>
+            <h3 className="mb-1 font-bold">본선 심사 기준</h3>
             <p className="mb-4 text-sm text-[var(--muted)]">
-              합계 100점. 팀당 5분 발표 후 질의응답이 진행됩니다.
+              합계 100점. 팀당 5분 발표 후 질의응답이 진행됩니다. 중간발표(9.28)는
+              별도 기준(논리의 연결성 30 · 실현 & 상용화 가능성 20 · 기획 문서의
+              재현 가능성 20 · 창의성 & 차별성 20 · 발표 10)으로 매니패스트상을
+              선정합니다.
             </p>
             <ul className="flex flex-col divide-y divide-[var(--line)]">
               {FINAL_CRITERIA.map((c) => (

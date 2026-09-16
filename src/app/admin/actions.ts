@@ -87,3 +87,21 @@ export async function setSubmitOpen(open: boolean) {
   revalidatePath("/mypage");
   return { ok: true };
 }
+
+// 참여도 감점 — 본선 개회식·최종발표 불참 인원(연인원). rankings 뷰가
+// 인당 1점(최대 5점)을 심사 점수에서 뺀다(0052). 심사위원 화면에는 없다.
+export async function setAbsentCount(teamId: string, count: number) {
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
+  if (!Number.isInteger(count) || count < 0 || count > 99)
+    return { error: "0 이상의 정수를 입력하세요" };
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("teams")
+    .update({ absent_count: count })
+    .eq("id", teamId);
+  if (error) return { error: adminError(error) };
+  revalidatePath("/admin/scoring");
+  revalidatePath("/results");
+  revalidatePath("/gallery");
+  return { ok: true };
+}

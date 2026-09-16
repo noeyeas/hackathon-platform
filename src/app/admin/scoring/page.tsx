@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { AWARD_LABELS, type Ranking } from "@/lib/types";
 import { VotingControls } from "../voting/VotingControls";
 import { ResultsToggle } from "./ResultsToggle";
+import { AbsentInput } from "./AbsentInput";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { fetchAll } from "@/lib/fetchAll";
@@ -167,12 +168,18 @@ export default async function ScoringProgressPage() {
           최종 점수는 여기에 주민표(전시 QR 투표, 최다 득표 = 100점)를 합산합니다
           — 표는 시상 순서대로 정렬됩니다.
         </p>
+        <p className="mb-3 text-xs text-[var(--muted)]">
+          <b>불참</b> 칸에는 본선 개회식(10.8 09:00)·최종발표(10.9 09:00)
+          불참 인원을 연인원으로 적습니다. 참여도 감점(인당 1점, 최대 5점)이
+          심사 점수에서 빠지며, 심사위원 화면에는 보이지 않습니다.
+        </p>
         {rankings && rankings.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="tbl min-w-[520px]">
+            <table className="tbl min-w-[600px]">
               <thead>
                 <tr>
                   <th>순위 / 팀</th>
+                  <th className="!text-right">불참</th>
                   <th className="!text-right">심사</th>
                   <th className="!text-right">팀 점수</th>
                   <th className="!text-right">주민</th>
@@ -186,6 +193,9 @@ export default async function ScoringProgressPage() {
                     <td>
                       <span className="mr-2 font-bold tabular-nums">{i + 1}</span>
                       {r.team_name}
+                    </td>
+                    <td className="num">
+                      <AbsentInput teamId={r.team_id} initial={r.absent_count} />
                     </td>
                     <td className="num">{r.judge_score}</td>
                     <td className="num">{r.team_votes}</td>
