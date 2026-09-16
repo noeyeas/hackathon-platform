@@ -53,10 +53,14 @@ export default function LoginPage() {
     setLoading(false);
     if (error) {
       // Supabase 이메일 발송 한도(시간당 N통) 초과 시 영어 원문 대신 Google 로그인으로 안내
+      // 발송 실패(500)는 원문이 비어 "{}"로 보이므로 한국어 안내로 통일
+      const msg = error.message?.trim();
       setError(
-        /rate limit/i.test(error.message)
+        /rate limit/i.test(msg)
           ? "이메일 발송 한도를 초과해 지금은 링크를 보낼 수 없습니다. 위의 Google 계정 로그인을 이용해 주세요."
-          : error.message,
+          : !msg || msg === "{}" || /sending .*email/i.test(msg)
+            ? "로그인 메일을 보내지 못했습니다. 잠시 후 다시 시도하거나 Google 계정으로 로그인해 주세요."
+            : msg,
       );
     } else setSent(true);
   }
