@@ -239,8 +239,13 @@ npm test        # RLS·집계 테스트 (PGlite)
 
 ### 7-4. 운영자 / 심사위원 지정
 
-가입 후 Supabase **Table Editor → users** 에서 해당 사용자의 `role` 을
-`admin` 또는 `judge` 로 변경하면 각각 `/admin`, `/judge` 에 접근할 수 있습니다.
+- **운영자**: 가입 후 Supabase **Table Editor → users** 에서 `role` 을 `admin` 으로 변경
+- **심사위원**: 가입 전에 `judge_emails` 에 이메일을 넣어 두면 첫 로그인 때 자동으로 `judge` 가 됩니다 (0055).
+  이미 가입한 사람은 `users.role` 을 `judge` 로 직접 바꿉니다.
+
+  ```sql
+  insert into judge_emails (email, name) values ('x@y.z', '이름');
+  ```
 
 ---
 
