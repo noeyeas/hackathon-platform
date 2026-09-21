@@ -43,8 +43,12 @@ export default async function ScoringProgressPage() {
       admin.from("team_scores").select("voter_team_id, project_id, criteria_id")
     ),
     admin.from("rankings").select("*").returns<Ranking[]>(),
-    // 제출하지 않은 팀도 다른 팀을 평가하므로 전체 팀을 가져온다
-    admin.from("teams").select("id, name").order("name"),
+    // 제출하지 않은 팀도 다른 팀을 평가하므로 전체 팀을 가져온다.
+    // 발표·불참은 제출 여부와 무관하게 팀마다 적으므로 여기서 같이 읽는다.
+    admin
+      .from("teams")
+      .select("id, name, presentation_score, absent_count")
+      .order("name"),
   ]);
 
   const criteriaCount = criteria?.length ?? 0;
@@ -162,23 +166,59 @@ export default async function ScoringProgressPage() {
         )}
       </Section>
 
+      {/* 발표 · 참여도 — 운영진 입력. 제출물이 없는 팀도 적을 수 있어야 하므로
+          집계표(제출작 기준)가 아니라 전체 팀 목록에 둔다. */}
+      <Section title="발표 · 참여도 입력 (운영진)" summaryRight={`${teamRows.length}팀`}>
+        <p className="mb-3 text-xs text-[var(--muted)]">
+          <b>발표</b>는 0~5점. <b>불참</b>은 본선 개회식(10.8 09:00)·최종발표
+          (10.9 09:00) 불참 인원을 연인원으로 적으면 참여도 5점에서 인당 1점이
+          빠집니다. 심사 점수 = 심사위원 4항목(90점 환산) + 발표 + 참여도.
+          심사위원 화면에는 보이지 않습니다. 숫자를 바꾸고 Enter 또는 저장.
+        </p>
+        {(allTeams ?? []).length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="tbl min-w-[360px]">
+              <thead>
+                <tr>
+                  <th>팀</th>
+                  <th className="!text-right">발표 (0~5)</th>
+                  <th className="!text-right">불참 인원</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(allTeams ?? []).map((t) => (
+                  <tr key={t.id}>
+                    <td>{t.name || "이름 없음"}</td>
+                    <td className="num">
+                      <PresentationInput
+                        teamId={t.id}
+                        round="final"
+                        initial={t.presentation_score}
+                      />
+                    </td>
+                    <td className="num">
+                      <AbsentInput teamId={t.id} initial={t.absent_count} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-sm text-[var(--muted)]">등록된 팀이 없습니다.</p>
+        )}
+      </Section>
+
       {/* 실시간 집계 */}
       <Section title="실시간 집계">
         <p className="mb-3 text-xs text-[var(--muted)]">
           1차 점수 = 심사 · 팀 상호평가(2:1)로 전시 진출팀을 뽑고, 진출팀의
           최종 점수는 여기에 주민표(전시 QR 투표, 최다 득표 = 100점)를 합산합니다
-          — 표는 시상 순서대로 정렬됩니다.
-        </p>
-        <p className="mb-3 text-xs text-[var(--muted)]">
-          <b>발표</b>(0~5점)와 <b>참여도</b>는 운영진이 적습니다. 불참 칸에는
-          본선 개회식(10.8 09:00)·최종발표(10.9 09:00) 불참 인원을 연인원으로
-          적으면 참여도 5점에서 인당 1점이 빠집니다. 심사 점수 = 심사위원
-          4항목(90점 환산) + 발표 + 참여도. 둘 다 심사위원 화면에는 보이지
-          않습니다.
+          — 표는 시상 순서대로 정렬됩니다. 제출물이 있는 팀만 나옵니다.
         </p>
         {rankings && rankings.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="tbl min-w-[680px]">
+            <table className="tbl min-w-[600px]">
               <thead>
                 <tr>
                   <th>순위 / 팀</th>
@@ -198,16 +238,8 @@ export default async function ScoringProgressPage() {
                       <span className="mr-2 font-bold tabular-nums">{i + 1}</span>
                       {r.team_name}
                     </td>
-                    <td className="num">
-                      <PresentationInput
-                        teamId={r.team_id}
-                        round="final"
-                        initial={r.presentation_score}
-                      />
-                    </td>
-                    <td className="num">
-                      <AbsentInput teamId={r.team_id} initial={r.absent_count} />
-                    </td>
+                    <td className="num">{r.presentation_score}</td>
+                    <td className="num">{r.absent_count}</td>
                     <td className="num">{r.judge_score}</td>
                     <td className="num">{r.team_votes}</td>
                     <td className="num">{r.audience_votes}</td>
