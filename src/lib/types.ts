@@ -42,9 +42,10 @@ export type Ranking = {
   team_id: string;
   team_name: string;
   title: string;
-  // 참여도 감점(불참 인원, 0052)을 뺀 뒤의 심사 점수.
+  // 심사위원 점수(90점 환산) + 발표(운영진, 0~5) + 참여도(5 − 불참 인원)(0054).
   judge_score: number;
   absent_count: number;
+  presentation_score: number;
   team_votes: number;
   audience_votes: number;
   // 진출팀은 심사 + 팀 상호평가 + 주민투표 합산 점수, 나머지는 1차 점수(0050).
@@ -57,7 +58,9 @@ export type Ranking = {
 export type MidRanking = {
   team_id: string;
   team_name: string;
+  // 심사위원 점수(90점 환산) + 발표(운영진, 0~10)(0054).
   judge_score: number;
+  presentation_score: number;
   judge_count: number;
 };
 
@@ -130,20 +133,20 @@ export function toProjectTrack(value: unknown): ProjectTrack | null {
 }
 
 // 본선 심사 기준(디스코드 공지 1️⃣-2). 합계 100점. 홈·결과 페이지가 같이 쓴다.
-// 참여도 5점은 심사위원 채점표(criteria 테이블, 0051)에 없고 운영진이
-// 출석 확인으로 별도 반영한다(0052). 그래서 DB 의 criteria 가 아니라 이
-// 상수를 안내에 쓴다 — DB 는 95점 채점표라 공지와 어긋나 보인다.
+// 발표 5점·참여도 5점은 심사위원 채점표(criteria 테이블)에 없고 운영진이
+// 별도 입력한다(0052, 0054). 그래서 DB 의 criteria 가 아니라 이 상수를
+// 안내에 쓴다 — DB 는 90점 채점표라 공지와 어긋나 보인다.
 export const FINAL_CRITERIA = [
   { t: "실현 & 상용화 가능성", p: 30, d: "실제 환경에서 구현·활용될 수 있는지, 서비스·제품으로 발전할 가능성" },
   { t: "구현 완성도 & 기술력", p: 20, d: "핵심 기능의 실제 구현 여부와 활용 기술의 적절성·완성도" },
   { t: "지역 문제 적합성", p: 20, d: "지역사회 문제를 정확히 파악하고 그에 맞는 해결 방안을 제시했는지" },
   { t: "창의성 & 차별성", p: 20, d: "기존 서비스·해결방안 대비 독창성과 차별화된 특징" },
-  { t: "발표", p: 5, d: "목적·주요 내용·구현 결과·기대효과를 명확하고 효과적으로 전달하는지" },
+  { t: "발표", p: 5, d: "목적·주요 내용·구현 결과·기대효과를 명확하고 효과적으로 전달하는지 — 운영진이 반영" },
   { t: "참여도", p: 5, d: "본선 개회식(10.8 09:00)·최종발표(10.9 09:00) 필수 참여. 불참 시 인당 1점 감점 — 운영진이 출석 확인으로 반영" },
 ] as const;
 
 // 중간발표 심사 기준(디스코드 공지 1️⃣-2). 합계 100점. 매니패스트상 1팀 선정.
-// DB criteria(round='mid', 0053)와 같은 내용이며 홈 안내에 쓴다.
+// 발표 10점은 운영진이 입력한다(0054) — 나머지 4개가 DB criteria(round='mid').
 export const MID_CRITERIA = [
   { t: "논리의 연결성", p: 30 },
   { t: "실현 & 상용화 가능성", p: 20 },
@@ -151,6 +154,9 @@ export const MID_CRITERIA = [
   { t: "창의성 & 차별성", p: 20 },
   { t: "발표", p: 10 },
 ] as const;
+
+// 운영진이 입력하는 발표 점수 상한. DB check 제약(0054)과 같아야 한다.
+export const PRESENTATION_MAX = { final: 5, mid: 10 } as const;
 
 // 상위 3팀 시상 이름 (결과 공개 후 갤러리·결과 페이지에서 공통 사용)
 // 시상 순서 = rankings 뷰의 표시 순서(0040).

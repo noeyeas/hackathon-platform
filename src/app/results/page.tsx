@@ -144,7 +144,7 @@ export default async function ResultsPage() {
       )}
 
       {/* ── 심사 기준 ── */}
-      {/* DB criteria 는 심사위원 채점표(95점)라 공지의 100점 기준과 다르다.
+      {/* DB criteria 는 심사위원 채점표(90점)라 공지의 100점 기준과 다르다.
           참가자에게는 홈과 같은 공지 기준을 그대로 보여 준다. */}
       <details className="group mt-6 rounded-lg border border-[var(--line)] bg-white">
         <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-semibold">

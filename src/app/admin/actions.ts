@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import type { EventPhase } from "@/lib/types";
+import { PRESENTATION_MAX, type EventPhase } from "@/lib/types";
 
 export async function setPhase(phase: EventPhase) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
@@ -99,6 +99,29 @@ export async function setMidJudgingOpen(open: boolean) {
   if (error) return { error: adminError(error) };
   revalidatePath("/admin/midterm");
   revalidatePath("/judge/mid");
+  return { ok: true };
+}
+
+// 발표 점수 — 심사위원이 아니라 운영진이 매긴다(0054). 본선 0~5, 중간 0~10.
+// rankings / mid_rankings 뷰가 심사위원 점수(90점 환산)에 더한다.
+export async function setPresentationScore(
+  teamId: string,
+  round: "final" | "mid",
+  score: number
+) {
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
+  const max = PRESENTATION_MAX[round];
+  if (!Number.isInteger(score) || score < 0 || score > max)
+    return { error: `0~${max} 사이 정수를 입력하세요` };
+  const admin = createAdminClient();
+  const column = round === "final" ? "presentation_score" : "mid_presentation_score";
+  const { error } = await admin
+    .from("teams")
+    .update({ [column]: score })
+    .eq("id", teamId);
+  if (error) return { error: adminError(error) };
+  revalidatePath(round === "final" ? "/admin/scoring" : "/admin/midterm");
+  revalidatePath("/results");
   return { ok: true };
 }
 

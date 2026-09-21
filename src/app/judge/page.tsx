@@ -62,7 +62,7 @@ export default async function JudgePage() {
       <PageHeader
         eyebrow="Judging"
         title="본선 심사 채점"
-        desc="10.9 최종발표 — 모든 팀을 본선 심사 기준으로 채점해 주세요."
+        desc="10.9 최종발표 — 모든 팀을 본선 심사 기준 4항목(90점)으로 채점해 주세요. 발표·참여도 10점은 운영진이 반영합니다."
       />
 
       <JudgeTabs active="final" />

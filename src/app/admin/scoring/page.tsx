@@ -4,6 +4,7 @@ import { AWARD_LABELS, type Ranking } from "@/lib/types";
 import { VotingControls } from "../voting/VotingControls";
 import { ResultsToggle } from "./ResultsToggle";
 import { AbsentInput } from "./AbsentInput";
+import { PresentationInput } from "./PresentationInput";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { fetchAll } from "@/lib/fetchAll";
@@ -169,16 +170,19 @@ export default async function ScoringProgressPage() {
           — 표는 시상 순서대로 정렬됩니다.
         </p>
         <p className="mb-3 text-xs text-[var(--muted)]">
-          <b>불참</b> 칸에는 본선 개회식(10.8 09:00)·최종발표(10.9 09:00)
-          불참 인원을 연인원으로 적습니다. 참여도 감점(인당 1점, 최대 5점)이
-          심사 점수에서 빠지며, 심사위원 화면에는 보이지 않습니다.
+          <b>발표</b>(0~5점)와 <b>참여도</b>는 운영진이 적습니다. 불참 칸에는
+          본선 개회식(10.8 09:00)·최종발표(10.9 09:00) 불참 인원을 연인원으로
+          적으면 참여도 5점에서 인당 1점이 빠집니다. 심사 점수 = 심사위원
+          4항목(90점 환산) + 발표 + 참여도. 둘 다 심사위원 화면에는 보이지
+          않습니다.
         </p>
         {rankings && rankings.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="tbl min-w-[600px]">
+            <table className="tbl min-w-[680px]">
               <thead>
                 <tr>
                   <th>순위 / 팀</th>
+                  <th className="!text-right">발표</th>
                   <th className="!text-right">불참</th>
                   <th className="!text-right">심사</th>
                   <th className="!text-right">팀 점수</th>
@@ -193,6 +197,13 @@ export default async function ScoringProgressPage() {
                     <td>
                       <span className="mr-2 font-bold tabular-nums">{i + 1}</span>
                       {r.team_name}
+                    </td>
+                    <td className="num">
+                      <PresentationInput
+                        teamId={r.team_id}
+                        round="final"
+                        initial={r.presentation_score}
+                      />
                     </td>
                     <td className="num">
                       <AbsentInput teamId={r.team_id} initial={r.absent_count} />

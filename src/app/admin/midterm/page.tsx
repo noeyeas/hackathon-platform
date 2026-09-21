@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server";
 import { MID_CRITERIA, type MidRanking } from "@/lib/types";
 import { MidControls } from "./MidControls";
+import { PresentationInput } from "../scoring/PresentationInput";
 import { completedByVoter } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { fetchAll } from "@/lib/fetchAll";
@@ -60,8 +61,8 @@ export default async function MidtermPage() {
     };
   });
   const judgeComplete = judgeRows.filter((r) => r.complete).length;
-  // 아직 아무도 채점하지 않은 팀은 0점으로 깔리므로 표에서 뺀다.
-  const scored = (rankings ?? []).filter((r) => r.judge_count > 0);
+  // 발표 점수를 넣어야 하므로 전 팀을 보여 준다. 채점 전 팀은 발표 점수만 있다.
+  const scored = rankings ?? [];
 
   return (
     <div className="mx-auto max-w-2xl lg:mx-0">
@@ -82,7 +83,8 @@ export default async function MidtermPage() {
       <div className="card mt-4">
         <h2 className="font-bold">중간발표 심사 기준</h2>
         <p className="mt-1 text-xs text-[var(--muted)]">
-          합계 100점. 심사위원 화면의 채점표와 같습니다.
+          합계 100점. 발표 10점은 아래 집계표에서 운영진이 적고, 나머지 4항목
+          (90점)은 심사위원이 채점합니다.
         </p>
         <ul className="mt-3 flex flex-wrap gap-2">
           {MID_CRITERIA.map((c) => (
@@ -121,19 +123,20 @@ export default async function MidtermPage() {
 
       <Section
         title="실시간 집계"
-        summaryRight={`채점된 팀 ${scored.length}/${teamCount}`}
+        summaryRight={`채점된 팀 ${scored.filter((r) => r.judge_count > 0).length}/${teamCount}`}
       >
         <p className="mb-3 text-xs text-[var(--muted)]">
-          심사위원 점수를 100점으로 환산한 값입니다. 1위가 매니패스트상 —
-          동점이면 팀 이름순으로 나오므로 운영진이 확인해 정하세요. 아직
-          채점되지 않은 팀은 표에서 빠집니다.
+          점수 = 심사위원 4항목(90점 환산) + <b>발표</b>(운영진 입력, 0~10점).
+          1위가 매니패스트상 — 동점이면 팀 이름순으로 나오므로 운영진이
+          확인해 정하세요.
         </p>
         {scored.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="tbl min-w-[420px]">
+            <table className="tbl min-w-[520px]">
               <thead>
                 <tr>
                   <th>순위 / 팀</th>
+                  <th className="!text-right">발표</th>
                   <th className="!text-right">심사위원 수</th>
                   <th className="!text-right">점수</th>
                   <th>선정</th>
@@ -145,6 +148,13 @@ export default async function MidtermPage() {
                     <td>
                       <span className="mr-2 font-bold tabular-nums">{i + 1}</span>
                       {r.team_name}
+                    </td>
+                    <td className="num">
+                      <PresentationInput
+                        teamId={r.team_id}
+                        round="mid"
+                        initial={r.presentation_score}
+                      />
                     </td>
                     <td className="num">{r.judge_count}</td>
                     <td className="num font-bold text-navy">{r.judge_score}</td>

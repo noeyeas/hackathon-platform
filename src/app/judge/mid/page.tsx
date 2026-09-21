@@ -61,7 +61,7 @@ export default async function MidJudgePage() {
       <PageHeader
         eyebrow="Judging"
         title="중간발표 심사 채점"
-        desc="9.28 중간발표 — 모든 팀을 중간발표 심사 기준으로 채점해 주세요. 1위 팀이 매니패스트상을 받습니다."
+        desc="9.28 중간발표 — 모든 팀을 중간발표 심사 기준 4항목(90점)으로 채점해 주세요. 발표 10점은 운영진이 반영하며, 합산 1위 팀이 매니패스트상을 받습니다."
       />
 
       <JudgeTabs active="mid" />
