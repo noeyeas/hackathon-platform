@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { deleteTeamAsAdmin, setTeamLeaderEmail } from "./actions";
 
@@ -116,20 +117,29 @@ export function TeamRow({
           </ul>
         )}
       </div>
-      <button
-        disabled={pending}
-        onClick={() => {
-          if (
-            confirm(
-              `'${name}' 팀을 삭제할까요? 소속 팀원·제출물도 함께 삭제됩니다.`
+      <div className="flex shrink-0 flex-col items-end gap-1.5">
+        {/* 그 팀의 마이페이지(팀 정보·제출물·반응)를 운영진이 읽기 전용으로 본다 */}
+        <Link
+          href={`/admin/teams/${id}`}
+          className="text-sm font-medium text-navy hover:underline"
+        >
+          마이페이지 →
+        </Link>
+        <button
+          disabled={pending}
+          onClick={() => {
+            if (
+              confirm(
+                `'${name}' 팀을 삭제할까요? 소속 팀원·제출물도 함께 삭제됩니다.`
+              )
             )
-          )
-            startTransition(() => void deleteTeamAsAdmin(id));
-        }}
-        className="shrink-0 text-sm text-[var(--muted)] hover:text-red-500"
-      >
-        {pending ? "..." : "삭제"}
-      </button>
+              startTransition(() => void deleteTeamAsAdmin(id));
+          }}
+          className="text-sm text-[var(--muted)] hover:text-red-500"
+        >
+          {pending ? "..." : "삭제"}
+        </button>
+      </div>
     </div>
   );
 }
