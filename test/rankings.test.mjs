@@ -21,7 +21,7 @@ const migration = join(
   "..",
   "supabase",
   "migrations",
-  "0045_audience_online_vote.sql"
+  "0054_admin_presentation_score.sql"
 );
 
 // 마이그레이션에서 view 정의만 추출(뒤따르는 revoke 는 pglite 에 없는 롤을 참조하므로 제외).
@@ -42,7 +42,12 @@ const U = (n) => `00000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
 async function setup({ finalistCount = 4 } = {}) {
   const db = new PGlite();
   await db.exec(`
-    create table teams ( id uuid primary key, name text not null );
+    -- 0052·0054: 참여도(불참 인원)·발표 점수는 운영진이 teams 에 적는다.
+    create table teams (
+      id uuid primary key, name text not null,
+      absent_count int not null default 0,
+      presentation_score int not null default 0
+    );
     create table projects (
       id uuid primary key,
       team_id uuid not null references teams(id),
@@ -54,7 +59,11 @@ async function setup({ finalistCount = 4 } = {}) {
       project_id uuid not null references projects(id),
       primary key (ballot_code, project_id)
     );
-    create table criteria ( id uuid primary key, max_score int not null default 10 );
+    -- 0053: 심사표는 round 로 나뉜다. 본선 채점표 배점 합은 90(0054).
+    create table criteria (
+      id uuid primary key, max_score int not null default 10,
+      round text not null default 'final'
+    );
     create table judge_scores (
       project_id uuid not null, judge_id uuid not null,
       criteria_id uuid not null references criteria(id), score int not null
@@ -72,9 +81,12 @@ async function setup({ finalistCount = 4 } = {}) {
 
   const C1 = U(101), C2 = U(102), J1 = U(201), J2 = U(202), VT = U(301);
   await db.exec(`
-    insert into criteria(id,max_score) values ('${C1}',10),('${C2}',10);
-    insert into teams(id,name) values
-      ('${U(1)}','A'),('${U(2)}','B'),('${U(3)}','C'),('${U(4)}','D'),('${U(5)}','E');
+    insert into criteria(id,max_score) values ('${C1}',45),('${C2}',45);
+    -- A~D 는 발표 만점(5)·전원 출석(참여도 5) → 심사 점수 = 심사위원 pct×90 + 10.
+    -- E 는 무점수에 발표 0·불참 5 → 심사 점수 0 (0054 이후에도 0점 팀이 가능함을 본다).
+    insert into teams(id,name,presentation_score,absent_count) values
+      ('${U(1)}','A',5,0),('${U(2)}','B',5,0),('${U(3)}','C',5,0),('${U(4)}','D',5,0),
+      ('${U(5)}','E',0,5);
     insert into projects(id,team_id,title) values
       ('${U(11)}','${U(1)}','pA'),
       ('${U(12)}','${U(2)}','pB'),
@@ -86,7 +98,7 @@ async function setup({ finalistCount = 4 } = {}) {
   // 주민표 — 투표권(QR) 한 장이 한 팀에 한 표. 예전 수기 입력값과 같은 분포를
   // 실제 표 행으로 깐다: pA 10, pB 90, pC 25, pD 0, pE 200.
   await castAudienceVotes(db, { 11: 10, 12: 90, 13: 25, 14: 0, 15: 200 });
-  const judge = { 11: 10, 12: 8, 13: 5, 14: 6 }; // pE 는 무점수
+  const judge = { 11: 45, 12: 36, 13: 20, 14: 27 }; // pE 는 무점수 (pct 100/80/44.4/60)
   for (const [pid, s] of Object.entries(judge))
     for (const J of [J1, J2])
       for (const C of [C1, C2])
@@ -94,7 +106,7 @@ async function setup({ finalistCount = 4 } = {}) {
           `insert into judge_scores(project_id,judge_id,criteria_id,score) values ($1,$2,$3,$4)`,
           [U(pid), J, C, s]
         );
-  const team = { 11: 10, 12: 6, 13: 4, 14: 4 };
+  const team = { 11: 45, 12: 27, 13: 18, 14: 18 }; // pct 100/60/40/40
   for (const [pid, s] of Object.entries(team))
     for (const C of [C1, C2])
       await db.query(
@@ -121,29 +133,35 @@ async function castAudienceVotes(db, votesByProject) {
   }
 }
 
+// 심사(100) = 심사위원 pct×90 + 발표 5 + 참여도 5 (0054)
+//   A pct100 → 100, B pct80 → 82, C pct44.4 → 50, D pct60 → 64, E → 0
 // 1차 점수 = (심사×0.5 + 팀×0.25) / 0.75
 //   A 심사100 팀100 → 100
-//   B 심사 80 팀 60 → (40+15)/0.75 = 73.33
+//   B 심사 82 팀 60 → (41+15)/0.75 = 74.67
+//   D 심사 64 팀 40 → (32+10)/0.75 = 56
 //   C 심사 50 팀 40 → (25+10)/0.75 = 46.67
-//   D 심사 60 팀 40 → (30+10)/0.75 = 53.33
 //   E 무점수        → 0
 test("rankings: 1차 점수는 심사·팀 상호평가만으로 계산된다", async () => {
   const db = await setup();
+  // 0050 부터 final_score 는 진출팀엔 주민표까지 합산된 값이라, 1차 점수는
+  // 뷰가 내놓는 심사·팀 점수로 같은 식을 다시 계산해 본다.
   const { rows } = await db.query(
-    `select team_name, final_score, stage1_rank from rankings order by stage1_rank`
+    `select team_name, judge_score, team_votes, stage1_rank from rankings order by stage1_rank`
   );
+  const stage1 = (r) =>
+    (Number(r.judge_score) * 0.5 + Number(r.team_votes) * 0.25) / 0.75;
   const expected = [
     { team: "A", score: 100.0 },
-    { team: "B", score: 73.33 },
-    { team: "D", score: 53.33 },
+    { team: "B", score: 74.67 },
+    { team: "D", score: 56.0 },
     { team: "C", score: 46.67 },
     { team: "E", score: 0.0 },
   ];
   rows.forEach((r, i) => {
     assert.equal(r.team_name, expected[i].team, `${i + 1}위 팀`);
     assert.ok(
-      Math.abs(Number(r.final_score) - expected[i].score) < 0.01,
-      `${r.team_name} 1차 점수: ${r.final_score} (기대 ${expected[i].score})`
+      Math.abs(stage1(r) - expected[i].score) < 0.01,
+      `${r.team_name} 1차 점수: ${stage1(r).toFixed(2)} (기대 ${expected[i].score})`
     );
   });
 });
@@ -174,15 +192,17 @@ test("rankings: 선정 팀 수는 finalist_count 를 따른다", async () => {
   }
 });
 
-test("rankings: 표시 순서 = 시상 순서 (선정팀 먼저, 그 안에서 주민표 순)", async () => {
+test("rankings: 표시 순서 = 시상 순서 (선정팀 먼저, 그 안에서 합산 점수 순)", async () => {
   const db = await setup();
   const { rows } = await db.query(`select team_name, is_finalist from rankings`);
 
-  // 선정 4팀: A(10표), B(90표), C(25표), D(0표) → 주민표 순 B > C > A > D
+  // 선정 4팀의 최종 = 심사×0.5 + 팀×0.25 + 주민(진출팀 최다 90표 = 100)×0.25 (0050)
+  //   A 50+25+2.78 = 77.78, B 41+15+25 = 81, C 25+10+6.94 = 41.94, D 32+10+0 = 42
+  //   → B > A > D > C
   assert.deepEqual(
     rows.map((r) => r.team_name),
-    ["B", "C", "A", "D", "E"],
-    "1위(B)가 노원구청장 표창, 그다음 3팀이 총장상, E 는 미선정"
+    ["B", "A", "D", "C", "E"],
+    "1위(B)가 노원구청장상, 그다음 3팀이 총장상, E 는 미선정"
   );
   assert.equal(rows[0].is_finalist, true);
   assert.equal(rows[4].is_finalist, false, "미선정 팀은 항상 뒤로");
@@ -195,4 +215,27 @@ test("rankings: 무점수 팀도 에러 없이 0점으로 집계된다", async (
   );
   assert.equal(rows[0].team_name, "E");
   assert.equal(Number(rows[0].final_score), 0);
+});
+
+// 0054: 발표·참여도는 심사위원 pct 와 무관하게 그대로 더해지고, 불참은 5점에서
+// 인당 1점씩 빼되 0 아래로는 내려가지 않는다.
+test("rankings: 발표 점수와 불참 인원이 심사 점수에 그대로 반영된다", async () => {
+  const db = await setup();
+  const score = async (name) =>
+    Number(
+      (
+        await db.query(`select judge_score from rankings where team_name = $1`, [name])
+      ).rows[0].judge_score
+    );
+
+  assert.equal(await score("A"), 100, "pct100 + 발표 5 + 참여도 5");
+
+  await db.query(`update teams set presentation_score = 2 where name = 'A'`);
+  assert.equal(await score("A"), 97, "발표 5 → 2 면 3점 감소");
+
+  await db.query(`update teams set absent_count = 3 where name = 'A'`);
+  assert.equal(await score("A"), 94, "불참 3명이면 참여도 5 → 2");
+
+  await db.query(`update teams set absent_count = 9 where name = 'A'`);
+  assert.equal(await score("A"), 92, "불참이 5명을 넘어도 참여도는 0 까지만 깎인다");
 });
