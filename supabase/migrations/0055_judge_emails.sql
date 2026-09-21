@@ -24,8 +24,11 @@ alter table judge_emails enable row level security;
 -- 정책을 하나도 두지 않는다 = anon/authenticated 는 읽지도 쓰지도 못한다.
 
 insert into judge_emails (email, name) values
-  ('kdpark.kw@gmail.com', '박규동 교수님'),
-  ('leo@manyfast.io',     '허재혁 대표님 (매니패스트)')
+  ('kdpark.kw@gmail.com',      '박규동 교수님'),
+  ('leo@manyfast.io',          '허재혁 대표님 (매니패스트)'),
+  ('uanshin@kw.ac.kr',         '신유안 교수님'),
+  ('youngjae.park@kw.ac.kr',   '박영재 교수님'),
+  ('kim01030048361@gmail.com', '김태헌님 (주민단체 대표)')
 on conflict (email) do nothing;
 
 create or replace function handle_new_user() returns trigger as $$
