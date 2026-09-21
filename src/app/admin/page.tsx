@@ -32,7 +32,7 @@ export default async function AdminPage() {
       .single(),
     admin.from("teams").select("id, name").order("name"),
     admin.from("projects").select("team_id"),
-    admin.from("criteria").select("id"),
+    admin.from("criteria").select("id").eq("round", "final"),
     admin
       .from("users")
       .select("id, name, email")

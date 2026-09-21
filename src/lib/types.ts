@@ -53,6 +53,14 @@ export type Ranking = {
   is_finalist: boolean;
 };
 
+// 중간발표(9.28) 채점 집계 — mid_rankings 뷰(0053). 1위가 매니패스트상.
+export type MidRanking = {
+  team_id: string;
+  team_name: string;
+  judge_score: number;
+  judge_count: number;
+};
+
 // 점수 가중치 (심사 / 팀 상호 / 주민투표). 합이 1 이어야 한다.
 //
 // 1차 선정(전시 진출)은 judge : team 비율만 쓴다 — rankings 뷰가
@@ -132,6 +140,16 @@ export const FINAL_CRITERIA = [
   { t: "창의성 & 차별성", p: 20, d: "기존 서비스·해결방안 대비 독창성과 차별화된 특징" },
   { t: "발표", p: 5, d: "목적·주요 내용·구현 결과·기대효과를 명확하고 효과적으로 전달하는지" },
   { t: "참여도", p: 5, d: "본선 개회식(10.8 09:00)·최종발표(10.9 09:00) 필수 참여. 불참 시 인당 1점 감점 — 운영진이 출석 확인으로 반영" },
+] as const;
+
+// 중간발표 심사 기준(디스코드 공지 1️⃣-2). 합계 100점. 매니패스트상 1팀 선정.
+// DB criteria(round='mid', 0053)와 같은 내용이며 홈 안내에 쓴다.
+export const MID_CRITERIA = [
+  { t: "논리의 연결성", p: 30 },
+  { t: "실현 & 상용화 가능성", p: 20 },
+  { t: "기획 문서의 재현 가능성", p: 20 },
+  { t: "창의성 & 차별성", p: 20 },
+  { t: "발표", p: 10 },
 ] as const;
 
 // 상위 3팀 시상 이름 (결과 공개 후 갤러리·결과 페이지에서 공통 사용)

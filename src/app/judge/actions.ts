@@ -33,6 +33,7 @@ export async function saveScores(projectId: string, formData: FormData) {
   const { data: criteria } = await supabase
     .from("criteria")
     .select("id, max_score")
+    .eq("round", "final")
     .order("sort");
   if (!criteria) return { error: "평가 기준을 불러오지 못했습니다" };
 
@@ -61,5 +62,59 @@ export async function saveScores(projectId: string, formData: FormData) {
     return { error: safeError(error, "점수 저장에 실패했어요. 잠시 후 다시 시도해 주세요.") };
 
   revalidatePath("/judge");
+  return { ok: true };
+}
+
+// 중간발표(9.28) 채점 — 대상이 제출물이 아니라 팀이다(0053).
+// 본선 saveScores 와 같은 흐름이지만 스위치(mid_judging_open)·심사표(round=mid)
+// ·저장 테이블(mid_scores)이 다르다.
+export async function saveMidScores(teamId: string, formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "로그인이 필요합니다" };
+
+  const { data: me } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  if (me?.role !== "judge" && me?.role !== "admin")
+    return { error: "심사위원·운영진만 채점할 수 있습니다" };
+
+  const { data: settings } = await supabase
+    .from("event_settings")
+    .select("mid_judging_open")
+    .single();
+  if (!settings?.mid_judging_open)
+    return { error: "지금은 중간발표 채점 기간이 아닙니다" };
+
+  const { data: criteria } = await supabase
+    .from("criteria")
+    .select("id, max_score")
+    .eq("round", "mid")
+    .order("sort");
+  if (!criteria?.length) return { error: "중간발표 심사표를 불러오지 못했습니다" };
+
+  // 코멘트는 첫 기준 행에만 — saveScores 와 같은 규칙.
+  const comment = String(formData.get("comment") ?? "").trim() || null;
+
+  const rows = criteria.map((c, i) => ({
+    team_id: teamId,
+    judge_id: user.id,
+    criteria_id: c.id,
+    score: clampScore(formData.get(`c_${c.id}`), c.max_score),
+    comment: i === 0 ? comment : null,
+  }));
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("mid_scores")
+    .upsert(rows, { onConflict: "team_id,judge_id,criteria_id" });
+  if (error)
+    return { error: safeError(error, "점수 저장에 실패했어요. 잠시 후 다시 시도해 주세요.") };
+
+  revalidatePath("/judge/mid");
   return { ok: true };
 }

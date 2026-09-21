@@ -7,6 +7,7 @@ import { BrandMark } from "@/components/BrandMark";
 const ITEMS = [
   { href: "/admin", label: "대시보드" },
   { href: "/admin/teams", label: "팀 등록" },
+  { href: "/admin/midterm", label: "중간발표 심사" },
   { href: "/admin/scoring", label: "심사 · 점수" },
   { href: "/admin/audience", label: "전시 주민투표" },
   { href: "/admin/announcements", label: "공지 발행" },

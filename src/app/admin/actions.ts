@@ -88,6 +88,20 @@ export async function setSubmitOpen(open: boolean) {
   return { ok: true };
 }
 
+// 중간발표(9.28) 채점 열림/닫힘. 본선 스위치(voting_open)와 별개다(0053).
+export async function setMidJudgingOpen(open: boolean) {
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("event_settings")
+    .update({ mid_judging_open: open })
+    .eq("id", 1);
+  if (error) return { error: adminError(error) };
+  revalidatePath("/admin/midterm");
+  revalidatePath("/judge/mid");
+  return { ok: true };
+}
+
 // 참여도 감점 — 본선 개회식·최종발표 불참 인원(연인원). rankings 뷰가
 // 인당 1점(최대 5점)을 심사 점수에서 뺀다(0052). 심사위원 화면에는 없다.
 export async function setAbsentCount(teamId: string, count: number) {

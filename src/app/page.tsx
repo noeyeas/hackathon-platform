@@ -6,7 +6,7 @@ import { Reveal } from "@/components/Reveal";
 import { RevealGroup } from "@/components/RevealGroup";
 import { getTimeline } from "@/lib/remoteData";
 import { formatMonthDayRange, formatMonthDayWeekdayRange } from "@/lib/format";
-import { FINAL_CRITERIA } from "@/lib/types";
+import { FINAL_CRITERIA, MID_CRITERIA } from "@/lib/types";
 
 // 구글 신청 폼 주소. 채우면 아래 ApplyButton 이 자동으로 활성 링크가 되고,
 // 비워두면 "준비 중" 비활성 버튼으로 표시된다.
@@ -400,9 +400,8 @@ export default async function Home() {
             <h3 className="mb-1 font-bold">본선 심사 기준</h3>
             <p className="mb-4 text-sm text-[var(--muted)]">
               합계 100점. 팀당 5분 발표 후 질의응답이 진행됩니다. 중간발표(9.28)는
-              별도 기준(논리의 연결성 30 · 실현 & 상용화 가능성 20 · 기획 문서의
-              재현 가능성 20 · 창의성 & 차별성 20 · 발표 10)으로 매니패스트상을
-              선정합니다.
+              별도 기준({MID_CRITERIA.map((c) => `${c.t} ${c.p}`).join(" · ")})으로
+              매니패스트상을 선정합니다.
             </p>
             <ul className="flex flex-col divide-y divide-[var(--line)]">
               {FINAL_CRITERIA.map((c) => (

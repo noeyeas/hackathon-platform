@@ -81,6 +81,7 @@ export default async function VotePage() {
   const { data: criteria } = await supabase
     .from("criteria")
     .select("id, name, max_score, weight, description")
+    .eq("round", "final") // 팀 상호평가는 본선 심사표만 쓴다(0053)
     .order("sort");
 
   let projectsQuery = supabase

@@ -28,7 +28,7 @@ export default async function ScoringProgressPage() {
     { data: allTeams },
   ] = await Promise.all([
     admin.from("event_settings").select("voting_open, phase").single(),
-    admin.from("criteria").select("id"),
+    admin.from("criteria").select("id").eq("round", "final"),
     admin
       .from("projects")
       .select("id, team_id, title, teams(name)")

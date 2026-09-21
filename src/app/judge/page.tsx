@@ -5,6 +5,7 @@ import { saveScores } from "./actions";
 import { ScoreProgress } from "@/components/ScoreProgress";
 import { completedCount } from "@/lib/scoring";
 import { PageHeader } from "@/components/PageHeader";
+import { JudgeTabs } from "./JudgeTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,7 @@ export default async function JudgePage() {
   const { data: criteria } = await supabase
     .from("criteria")
     .select("id, name, max_score, weight, description")
+    .eq("round", "final") // 중간발표 심사표(0053)는 /judge/mid 에서
     .order("sort");
 
   const { data: projects } = await supabase
@@ -59,9 +61,11 @@ export default async function JudgePage() {
     <div className="mx-auto max-w-2xl">
       <PageHeader
         eyebrow="Judging"
-        title="심사 채점"
-        desc="모든 팀을 심사 기준으로 채점해 주세요."
+        title="본선 심사 채점"
+        desc="10.9 최종발표 — 모든 팀을 본선 심사 기준으로 채점해 주세요."
       />
+
+      <JudgeTabs active="final" />
 
       <ScoreProgress done={doneCount} total={projects?.length ?? 0} />
 

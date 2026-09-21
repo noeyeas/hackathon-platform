@@ -30,7 +30,7 @@ export function OpenControls({
   );
 }
 
-function Switch({
+export function Switch({
   title,
   desc,
   initial,

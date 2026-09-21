@@ -29,7 +29,7 @@ select t as "테이블",
                            false, true, '')))[1]::text::int as "행 수"
 from unnest(array[
   'teams','projects','team_members','users',
-  'judge_scores','team_scores','votes','audience_tokens',
+  'judge_scores','mid_scores','team_scores','votes','audience_tokens',
   'audience_ballots','audience_votes',
   'project_likes','project_comments','project_view_log',
   'announcements','recruit_posts','milestones'
@@ -60,7 +60,8 @@ begin
     'audience_ballots',  -- 발급된 QR 투표권 (0045)
     'votes',             -- 팀 상호 + 관객 투표 (구버전 경로)
     'audience_tokens',   -- 테이블별 QR 토큰 (구버전 경로)
-    'judge_scores',      -- 심사위원 채점
+    'judge_scores',      -- 심사위원 채점 (본선)
+    'mid_scores',        -- 심사위원 채점 (중간발표, 0053)
     'team_scores',       -- 팀 상호 채점
     -- 제출작에 붙은 것
     'project_comments',

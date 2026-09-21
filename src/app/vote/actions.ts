@@ -41,7 +41,8 @@ export async function saveTeamScores(projectId: string, formData: FormData) {
 
   const { data: criteria } = await supabase
     .from("criteria")
-    .select("id, max_score");
+    .select("id, max_score")
+    .eq("round", "final");
   if (!criteria) return { error: "평가 기준을 불러오지 못했습니다" };
 
   const rows = criteria.map((c) => {
