@@ -42,7 +42,12 @@ export default async function MidJudgePage() {
         .select("id, name, max_score, weight, description")
         .eq("round", "mid")
         .order("sort"),
-      supabase.from("teams").select("id, name, tagline").order("name"),
+      // 기권 팀은 채점 대상이 아니다(0056)
+      supabase
+        .from("teams")
+        .select("id, name, tagline")
+        .neq("status", "withdrawn")
+        .order("name"),
       supabase
         .from("mid_scores")
         .select("team_id, criteria_id, score, comment")

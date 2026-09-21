@@ -41,6 +41,26 @@ export async function setTeamLeaderEmail(id: string, email: string) {
   return { ok: true };
 }
 
+// 기권 처리/취소. 삭제와 달리 팀원 연결·제출물이 남고, 심사·상호평가·집계
+// 대상에서만 빠진다(0056). 되돌릴 수 있다.
+export async function setTeamWithdrawn(id: string, withdrawn: boolean) {
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("teams")
+    .update({ status: withdrawn ? "withdrawn" : "forming" })
+    .eq("id", id);
+  if (error) return { error: adminError(error) };
+  revalidatePath("/admin/teams");
+  revalidatePath("/admin");
+  revalidatePath("/admin/scoring");
+  revalidatePath("/admin/midterm");
+  revalidatePath("/judge");
+  revalidatePath("/judge/mid");
+  revalidatePath("/vote");
+  return { ok: true };
+}
+
 export async function deleteTeamAsAdmin(id: string) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();

@@ -148,6 +148,9 @@ export default async function MyPage() {
                 {isLeader && (
                   <span className="chip border-team text-team">팀장</span>
                 )}
+                {team?.status === "withdrawn" && (
+                  <span className="chip border-alert text-alert">기권</span>
+                )}
               </div>
 
               <div className="mt-4 flex flex-col gap-4 border-t border-[var(--line)] pt-4">

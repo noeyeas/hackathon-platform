@@ -32,7 +32,7 @@ export default async function ScoringProgressPage() {
     admin.from("criteria").select("id").eq("round", "final"),
     admin
       .from("projects")
-      .select("id, team_id, title, teams(name)")
+      .select("id, team_id, title, teams(name, status)")
       .order("submitted_at"),
     admin.from("users").select("id, name, email").eq("role", "judge").order("name"),
     // 채점 행은 1,000행을 넘기므로 끝까지 페이지를 넘겨 읽는다(fetchAll 주석 참고).
@@ -48,11 +48,14 @@ export default async function ScoringProgressPage() {
     admin
       .from("teams")
       .select("id, name, presentation_score, absent_count")
+      .neq("status", "withdrawn") // 기권 팀은 평가 주체도 대상도 아니다(0056)
       .order("name"),
   ]);
 
   const criteriaCount = criteria?.length ?? 0;
-  const projectList = projects ?? [];
+  const projectList = (projects ?? []).filter(
+    (p) => (p.teams as unknown as { status: string } | null)?.status !== "withdrawn"
+  );
   const submittedCount = projectList.length;
   const submittedTeamIds = new Set(projectList.map((p) => p.team_id));
 

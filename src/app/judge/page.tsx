@@ -44,10 +44,14 @@ export default async function JudgePage() {
     .eq("round", "final") // 중간발표 심사표(0053)는 /judge/mid 에서
     .order("sort");
 
-  const { data: projects } = await supabase
+  const { data: allProjects } = await supabase
     .from("projects")
-    .select("id, title, teams(name)")
+    .select("id, title, teams(name, status)")
     .order("submitted_at");
+  // 기권 팀의 제출물은 채점 대상이 아니다(0056)
+  const projects = (allProjects ?? []).filter(
+    (p) => (p.teams as unknown as { status: string } | null)?.status !== "withdrawn"
+  );
 
   const { data: myScores } = await supabase
     .from("judge_scores")
@@ -67,7 +71,7 @@ export default async function JudgePage() {
 
       <JudgeTabs active="final" />
 
-      <ScoreProgress done={doneCount} total={projects?.length ?? 0} />
+      <ScoreProgress done={doneCount} total={projects.length} />
 
       {!votingOpen && (
         <div className="mt-4 rounded-md border border-gold/30 bg-gold-soft px-4 py-3 text-sm text-gold-ink">
@@ -77,7 +81,7 @@ export default async function JudgePage() {
       )}
 
       <div className="mt-6 flex flex-col gap-4">
-        {projects?.map((p) => {
+        {projects.map((p) => {
           const team = (p.teams as unknown as { name: string } | null)?.name;
           const existing =
             myScores?.filter((s) => s.project_id === p.id) ?? [];

@@ -98,6 +98,7 @@ export default async function AdminTeamsPage() {
                   leaderEmail={t.leader_email}
                   members={members}
                   locked={t.status === "locked"}
+                  withdrawn={t.status === "withdrawn"}
                 />
               );
             })}

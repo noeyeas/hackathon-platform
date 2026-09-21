@@ -30,7 +30,7 @@ export default async function AdminPage() {
       .from("event_settings")
       .select("phase, team_edit_open, project_submit_open")
       .single(),
-    admin.from("teams").select("id, name").order("name"),
+    admin.from("teams").select("id, name, status").order("name"),
     admin.from("projects").select("team_id"),
     admin.from("criteria").select("id").eq("round", "final"),
     admin
@@ -47,12 +47,20 @@ export default async function AdminPage() {
     ),
   ]);
 
-  const teamList = allTeams ?? [];
+  // 기권 팀은 팀 수·미제출·평가 진행률 어디에도 세지 않는다(0056)
+  const withdrawnIds = new Set(
+    (allTeams ?? []).filter((t) => t.status === "withdrawn").map((t) => t.id)
+  );
+  const teamList = (allTeams ?? []).filter((t) => !withdrawnIds.has(t.id));
   const teams = teamList.length;
-  const submitted = (projectTeams ?? []).length;
+  const submitted = (projectTeams ?? []).filter(
+    (p) => !withdrawnIds.has(p.team_id as string)
+  ).length;
   const criteriaCount = criteria?.length ?? 0;
   const submittedTeamIds = new Set(
-    (projectTeams ?? []).map((p) => p.team_id as string)
+    (projectTeams ?? [])
+      .map((p) => p.team_id as string)
+      .filter((id) => !withdrawnIds.has(id))
   );
 
   // 아직 제출하지 않은 팀 — 이름까지 보여야 누구를 찾아갈지 바로 안다.
@@ -135,7 +143,11 @@ export default async function AdminPage() {
 
       {/* 한눈에 보는 진행률 — 숫자보다 "얼마나 남았나"가 먼저 읽히도록 바를 함께 둔다. */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="등록 팀" value={teams} unit="팀" />
+        <Stat
+          label="등록 팀"
+          value={teams}
+          unit={withdrawnIds.size > 0 ? `팀 (기권 ${withdrawnIds.size})` : "팀"}
+        />
         <Stat
           label="제출작"
           value={submitted}

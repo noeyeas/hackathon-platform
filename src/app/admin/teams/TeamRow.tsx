@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { deleteTeamAsAdmin, setTeamLeaderEmail } from "./actions";
+import { deleteTeamAsAdmin, setTeamLeaderEmail, setTeamWithdrawn } from "./actions";
 
 type Member = { email: string; name: string | null; isLeader: boolean };
 
@@ -13,6 +13,7 @@ export function TeamRow({
   leaderEmail,
   members,
   locked,
+  withdrawn,
 }: {
   id: string;
   name: string;
@@ -20,8 +21,10 @@ export function TeamRow({
   leaderEmail: string | null;
   members: Member[];
   locked: boolean;
+  withdrawn: boolean;
 }) {
   const [pending, startTransition] = useTransition();
+  const [withdrawPending, startWithdraw] = useTransition();
   const [editing, setEditing] = useState(false);
   const [email, setEmail] = useState(leaderEmail ?? "");
   const [savePending, startSave] = useTransition();
@@ -36,10 +39,17 @@ export function TeamRow({
   }
 
   return (
-    <div className="flex items-start justify-between gap-3 rounded-lg bg-paper px-4 py-3">
+    <div
+      className={`flex items-start justify-between gap-3 rounded-lg bg-paper px-4 py-3 ${
+        withdrawn ? "opacity-60" : ""
+      }`}
+    >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate font-semibold">{name}</span>
+          <span className={`truncate font-semibold ${withdrawn ? "line-through" : ""}`}>
+            {name}
+          </span>
+          {withdrawn && <span className="chip border-alert text-alert">기권</span>}
           <span
             className={`chip ${
               linked ? "border-team text-team" : "border-navy text-navy"
@@ -125,6 +135,20 @@ export function TeamRow({
         >
           마이페이지 →
         </Link>
+        {/* 기권은 삭제와 달리 되돌릴 수 있다 — 심사·평가 대상에서만 뺀다 */}
+        <button
+          disabled={withdrawPending}
+          onClick={() => {
+            if (
+              withdrawn ||
+              confirm(`'${name}' 팀을 기권 처리할까요? 심사·상호평가·순위에서 제외됩니다.`)
+            )
+              startWithdraw(() => void setTeamWithdrawn(id, !withdrawn));
+          }}
+          className="text-sm text-[var(--muted)] hover:text-alert"
+        >
+          {withdrawPending ? "..." : withdrawn ? "기권 취소" : "기권"}
+        </button>
         <button
           disabled={pending}
           onClick={() => {

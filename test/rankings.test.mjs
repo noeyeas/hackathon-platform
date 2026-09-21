@@ -21,7 +21,7 @@ const migration = join(
   "..",
   "supabase",
   "migrations",
-  "0054_admin_presentation_score.sql"
+  "0056_team_withdrawn.sql"
 );
 
 // 마이그레이션에서 view 정의만 추출(뒤따르는 revoke 는 pglite 에 없는 롤을 참조하므로 제외).
@@ -46,7 +46,8 @@ async function setup({ finalistCount = 4 } = {}) {
     create table teams (
       id uuid primary key, name text not null,
       absent_count int not null default 0,
-      presentation_score int not null default 0
+      presentation_score int not null default 0,
+      status text not null default 'forming'
     );
     create table projects (
       id uuid primary key,
@@ -238,4 +239,17 @@ test("rankings: 발표 점수와 불참 인원이 심사 점수에 그대로 반
 
   await db.query(`update teams set absent_count = 9 where name = 'A'`);
   assert.equal(await score("A"), 92, "불참이 5명을 넘어도 참여도는 0 까지만 깎인다");
+});
+
+// 0056: 기권 팀은 순위·진출 계산에서 통째로 빠진다 — 진출 슬롯도 차지하지 않는다.
+test("rankings: 기권 팀은 집계에서 빠지고 진출 슬롯을 차지하지 않는다", async () => {
+  const db = await setup({ finalistCount: 3 });
+  await db.query(`update teams set status = 'withdrawn' where name = 'A'`);
+  const { rows } = await db.query(`select team_name, is_finalist from rankings`);
+  assert.ok(!rows.some((r) => r.team_name === "A"), "기권 팀이 표에 없어야 한다");
+  assert.deepEqual(
+    rows.filter((r) => r.is_finalist).map((r) => r.team_name).sort(),
+    ["B", "C", "D"],
+    "A 가 빠진 자리를 다음 순위가 채운다"
+  );
 });

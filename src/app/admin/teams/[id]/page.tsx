@@ -114,7 +114,11 @@ export default async function AdminTeamDetailPage({
                 </span>
               </Row>
               <Row label="상태">
-                <span className="chip">{team.status === "locked" ? "잠김" : "구성 중"}</span>
+                {team.status === "withdrawn" ? (
+                  <span className="chip border-alert text-alert">기권</span>
+                ) : (
+                  <span className="chip">{team.status === "locked" ? "잠김" : "구성 중"}</span>
+                )}
               </Row>
               <Row label="등록일">{formatDateTime(team.created_at)}</Row>
             </dl>

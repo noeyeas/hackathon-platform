@@ -86,10 +86,14 @@ export default async function VotePage() {
 
   let projectsQuery = supabase
     .from("projects")
-    .select("id, title, team_id, teams(name)")
+    .select("id, title, team_id, teams(name, status)")
     .order("submitted_at");
   if (teamId) projectsQuery = projectsQuery.neq("team_id", teamId); // 자기 팀 제외
-  const { data: projects } = await projectsQuery;
+  const { data: allProjects } = await projectsQuery;
+  // 기권 팀의 제출물은 평가 대상이 아니다(0056)
+  const projects = (allProjects ?? []).filter(
+    (p) => (p.teams as unknown as { status: string } | null)?.status !== "withdrawn"
+  );
 
   // 우리 팀이 이미 매긴 점수 (팀이 있을 때만)
   const { data: myScores } = teamId

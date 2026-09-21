@@ -28,7 +28,7 @@ export default async function MidtermPage() {
   ] = await Promise.all([
     admin.from("event_settings").select("mid_judging_open").single(),
     admin.from("criteria").select("id").eq("round", "mid"),
-    admin.from("teams").select("id"),
+    admin.from("teams").select("id").neq("status", "withdrawn"), // 기권 제외(0056)
     admin.from("users").select("id, name, email").eq("role", "judge").order("name"),
     // 40팀 × 5기준 × 심사위원 수 — 1,000행을 넘길 수 있어 끝까지 읽는다.
     fetchAll(() =>
