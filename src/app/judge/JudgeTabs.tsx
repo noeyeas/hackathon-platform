@@ -9,8 +9,7 @@ const TABS = [
 
 export function JudgeTabs({ active }: { active: "mid" | "final" }) {
   return (
-    <div className="mt-4">
-    <div className="flex gap-1 rounded-lg border border-[var(--line)] bg-paper p-1">
+    <div className="mt-4 flex gap-1 rounded-lg border border-[var(--line)] bg-paper p-1">
       {TABS.map((t) => {
         const on = t.key === active;
         return (
@@ -28,12 +27,6 @@ export function JudgeTabs({ active }: { active: "mid" | "final" }) {
           </Link>
         );
       })}
-    </div>
-    <p className="mt-2 text-right text-xs">
-      <Link href="/judge/guide" className="text-navy underline">
-        심사위원 안내 보기
-      </Link>
-    </p>
     </div>
   );
 }

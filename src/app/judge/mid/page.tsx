@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScoreCard } from "../ScoreCard";
@@ -32,9 +31,6 @@ export default async function MidJudgePage() {
           심사위원으로 등록된 이메일로 로그인했는지 확인해 주세요. 다른 계정으로
           로그인했다면 로그아웃 후 등록된 계정으로 다시 로그인하면 됩니다.
         </p>
-        <Link href="/judge/guide" className="btn-ghost mt-4 inline-flex">
-          심사위원 안내 보기
-        </Link>
       </div>
     );
   }
