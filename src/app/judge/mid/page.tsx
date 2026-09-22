@@ -88,8 +88,9 @@ export default async function MidJudgePage() {
             <ScoreCard
               key={t.id}
               projectId={t.id}
-              teamName={t.name}
-              title={t.tagline || "(한 줄 소개 없음)"}
+              // 제출물이 없으니 팀 이름이 제목, 한 줄 소개가 부제다
+              teamName={t.tagline ?? ""}
+              title={t.name}
               criteria={criteria ?? []}
               existing={existing}
               action={saveMidScores}

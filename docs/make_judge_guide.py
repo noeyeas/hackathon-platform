@@ -12,6 +12,8 @@ from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
 from pathlib import Path
 
+IMG = Path(__file__).with_name("img")
+
 SITE = "https://www.kw-hackathon.co.kr"
 NAVY = RGBColor(0x1F, 0x2A, 0x5C)
 MUTED = RGBColor(0x66, 0x66, 0x66)
@@ -90,6 +92,25 @@ def numbered(doc, text, bold_prefix=None):
     return p
 
 
+def figures(doc, items, width_cm=7.2):
+    """화면 캡처를 가로로 나란히(테두리 없는 표) 넣고 아래에 설명을 단다."""
+    items = [(f, cap) for f, cap in items if (IMG / f).exists()]
+    if not items:
+        return
+    table = doc.add_table(rows=2, cols=len(items))
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    for i, (f, cap) in enumerate(items):
+        cell = table.rows[0].cells[i]
+        cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        cell.paragraphs[0].add_run().add_picture(str(IMG / f), width=Cm(width_cm))
+        c2 = table.rows[1].cells[i]
+        c2.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = c2.paragraphs[0].add_run(cap)
+        r.font.size = Pt(9)
+        r.font.color.rgb = MUTED
+    doc.add_paragraph()
+
+
 def criteria_table(doc, rows, judge_note):
     table = doc.add_table(rows=1, cols=3)
     table.style = "Table Grid"
@@ -157,6 +178,10 @@ def build():
     bullet(doc, "이메일 링크 로그인도 되지만 메일 도착까지 잠시 걸릴 수 있습니다.")
     bullet(doc, "(예: 학교 계정 ↔ Gmail)으로 로그인하면 일반 참가자로 인식돼 채점 화면이 열리지 않습니다. 등록된 주소인지 확인해 주세요.", "다른 계정")
     para(doc, f"채점 화면 주소: {SITE}/judge  (중간발표: {SITE}/judge/mid)", muted=True)
+    figures(doc, [
+        ("00_login.png", "로그인 화면 — ‘Google 계정으로 계속하기’ 권장"),
+        ("01_menu.png", "로그인 후 오른쪽 위 ☰ 메뉴 → ‘심사’"),
+    ])
 
     # ── 2. 화면
     h1(doc, "2. 채점 화면 사용법")
@@ -168,6 +193,13 @@ def build():
     bullet(doc, " (선택) — 팀에 남기고 싶은 말이 있으면 적어 주세요. 운영진만 볼 수 있습니다.", "코멘트")
     bullet(doc, " — 모든 항목을 채워야 저장됩니다. 저장 후에도 카드를 다시 열어 수정할 수 있습니다.", "점수 저장")
     bullet(doc, "저장이 안 되고 ‘평가가 닫혀 있습니다’가 보이면 운영진이 아직 채점을 열지 않은 것입니다. 행사 진행에 맞춰 열립니다.")
+    figures(doc, [
+        ("02_mid_list.png", "① 탭·진행률·팀 카드 목록. 배지 ‘미채점’ = 아직 저장 전"),
+        ("03_mid_card.png", "② 카드를 펼친 채점표. 슬라이더로 점수, 아래 합계 → ‘점수 저장’"),
+    ])
+    figures(doc, [
+        ("04_final_list.png", "③ 본선 탭. 운영진이 열기 전에는 노란 안내가 보이고 저장이 되지 않습니다"),
+    ], width_cm=7.2)
 
     # ── 3. 중간
     h1(doc, "3. 중간발표 (9.28 18:30, 80주년기념관 310호)")
@@ -193,7 +225,8 @@ def build():
     bullet(doc, "기권한 팀은 목록에 나오지 않습니다.")
     bullet(doc, "화면이 이상하거나 저장이 안 되면 새로고침 후 다시 시도하고, 그래도 안 되면 현장 운영진에게 말씀해 주세요.")
 
-    out = Path(__file__).with_name("심사위원_안내.docx")
+    import sys
+    out = Path(__file__).with_name(sys.argv[1] if len(sys.argv) > 1 else "심사위원_안내.docx")
     doc.save(out)
     print(out)
 
