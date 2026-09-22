@@ -6,7 +6,8 @@
 # 운영진은 회수한 채점표의 팀별 평균(90점 만점)을 /admin/midterm · /admin/scoring 에 적는다.
 #
 # 팀 목록은 .env.local 의 서비스 키로 DB(teams, 기권 제외, 이름순)에서 읽는다.
-# 읽지 못하면(오프라인 등) 빈 줄 40개로 만든다. 심사표 문구는 src/lib/types.ts 의
+# 읽지 못하면(오프라인 등) 팀 이름 빈칸 40개로 만든다. 팀마다 세부 항목 표와
+# 피드백 칸이 있는 블록 하나, 쪽당 2팀. 심사표 문구는 src/lib/types.ts 의
 # FINAL_CRITERIA·MID_CRITERIA 와 같은 내용을 여기 직접 적는다 — 배점·항목이
 # 바뀌면 여기와 DB(criteria) 둘 다 고칠 것.
 
@@ -18,7 +19,7 @@ from pathlib import Path
 from docx import Document
 from docx.enum.section import WD_ORIENT
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_CELL_VERTICAL_ALIGNMENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Cm, Pt, RGBColor
@@ -28,22 +29,54 @@ NAVY = RGBColor(0x1F, 0x2A, 0x5C)
 MUTED = RGBColor(0x66, 0x66, 0x66)
 BLANK_ROWS = 40
 
-# (항목, 배점, 설명, 심사위원 채점 여부)
+# (항목, 배점, 설명, 심사위원 채점 여부, 세부 항목[(이름, 배점)])
+# 세부 항목은 채점표에서 항목을 쪼개 적기 위한 것 — 배점 합이 항목 배점과 같아야 한다.
+# 시스템(criteria)에는 항목 단위 배점만 있으므로 운영진은 항목 합계(90점)만 옮겨 적는다.
 MID = [
-    ("논리의 연결성", 30, "문제 정의 → 해결 방안 → 기대 효과가 빈틈없이 이어지는지", True),
-    ("실현 & 상용화 가능성", 20, "실제 환경에서 구현·활용될 수 있는지, 서비스·제품으로 발전할 가능성", True),
-    ("기획 문서의 재현 가능성", 20, "기획 문서만 보고도 같은 결과물을 만들 수 있을 만큼 구체적인지", True),
-    ("창의성 & 차별성", 20, "기존 서비스·해결방안 대비 독창성과 차별화된 특징", True),
-    ("발표", 10, "운영진이 반영 — 채점표에 없습니다", False),
+    ("논리의 연결성", 30, "문제 정의 → 해결 방안 → 기대 효과가 빈틈없이 이어지는지", True, [
+        ("문제 정의가 명확하고 근거가 있는가", 10),
+        ("해결 방안이 문제에서 자연스럽게 도출되는가", 10),
+        ("기대 효과가 해결 방안과 논리적으로 이어지는가", 10),
+    ]),
+    ("실현 & 상용화 가능성", 20, "실제 환경에서 구현·활용될 수 있는지, 서비스·제품으로 발전할 가능성", True, [
+        ("주어진 기간·기술로 구현할 수 있는가", 10),
+        ("서비스·제품으로 발전·확장할 여지가 있는가", 10),
+    ]),
+    ("기획 문서의 재현 가능성", 20, "기획 문서만 보고도 같은 결과물을 만들 수 있을 만큼 구체적인지", True, [
+        ("핵심 기능·요구사항이 구체적으로 정의되었는가", 10),
+        ("화면·흐름·역할 분담·일정이 구체적인가", 10),
+    ]),
+    ("창의성 & 차별성", 20, "기존 서비스·해결방안 대비 독창성과 차별화된 특징", True, [
+        ("아이디어·접근 방식이 독창적인가", 10),
+        ("기존 서비스·해결방안과 뚜렷한 차별점이 있는가", 10),
+    ]),
+    ("발표", 10, "운영진이 반영 — 채점표에 없습니다", False, []),
 ]
 FINAL = [
-    ("실현 & 상용화 가능성", 30, "실제 환경에서 구현·활용될 수 있는지, 서비스·제품으로 발전할 가능성", True),
-    ("구현 완성도 & 기술력", 20, "핵심 기능의 실제 구현 여부와 활용 기술의 적절성·완성도", True),
-    ("지역 문제 적합성", 20, "지역사회 문제를 정확히 파악하고 그에 맞는 해결 방안을 제시했는지", True),
-    ("창의성 & 차별성", 20, "기존 서비스·해결방안 대비 독창성과 차별화된 특징", True),
-    ("발표", 5, "운영진이 반영 — 채점표에 없습니다", False),
-    ("참여도", 5, "운영진이 반영 — 개회식·최종발표 불참 시 인당 1점 감점", False),
+    ("실현 & 상용화 가능성", 30, "실제 환경에서 구현·활용될 수 있는지, 서비스·제품으로 발전할 가능성", True, [
+        ("실제 지역 환경에서 바로 쓸 수 있는가", 10),
+        ("운영·유지·확장이 현실적인가", 10),
+        ("서비스·제품으로 발전할 가능성이 있는가", 10),
+    ]),
+    ("구현 완성도 & 기술력", 20, "핵심 기능의 실제 구현 여부와 활용 기술의 적절성·완성도", True, [
+        ("핵심 기능이 실제로 동작하는가", 10),
+        ("사용 기술이 적절하고 완성도가 높은가", 10),
+    ]),
+    ("지역 문제 적합성", 20, "지역사회 문제를 정확히 파악하고 그에 맞는 해결 방안을 제시했는지", True, [
+        ("월계1동 지역 문제를 정확히 파악했는가", 10),
+        ("해결 방안이 그 문제에 실제로 맞는가", 10),
+    ]),
+    ("창의성 & 차별성", 20, "기존 서비스·해결방안 대비 독창성과 차별화된 특징", True, [
+        ("아이디어·접근 방식이 독창적인가", 10),
+        ("기존 서비스·해결방안과 뚜렷한 차별점이 있는가", 10),
+    ]),
+    ("발표", 5, "운영진이 반영 — 채점표에 없습니다", False, []),
+    ("참여도", 5, "운영진이 반영 — 개회식·최종발표 불참 시 인당 1점 감점", False, []),
 ]
+for _rows in (MID, FINAL):
+    for _name, _pts, _, _by_judge, _subs in _rows:
+        assert not _by_judge or sum(p for _, p in _subs) == _pts, f"{_name}: 세부 배점 합 ≠ {_pts}"
+TEAMS_PER_PAGE = 2
 
 
 # ---------- 팀 목록 ----------
@@ -121,9 +154,9 @@ def base_font(doc):
         st.font.color.rgb = NAVY
 
 
-def landscape(section):
-    section.orientation = WD_ORIENT.LANDSCAPE
-    section.page_width, section.page_height = Cm(29.7), Cm(21.0)
+def portrait(section):
+    section.orientation = WD_ORIENT.PORTRAIT
+    section.page_width, section.page_height = Cm(21.0), Cm(29.7)
     section.left_margin = section.right_margin = Cm(1.5)
     section.top_margin = section.bottom_margin = Cm(1.3)
 
@@ -166,34 +199,42 @@ def criteria_table(doc, rows):
     table = doc.add_table(rows=1, cols=3)
     table.style = "Table Grid"
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for cell, text in zip(table.rows[0].cells, ("항목", "배점", "설명")):
-        cell_text(cell, text, bold=True)
+    for cell, text in zip(table.rows[0].cells, ("항목", "배점", "세부 항목 (배점)")):
+        cell_text(cell, text, bold=True, size=10)
         set_cell_bg(cell, "E8ECF5")
-    for name, pts, desc, by_judge in rows:
+    for name, pts, desc, by_judge, subs in rows:
         c = table.add_row().cells
-        cell_text(c[0], name, bold=by_judge)
-        cell_text(c[1], str(pts), align=WD_ALIGN_PARAGRAPH.CENTER)
-        cell_text(c[2], desc)
-        if not by_judge:
+        cell_text(c[0], name, bold=by_judge, size=10)
+        cell_text(c[1], str(pts), size=10, align=WD_ALIGN_PARAGRAPH.CENTER)
+        if by_judge:
+            cell_text(c[2], f"· {subs[0][0]} ({subs[0][1]})", size=9.5)
+            for sub, sp in subs[1:]:
+                para = c[2].add_paragraph()
+                para.paragraph_format.space_after = Pt(0)
+                r = para.add_run(f"· {sub} ({sp})")
+                r.font.size = Pt(9.5)
+        else:
+            cell_text(c[2], desc, size=9.5)
             for cell in c:
                 set_cell_bg(cell, "F5F5F5")
                 for p in cell.paragraphs:
                     for r in p.runs:
                         r.font.color.rgb = MUTED
-    widths = (Cm(5.0), Cm(1.6), Cm(19.0))
+    widths = (Cm(4.4), Cm(1.4), Cm(12.2))
     for row in table.rows:
         for cell, w in zip(row.cells, widths):
             cell.width = w
 
 
-def guide_page(doc, title, when, intro, rows, notes):
-    doc.add_heading("월계1동 지역문제 해결 해커톤", level=1)
+def guide_page(doc, title, when, intro, rows, notes, new_page=False):
+    h1 = doc.add_heading("월계1동 지역문제 해결 해커톤", level=1)
+    h1.paragraph_format.page_break_before = new_page
     h = doc.add_heading(f"{title} 심사위원 안내  ·  {when}", level=2)
     h.paragraph_format.space_before = Pt(0)
     doc.add_paragraph(intro)
     criteria_table(doc, rows)
     judge_items = [r for r in rows if r[3]]
-    judge_total = sum(p for _, p, _, _ in judge_items)
+    judge_total = sum(r[1] for r in judge_items)
     p = doc.add_paragraph()
     p.paragraph_format.space_before = Pt(6)
     r = p.add_run(
@@ -208,61 +249,97 @@ def guide_page(doc, title, when, intro, rows, notes):
 
 
 # ---------- 채점표 ----------
-def score_sheet(doc, title, when, rows, teams):
-    crits = [(n, p) for n, p, _, j in rows if j]
-    judge_total = sum(p for _, p in crits)
-
-    h = doc.add_heading(f"{title} 채점표  ·  {when}", level=2)
-    h.paragraph_format.space_before = Pt(0)
-    p = doc.add_paragraph()
-    p.paragraph_format.space_after = Pt(2)
-    r = p.add_run(
-        f"항목마다 0점부터 배점까지 1점 단위 정수로 적고, 합계({judge_total}점 만점)를 계산해 주세요. "
-        "비고에는 팀에 남길 말이나 특이사항을 적어 주세요(선택)."
-    )
-    r.font.size = Pt(9.5)
-    r.font.color.rgb = MUTED
-    signature_line(doc)
-
-    cols = ["No", "팀"] + [f"{n}\n({p})" for n, p in crits] + [f"합계\n({judge_total})", "비고"]
-    table = doc.add_table(rows=1, cols=len(cols))
+def team_block(doc, no, name, crits, judge_total):
+    """팀 하나의 채점 블록 — 제목줄 · 세부 항목별 점수 · 합계 · 피드백 칸."""
+    table = doc.add_table(rows=1, cols=4)
     table.style = "Table Grid"
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    hdr = table.rows[0]
-    repeat_header(hdr)
-    for cell, text in zip(hdr.cells, cols):
-        cell_text(cell, text, bold=True, size=9.5, align=WD_ALIGN_PARAGRAPH.CENTER)
+    widths = (Cm(4.2), Cm(9.6), Cm(1.6), Cm(2.6))
+
+    # 제목줄: No · 팀 이름 · 합계 적는 칸
+    title = table.rows[0]
+    row_height(title, 0.9)
+    tc = title.cells
+    left = tc[0].merge(tc[1])
+    cell_text(left, f"{no}.  ", bold=True, size=12)
+    r = left.paragraphs[0].add_run(name if name else "팀: ______________________")
+    r.bold = True
+    r.font.size = Pt(12)
+    right = tc[2].merge(tc[3])
+    cell_text(right, f"합계        / {judge_total}", bold=True, size=11, align=WD_ALIGN_PARAGRAPH.RIGHT)
+    for cell in (left, right):
         set_cell_bg(cell, "E8ECF5")
-    set_cell_bg(hdr.cells[-2], "FFF4D6")  # 합계 칸은 눈에 띄게
 
-    names = teams if teams else [""] * BLANK_ROWS
-    for i, name in enumerate(names, 1):
-        row = table.add_row()
-        no_split(row)
-        row_height(row, 0.85)
-        c = row.cells
-        cell_text(c[0], str(i), size=9.5, align=WD_ALIGN_PARAGRAPH.CENTER)
-        cell_text(c[1], name, size=10)
-        for cell in c[2:]:
-            cell_text(cell, "", size=10)
+    # 머리행
+    hdr = table.add_row()
+    for cell, text in zip(hdr.cells, ("항목", "세부 항목", "배점", "점수")):
+        cell_text(cell, text, bold=True, size=9, color=MUTED, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_cell_bg(cell, "F5F5F5")
 
-    # 가로 26.7cm: No 1.0 · 팀 5.2 · 항목 4×3.0 · 합계 2.2 · 비고 나머지
-    rest = 26.7 - 1.0 - 5.2 - 3.0 * len(crits) - 2.2
-    widths = [Cm(1.0), Cm(5.2)] + [Cm(3.0)] * len(crits) + [Cm(2.2), Cm(rest)]
+    # 세부 항목 — 같은 항목은 첫 칸을 세로로 합친다
+    for cname, cpts, subs in crits:
+        first = None
+        for sub, sp in subs:
+            row = table.add_row()
+            row_height(row, 0.58)
+            c = row.cells
+            cell_text(c[1], sub, size=9.5)
+            cell_text(c[2], str(sp), size=9.5, align=WD_ALIGN_PARAGRAPH.CENTER)
+            cell_text(c[3], "", size=10)
+            if first is None:
+                first = c[0]
+            else:
+                first = first.merge(c[0])
+        cell_text(first, cname, bold=True, size=9.5)
+        sub_r = first.paragraphs[0].add_run(f"  ({cpts})")
+        sub_r.font.size = Pt(9)
+        sub_r.font.color.rgb = MUTED
+
+    # 피드백 칸 — 팀에 전달할 말·특이사항을 넉넉히 적을 수 있게 한 칸으로 크게
+    fb = table.add_row()
+    row_height(fb, 4.8)
+    cell = fb.cells[0].merge(fb.cells[3])
+    cell_text(cell, "피드백 · 코멘트", bold=True, size=9, color=MUTED)
+    cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
+
     for row in table.rows:
+        no_split(row)
         for cell, w in zip(row.cells, widths):
             cell.width = w
 
 
-def page_break(doc):
-    doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+def score_sheet(doc, title, when, rows, teams):
+    crits = [(n, p, subs) for n, p, _, j, subs in rows if j]
+    judge_total = sum(p for _, p, _ in crits)
+    names = teams if teams else [""] * BLANK_ROWS
+
+    for i in range(0, len(names), TEAMS_PER_PAGE):
+        # 쪽 나눔은 빈 단락이 아니라 제목의 page_break_before 로 — 표 뒤에 Word 가
+        # 붙이는 빈 단락 + 나눔 단락이 겹치면 빈 쪽이 생긴다.
+        h = doc.add_heading(f"{title} 채점표  ·  {when}", level=2)
+        h.paragraph_format.page_break_before = True
+        h.paragraph_format.space_before = Pt(0)
+        h.paragraph_format.space_after = Pt(2)
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(4)
+        r = p.add_run(
+            f"세부 항목마다 0~배점 사이 정수로 적고 합계({judge_total}점 만점)를 계산해 주세요.    "
+            "심사위원 성명: ______________"
+        )
+        r.font.size = Pt(9)
+        r.font.color.rgb = MUTED
+        for j, name in enumerate(names[i : i + TEAMS_PER_PAGE]):
+            if j > 0:
+                gap = doc.add_paragraph()
+                gap.paragraph_format.space_after = Pt(2)
+            team_block(doc, i + j + 1, name, crits, judge_total)
 
 
 def main():
     teams = fetch_teams()
     doc = Document()
     base_font(doc)
-    landscape(doc.sections[0])
+    portrait(doc.sections[0])
 
     common_notes = [
         ("같은 항목이라도 팀 간 상대 비교를 염두에 두고 일관되게 매겨 주시면 집계가 공정해집니다.", "일관성 — "),
@@ -282,9 +359,7 @@ def main():
         [("중간발표 점수는 본선 점수에 합산되지 않습니다. 부담 없이 기획의 완성도로 평가해 주세요.", "본선과 별개 — ")]
         + common_notes,
     )
-    page_break(doc)
     score_sheet(doc, "중간발표", "9.28", MID, teams)
-    page_break(doc)
 
     # ---- 본선 ----
     guide_page(
@@ -300,13 +375,13 @@ def main():
              "합산 1위 노원구청장상, 2~4위 광운대학교 총장상.", "최종 순위 — "),
         ]
         + common_notes,
+        new_page=True,
     )
-    page_break(doc)
     score_sheet(doc, "본선 최종발표", "10.9", FINAL, teams)
 
     out = ROOT / "docs" / "심사위원_채점표.docx"
     doc.save(out)
-    print(out, f"(팀 {len(teams) if teams else 0}개, 빈 줄이면 {BLANK_ROWS})")
+    print(out, f"(팀 {len(teams) if teams else BLANK_ROWS}개, 쪽당 {TEAMS_PER_PAGE}팀)")
 
 
 if __name__ == "__main__":
