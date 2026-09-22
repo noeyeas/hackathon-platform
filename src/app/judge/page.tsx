@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScoreCard } from "./ScoreCard";
@@ -26,8 +27,12 @@ export default async function JudgePage() {
       <div className="card mx-auto max-w-md text-center">
         <h1 className="display text-xl">심사위원 전용 페이지입니다</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">
-          운영진에게 심사위원 권한을 요청하세요.
+          심사위원으로 등록된 이메일로 로그인했는지 확인해 주세요. 다른 계정으로
+          로그인했다면 로그아웃 후 등록된 계정으로 다시 로그인하면 됩니다.
         </p>
+        <Link href="/judge/guide" className="btn-ghost mt-4 inline-flex">
+          심사위원 안내 보기
+        </Link>
       </div>
     );
   }
