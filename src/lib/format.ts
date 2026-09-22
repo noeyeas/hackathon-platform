@@ -114,3 +114,23 @@ export function formatMonthDayWeekdayRange(
   const end = formatMonthDayWeekday(endIso);
   return end === start ? start : `${start} – ${end}`;
 }
+
+// 조 번호를 붙인 팀 표기 (예: "1조 토큰좀주세요"). 번호가 없는 팀은 이름만.
+// 운영 결정(9/22): 발표 순서·좌석·채점표·화면 모두 "N조 팀이름" 으로 통일.
+export function teamLabel(
+  teamNo: number | null | undefined,
+  name: string
+): string {
+  return teamNo ? `${teamNo}조 ${name}` : name;
+}
+
+// 조 번호순 정렬 비교자 — 번호 없는 팀은 뒤로, 그 안에서는 이름순.
+export function byTeamNo<T extends { team_no?: number | null; name?: string; team_name?: string }>(
+  a: T,
+  b: T
+): number {
+  const an = a.team_no ?? Number.MAX_SAFE_INTEGER;
+  const bn = b.team_no ?? Number.MAX_SAFE_INTEGER;
+  if (an !== bn) return an - bn;
+  return (a.name ?? a.team_name ?? "").localeCompare(b.name ?? b.team_name ?? "", "ko");
+}

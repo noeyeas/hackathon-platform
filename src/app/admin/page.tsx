@@ -4,6 +4,7 @@ import { PHASE_LABEL, PHASE_ORDER, type EventPhase } from "@/lib/types";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { fetchAll } from "@/lib/fetchAll";
+import { teamLabel } from "@/lib/format";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { AdminPageHeader } from "./AdminPageHeader";
 import { OpenControls } from "./OpenControls";
@@ -30,7 +31,11 @@ export default async function AdminPage() {
       .from("event_settings")
       .select("phase, team_edit_open, project_submit_open")
       .single(),
-    admin.from("teams").select("id, name, status").order("name"),
+    admin
+      .from("teams")
+      .select("id, name, team_no, status")
+      .order("team_no", { nullsFirst: false })
+      .order("name"),
     admin.from("projects").select("team_id"),
     admin.from("criteria").select("id").eq("round", "final"),
     admin
@@ -88,7 +93,7 @@ export default async function AdminPage() {
     const done = Math.min(teamDone.get(t.id)?.size ?? 0, total);
     return {
       key: t.id,
-      name: t.name || "이름 없음",
+      name: teamLabel(t.team_no, t.name || "이름 없음"),
       done,
       total,
       complete: total > 0 && done >= total,
@@ -192,7 +197,7 @@ export default async function AdminPage() {
             hrefLabel="팀 등록"
             items={notSubmitted.map((t) => ({
               key: t.id,
-              name: t.name || "이름 없음",
+              name: teamLabel(t.team_no, t.name || "이름 없음"),
             }))}
           />
           <PendingCard

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { EditableField } from "./EditableField";
 import { canEditTeam } from "@/lib/teamEdit";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
+import { teamLabel } from "@/lib/format";
 
 export default async function TeamPage() {
   const supabase = await createClient();
@@ -57,7 +58,7 @@ export default async function TeamPage() {
     await Promise.all([
       supabase
         .from("teams")
-        .select("id, name, tagline, members_note, status")
+        .select("id, name, team_no, tagline, members_note, status")
         .eq("id", membership.team_id)
         .single(),
       supabase
@@ -75,7 +76,9 @@ export default async function TeamPage() {
     <div className="mx-auto flex max-w-2xl flex-col gap-5">
       <div className="card">
         <div className="flex items-start justify-between">
-          <h1 className="display text-2xl">{team?.name}</h1>
+          <h1 className="display text-2xl">
+            {team ? teamLabel(team.team_no, team.name) : ""}
+          </h1>
           {membership.is_leader && (
             <span className="chip border-team text-team">팀장</span>
           )}

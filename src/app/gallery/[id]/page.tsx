@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { formatDateTime, safeUrl } from "@/lib/format";
+import { formatDateTime, safeUrl, teamLabel } from "@/lib/format";
 import { LikeButton } from "@/components/LikeButton";
 import { CommentForm, DeleteCommentButton } from "@/components/CommentBox";
 import { TeamName } from "@/components/TeamName";
@@ -34,7 +34,7 @@ export default async function ProjectDetailPage({
     supabase
       .from("projects")
       .select(
-        "id, title, description, track, repo_url, demo_url, video_url, deck_url, thumbnail_url, view_count, teams(name, tagline, members_note)"
+        "id, title, description, track, repo_url, demo_url, video_url, deck_url, thumbnail_url, view_count, teams(name, team_no, tagline, members_note)"
       )
       .eq("id", id)
       .single(),
@@ -52,6 +52,7 @@ export default async function ProjectDetailPage({
 
   const team = p.teams as unknown as {
     name: string;
+    team_no: number | null;
     tagline: string | null;
     members_note: string | null;
   } | null;
@@ -118,7 +119,7 @@ export default async function ProjectDetailPage({
       <div className="mt-5 flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
           {team?.name && (
-            <TeamName name={team.name} membersNote={team.members_note} />
+            <TeamName name={teamLabel(team.team_no, team.name)} membersNote={team.members_note} />
           )}
           {track && (
             <span className="eyebrow">{PROJECT_TRACK_LABEL[track]}</span>

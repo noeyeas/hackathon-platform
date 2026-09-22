@@ -6,6 +6,7 @@ import { ScoreProgress } from "@/components/ScoreProgress";
 import { completedCount } from "@/lib/scoring";
 import { PageHeader } from "@/components/PageHeader";
 import { JudgeTabs } from "./JudgeTabs";
+import { byTeamNo, teamLabel } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -47,12 +48,20 @@ export default async function JudgePage() {
 
   const { data: allProjects } = await supabase
     .from("projects")
-    .select("id, title, teams(name, status)")
+    .select("id, title, teams(name, team_no, status)")
     .order("submitted_at");
   // 기권 팀의 제출물은 채점 대상이 아니다(0056)
-  const projects = (allProjects ?? []).filter(
-    (p) => (p.teams as unknown as { status: string } | null)?.status !== "withdrawn"
-  );
+  const projects = (allProjects ?? [])
+    .filter(
+      (p) => (p.teams as unknown as { status: string } | null)?.status !== "withdrawn"
+    )
+    // 발표 순서 = 조 번호순(0058). 채점표(종이)와 같은 순서라야 찾기 쉽다.
+    .sort((a, b) =>
+      byTeamNo(
+        (a.teams as unknown as { team_no: number | null; name: string }) ?? {},
+        (b.teams as unknown as { team_no: number | null; name: string }) ?? {}
+      )
+    );
 
   const { data: myScores } = await supabase
     .from("judge_scores")
@@ -83,7 +92,8 @@ export default async function JudgePage() {
 
       <div className="mt-6 flex flex-col gap-4">
         {projects.map((p) => {
-          const team = (p.teams as unknown as { name: string } | null)?.name;
+          const t = p.teams as unknown as { name: string; team_no: number | null } | null;
+          const team = t ? teamLabel(t.team_no, t.name) : "";
           const existing =
             myScores?.filter((s) => s.project_id === p.id) ?? [];
           return (

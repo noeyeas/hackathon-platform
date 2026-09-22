@@ -7,6 +7,7 @@ import { JudgePaperInput } from "../scoring/JudgePaperInput";
 import { completedByVoter } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { fetchAll } from "@/lib/fetchAll";
+import { teamLabel } from "@/lib/format";
 import { AdminPageHeader } from "../AdminPageHeader";
 
 export const dynamic = "force-dynamic";
@@ -131,7 +132,7 @@ export default async function MidtermPage() {
         <p className="mb-3 text-xs text-[var(--muted)]">
           점수 = <b>심사</b>(종이 채점표 팀별 평균, 0~90, 비우면 웹 채점 환산) +
           <b>발표</b>(0~10점). 둘 다 운영진이 적습니다 — 숫자를 바꾸고 Enter 또는 저장.
-          1위가 매니패스트상 — 동점이면 팀 이름순으로 나오므로 운영진이
+          1위가 매니패스트상 — 동점이면 조 번호순으로 나오므로 운영진이
           확인해 정하세요.
         </p>
         {scored.length > 0 ? (
@@ -152,7 +153,7 @@ export default async function MidtermPage() {
                   <tr key={r.team_id} className={i === 0 ? "bg-gold-soft/40" : ""}>
                     <td>
                       <span className="mr-2 font-bold tabular-nums">{i + 1}</span>
-                      {r.team_name}
+                      {teamLabel(r.team_no, r.team_name)}
                     </td>
                     <td className="num">
                       <JudgePaperInput

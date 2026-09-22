@@ -18,8 +18,10 @@ export default async function AdminTeamsPage() {
   const { data: teams } = await admin
     .from("teams")
     .select(
-      "id, name, tagline, leader_email, status, team_members(is_leader, users(email, name))"
+      "id, name, team_no, tagline, leader_email, status, team_members(is_leader, users(email, name))"
     )
+    // 조 번호순(0058). 번호 없는 팀은 뒤에 등록순으로.
+    .order("team_no", { nullsFirst: false })
     .order("created_at", { ascending: true });
 
   const list = teams ?? [];
@@ -54,6 +56,14 @@ export default async function AdminTeamsPage() {
             required
             className="input"
             placeholder="예: 코드마법사"
+          />
+          <label className="label mt-3">조 번호 (선택)</label>
+          <input
+            name="team_no"
+            type="number"
+            min={1}
+            className="input"
+            placeholder="예: 41 — 화면·채점표에 '41조 팀이름'으로 표시"
           />
           <label className="label mt-3">팀장 이메일 *</label>
           <input
@@ -94,6 +104,7 @@ export default async function AdminTeamsPage() {
                   key={t.id}
                   id={t.id}
                   name={t.name}
+                  teamNo={t.team_no}
                   tagline={t.tagline}
                   leaderEmail={t.leader_email}
                   members={members}

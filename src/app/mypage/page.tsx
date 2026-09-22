@@ -8,6 +8,7 @@ import { canSubmitProject } from "@/lib/submitWindow";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { NewCommentsDot } from "./NewCommentsDot";
 import { PageHeader } from "@/components/PageHeader";
+import { teamLabel } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +64,7 @@ export default async function MyPage() {
     ? await Promise.all([
         supabase
           .from("teams")
-          .select("name, tagline, members_note, status")
+          .select("name, team_no, tagline, members_note, status")
           .eq("id", membership.team_id)
           .single(),
         supabase
@@ -141,7 +142,7 @@ export default async function MyPage() {
               </div>
               <div className="mt-1 flex items-center gap-2">
                 <TeamName
-                  name={team?.name ?? ""}
+                  name={team ? teamLabel(team.team_no, team.name) : ""}
                   membersNote={team?.members_note}
                   chipClassName="text-lg font-bold"
                 />

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { safeUrl } from "@/lib/format";
+import { safeUrl, teamLabel } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import {
   AWARD_LABELS,
@@ -106,7 +106,7 @@ export default async function ResultsPage() {
             {top.title}
           </h2>
           <p className="mt-1 font-title text-xl font-medium text-white/60">
-            Team {top.team_name}
+            {teamLabel(top.team_no, top.team_name)}
           </p>
 
           {topProject?.description && (
@@ -225,7 +225,7 @@ export default async function ResultsPage() {
                               : undefined
                           }
                         >
-                          {r.team_name}
+                          {teamLabel(r.team_no, r.team_name)}
                         </Link>
                         <span className="ml-2 text-xs text-[var(--muted)]">
                           {r.title}

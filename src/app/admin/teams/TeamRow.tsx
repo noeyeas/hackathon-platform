@@ -2,13 +2,19 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { deleteTeamAsAdmin, setTeamLeaderEmail, setTeamWithdrawn } from "./actions";
+import {
+  deleteTeamAsAdmin,
+  setTeamLeaderEmail,
+  setTeamNo,
+  setTeamWithdrawn,
+} from "./actions";
 
 type Member = { email: string; name: string | null; isLeader: boolean };
 
 export function TeamRow({
   id,
   name,
+  teamNo,
   tagline,
   leaderEmail,
   members,
@@ -17,6 +23,7 @@ export function TeamRow({
 }: {
   id: string;
   name: string;
+  teamNo: number | null;
   tagline: string | null;
   leaderEmail: string | null;
   members: Member[];
@@ -28,8 +35,25 @@ export function TeamRow({
   const [editing, setEditing] = useState(false);
   const [email, setEmail] = useState(leaderEmail ?? "");
   const [savePending, startSave] = useTransition();
+  // 조 번호 인라인 수정(0058). 번호를 잘못 넣으면(중복 등) 서버 메시지를 보여 준다.
+  const [noEditing, setNoEditing] = useState(false);
+  const [no, setNo] = useState(teamNo ? String(teamNo) : "");
+  const [noError, setNoError] = useState<string | null>(null);
+  const [noPending, startNo] = useTransition();
 
   const linked = members.some((m) => m.isLeader);
+
+  function saveNo() {
+    startNo(async () => {
+      const r = await setTeamNo(id, no);
+      if (r?.error) {
+        setNoError(r.error);
+        return;
+      }
+      setNoError(null);
+      setNoEditing(false);
+    });
+  }
 
   function saveEmail() {
     startSave(async () => {
@@ -46,6 +70,44 @@ export function TeamRow({
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
+          {noEditing ? (
+            <span className="flex items-center gap-1 text-xs">
+              <input
+                value={no}
+                onChange={(e) => setNo(e.target.value)}
+                type="number"
+                min={1}
+                placeholder="조"
+                className="input !h-7 !w-16 !px-2 !py-1 text-xs"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveNo();
+                  if (e.key === "Escape") {
+                    setNo(teamNo ? String(teamNo) : "");
+                    setNoError(null);
+                    setNoEditing(false);
+                  }
+                }}
+              />
+              <button
+                onClick={saveNo}
+                disabled={noPending}
+                className="font-medium text-navy hover:underline"
+              >
+                {noPending ? "..." : "저장"}
+              </button>
+            </span>
+          ) : (
+            <button
+              onClick={() => setNoEditing(true)}
+              title="조 번호 수정"
+              className={`chip shrink-0 tabular-nums hover:border-navy ${
+                teamNo ? "border-navy text-navy" : "border-dashed text-[var(--muted)]"
+              }`}
+            >
+              {teamNo ? `${teamNo}조` : "번호 없음"}
+            </button>
+          )}
           <span className={`truncate font-semibold ${withdrawn ? "line-through" : ""}`}>
             {name}
           </span>
@@ -58,6 +120,7 @@ export function TeamRow({
             {linked ? "팀장 연결됨" : "연결 대기"}
           </span>
         </div>
+        {noError && <p className="mt-0.5 text-xs text-alert">{noError}</p>}
         {tagline && (
           <p className="mt-0.5 truncate text-xs text-[var(--muted)]">
             {tagline}

@@ -5,6 +5,7 @@ import { normalizeBallotCode, DEVICE_COOKIE } from "@/lib/ballot";
 import { PROJECT_TRACK_LABEL, toProjectTrack, type Ranking } from "@/lib/types";
 import { BallotForm, type Candidate } from "./BallotForm";
 import { castAudienceVotes } from "./actions";
+import { teamLabel } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -104,7 +105,7 @@ export default async function ExhibitVotePage({
 
   const { data: projects } = await admin
     .from("projects")
-    .select("id, title, description, track, thumbnail_url, teams(name)")
+    .select("id, title, description, track, thumbnail_url, teams(name, team_no)")
     .in("id", finalistIds);
 
   // 후보 순서는 투표권마다 다르게 섞는다. 늘 같은 팀이 맨 위에 오면 그 자체로
@@ -113,7 +114,10 @@ export default async function ExhibitVotePage({
     .map((p) => ({
       id: p.id as string,
       title: p.title as string,
-      team: (p.teams as unknown as { name: string } | null)?.name ?? "",
+      team: (() => {
+        const t = p.teams as unknown as { name: string; team_no: number | null } | null;
+        return t ? teamLabel(t.team_no, t.name) : "";
+      })(),
       description: (p.description as string | null) ?? "",
       thumbnail: (p.thumbnail_url as string | null) ?? null,
       track: PROJECT_TRACK_LABEL[toProjectTrack(p.track) ?? "etc"],

@@ -9,6 +9,7 @@ import { JudgePaperInput } from "./JudgePaperInput";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { fetchAll } from "@/lib/fetchAll";
+import { teamLabel } from "@/lib/format";
 import { AdminPageHeader } from "../AdminPageHeader";
 
 export const dynamic = "force-dynamic";
@@ -48,8 +49,9 @@ export default async function ScoringProgressPage() {
     // 발표·불참은 제출 여부와 무관하게 팀마다 적으므로 여기서 같이 읽는다.
     admin
       .from("teams")
-      .select("id, name, presentation_score, absent_count, judge_paper_score")
+      .select("id, name, team_no, presentation_score, absent_count, judge_paper_score")
       .neq("status", "withdrawn") // 기권 팀은 평가 주체도 대상도 아니다(0056)
+      .order("team_no", { nullsFirst: false })
       .order("name"),
   ]);
 
@@ -81,7 +83,7 @@ export default async function ScoringProgressPage() {
     const done = teamDone.get(t.id)?.size ?? 0;
     return {
       key: t.id,
-      name: t.name || "이름 없음",
+      name: teamLabel(t.team_no, t.name || "이름 없음"),
       done: Math.min(done, target),
       total: target,
       complete: target > 0 && done >= target,
@@ -194,7 +196,7 @@ export default async function ScoringProgressPage() {
               <tbody>
                 {(allTeams ?? []).map((t) => (
                   <tr key={t.id}>
-                    <td>{t.name || "이름 없음"}</td>
+                    <td>{teamLabel(t.team_no, t.name || "이름 없음")}</td>
                     <td className="num">
                       <JudgePaperInput
                         teamId={t.id}
@@ -249,7 +251,7 @@ export default async function ScoringProgressPage() {
                   <tr key={r.project_id} className={r.is_finalist ? "bg-gold-soft/40" : ""}>
                     <td>
                       <span className="mr-2 font-bold tabular-nums">{i + 1}</span>
-                      {r.team_name}
+                      {teamLabel(r.team_no, r.team_name)}
                     </td>
                     <td className="num">{r.presentation_score}</td>
                     <td className="num">{r.absent_count}</td>

@@ -6,6 +6,7 @@ import { saveTeamScores } from "./actions";
 import { ScoreProgress } from "@/components/ScoreProgress";
 import { completedCount } from "@/lib/scoring";
 import { PageHeader } from "@/components/PageHeader";
+import { byTeamNo, teamLabel } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -86,14 +87,22 @@ export default async function VotePage() {
 
   let projectsQuery = supabase
     .from("projects")
-    .select("id, title, team_id, teams(name, status)")
+    .select("id, title, team_id, teams(name, team_no, status)")
     .order("submitted_at");
   if (teamId) projectsQuery = projectsQuery.neq("team_id", teamId); // 자기 팀 제외
   const { data: allProjects } = await projectsQuery;
   // 기권 팀의 제출물은 평가 대상이 아니다(0056)
-  const projects = (allProjects ?? []).filter(
-    (p) => (p.teams as unknown as { status: string } | null)?.status !== "withdrawn"
-  );
+  const projects = (allProjects ?? [])
+    .filter(
+      (p) => (p.teams as unknown as { status: string } | null)?.status !== "withdrawn"
+    )
+    // 조 번호순(0058) — 발표 순서와 같아야 찾기 쉽다.
+    .sort((a, b) =>
+      byTeamNo(
+        (a.teams as unknown as { team_no: number | null; name: string }) ?? {},
+        (b.teams as unknown as { team_no: number | null; name: string }) ?? {}
+      )
+    );
 
   // 우리 팀이 이미 매긴 점수 (팀이 있을 때만)
   const { data: myScores } = teamId
@@ -130,7 +139,8 @@ export default async function VotePage() {
 
       <div className="mt-6 flex flex-col gap-4">
         {projects?.map((p) => {
-          const team = (p.teams as unknown as { name: string } | null)?.name;
+          const t = p.teams as unknown as { name: string; team_no: number | null } | null;
+          const team = t ? teamLabel(t.team_no, t.name) : "";
           const existing =
             myScores
               ?.filter((s) => s.project_id === p.id)

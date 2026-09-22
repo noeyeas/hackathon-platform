@@ -5,7 +5,7 @@
 # 각각 [심사 기준 안내 1장 + 팀 목록이 미리 채워진 채점표]로 구성되며,
 # 운영진은 회수한 채점표의 팀별 평균(90점 만점)을 /admin/midterm · /admin/scoring 에 적는다.
 #
-# 팀 목록은 .env.local 의 서비스 키로 DB(teams, 기권 제외, 이름순)에서 읽는다.
+# 팀 목록은 .env.local 의 서비스 키로 DB(teams, 기권 제외, 조 번호순)에서 읽는다.
 # 읽지 못하면(오프라인 등) 팀 이름 빈칸 40개로 만든다. 팀마다 세부 항목 표와
 # 피드백 칸이 있는 블록 하나, 쪽당 2팀. 심사표 문구는 src/lib/types.ts 의
 # FINAL_CRITERIA·MID_CRITERIA 와 같은 내용을 여기 직접 적는다 — 배점·항목이
@@ -98,12 +98,14 @@ def fetch_teams():
     if not url or not key:
         return None
     req = urllib.request.Request(
-        f"{url}/rest/v1/teams?select=name&status=neq.withdrawn&order=name.asc",
+        f"{url}/rest/v1/teams?select=name,team_no&status=neq.withdrawn"
+        "&order=team_no.asc.nullslast,name.asc",
         headers={"apikey": key, "Authorization": f"Bearer {key}"},
     )
     try:
         with urllib.request.urlopen(req, timeout=15) as res:
-            return [t["name"] for t in json.load(res)]
+            # (조 번호, 이름). 번호가 없는 팀은 목록 뒤에 번호 없이 나온다(0058).
+            return [(t.get("team_no"), t["name"]) for t in json.load(res)]
     except Exception as e:  # noqa: BLE001 — 실패해도 빈 표로 만든다
         print("팀 목록을 읽지 못해 빈 줄로 만듭니다:", e, file=sys.stderr)
         return None
@@ -261,7 +263,7 @@ def team_block(doc, no, name, crits, judge_total):
     row_height(title, 0.9)
     tc = title.cells
     left = tc[0].merge(tc[1])
-    cell_text(left, f"{no}.  ", bold=True, size=12)
+    cell_text(left, f"{no}조  " if no else "", bold=True, size=12)
     r = left.paragraphs[0].add_run(name if name else "팀: ______________________")
     r.bold = True
     r.font.size = Pt(12)
@@ -311,7 +313,7 @@ def team_block(doc, no, name, crits, judge_total):
 def score_sheet(doc, title, when, rows, teams):
     crits = [(n, p, subs) for n, p, _, j, subs in rows if j]
     judge_total = sum(p for _, p, _ in crits)
-    names = teams if teams else [""] * BLANK_ROWS
+    names = teams if teams else [(i + 1, "") for i in range(BLANK_ROWS)]
 
     for i in range(0, len(names), TEAMS_PER_PAGE):
         # 쪽 나눔은 빈 단락이 아니라 제목의 page_break_before 로 — 표 뒤에 Word 가
@@ -328,11 +330,11 @@ def score_sheet(doc, title, when, rows, teams):
         )
         r.font.size = Pt(9)
         r.font.color.rgb = MUTED
-        for j, name in enumerate(names[i : i + TEAMS_PER_PAGE]):
+        for j, (no, name) in enumerate(names[i : i + TEAMS_PER_PAGE]):
             if j > 0:
                 gap = doc.add_paragraph()
                 gap.paragraph_format.space_after = Pt(2)
-            team_block(doc, i + j + 1, name, crits, judge_total)
+            team_block(doc, no, name, crits, judge_total)
 
 
 def main():

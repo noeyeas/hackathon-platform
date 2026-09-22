@@ -19,6 +19,8 @@ export type User = {
 export type Team = {
   id: string;
   name: string;
+  // 조 번호(1~40, 0058). null 이면 아직 번호 없음. 화면 표기는 teamLabel().
+  team_no: number | null;
   tagline: string | null;
   invite_code: string;
   leader_code: string;
@@ -41,6 +43,7 @@ export type Ranking = {
   project_id: string;
   team_id: string;
   team_name: string;
+  team_no: number | null;
   title: string;
   // 심사위원 점수(90점 환산) + 발표(운영진, 0~5) + 참여도(5 − 불참 인원)(0054).
   judge_score: number;
@@ -58,6 +61,7 @@ export type Ranking = {
 export type MidRanking = {
   team_id: string;
   team_name: string;
+  team_no: number | null;
   // 심사위원 점수(90점 환산) + 발표(운영진, 0~10)(0054).
   judge_score: number;
   presentation_score: number;

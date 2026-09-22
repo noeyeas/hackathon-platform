@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
-import { formatDateTime, safeUrl } from "@/lib/format";
+import { formatDateTime, safeUrl, teamLabel } from "@/lib/format";
 import { PROJECT_TRACK_LABEL, toProjectTrack } from "@/lib/types";
 import { AdminPageHeader } from "../../AdminPageHeader";
 
@@ -23,7 +23,7 @@ export default async function AdminTeamDetailPage({
   const { data: team } = await admin
     .from("teams")
     .select(
-      "id, name, tagline, members_note, status, leader_email, created_at, presentation_score, mid_presentation_score, absent_count, team_members(is_leader, users(id, email, name, created_at))"
+      "id, name, team_no, tagline, members_note, status, leader_email, created_at, presentation_score, mid_presentation_score, absent_count, team_members(is_leader, users(id, email, name, created_at))"
     )
     .eq("id", id)
     .maybeSingle();
@@ -83,7 +83,7 @@ export default async function AdminTeamDetailPage({
   return (
     <div className="mx-auto max-w-2xl lg:mx-0">
       <AdminPageHeader
-        title={team.name}
+        title={teamLabel(team.team_no, team.name)}
         desc="참가자가 마이페이지에서 보는 내용을 그대로 보여 줍니다 (읽기 전용)."
         aside={
           <Link href="/admin/teams" className="btn-ghost">

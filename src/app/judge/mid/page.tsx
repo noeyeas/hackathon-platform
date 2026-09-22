@@ -6,6 +6,7 @@ import { ScoreProgress } from "@/components/ScoreProgress";
 import { completedCount } from "@/lib/scoring";
 import { PageHeader } from "@/components/PageHeader";
 import { JudgeTabs } from "../JudgeTabs";
+import { teamLabel } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -46,8 +47,9 @@ export default async function MidJudgePage() {
       // 기권 팀은 채점 대상이 아니다(0056)
       supabase
         .from("teams")
-        .select("id, name, tagline")
+        .select("id, name, team_no, tagline")
         .neq("status", "withdrawn")
+        .order("team_no", { nullsFirst: false }) // 발표 순서 = 조 번호순(0058)
         .order("name"),
       supabase
         .from("mid_scores")
@@ -90,7 +92,7 @@ export default async function MidJudgePage() {
               projectId={t.id}
               // 제출물이 없으니 팀 이름이 제목, 한 줄 소개가 부제다
               teamName={t.tagline ?? ""}
-              title={t.name}
+              title={teamLabel(t.team_no, t.name)}
               criteria={criteria ?? []}
               existing={existing}
               action={saveMidScores}

@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth";
 import { type Ranking } from "@/lib/types";
+import { teamLabel } from "@/lib/format";
 import { AdminPageHeader } from "../AdminPageHeader";
 import { AudienceControls, type Batch } from "./AudienceControls";
 
@@ -82,7 +83,7 @@ export default async function AudiencePage() {
               return (
                 <li key={r.project_id} className="flex items-center gap-3 py-2.5">
                   <span className="w-28 flex-none truncate font-medium">
-                    {r.team_name}
+                    {teamLabel(r.team_no, r.team_name)}
                   </span>
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper">
                     <div

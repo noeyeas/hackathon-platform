@@ -4,6 +4,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { GalleryBrowser, type GalleryItem } from "./GalleryBrowser";
 import { AWARD_LABELS, toProjectTrack, type EventPhase, type Ranking } from "@/lib/types";
+import { teamLabel } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export default async function GalleryPage() {
     supabase
       .from("projects")
       .select(
-        "id, title, description, track, thumbnail_url, view_count, submitted_at, teams(name, members_note)"
+        "id, title, description, track, thumbnail_url, view_count, submitted_at, teams(name, team_no, members_note)"
       ),
     supabase.from("event_settings").select("phase").single(),
     supabase.from("project_like_counts").select("project_id, likes"),
@@ -58,6 +59,7 @@ export default async function GalleryPage() {
   const items: GalleryItem[] = (data ?? []).map((p) => {
     const team = p.teams as unknown as {
       name: string;
+      team_no: number | null;
       members_note: string | null;
     } | null;
     const awardRank = awardByProject.get(p.id) ?? null;
@@ -67,7 +69,7 @@ export default async function GalleryPage() {
       description: p.description,
       track: toProjectTrack(p.track),
       thumbnailUrl: p.thumbnail_url ?? null,
-      teamName: team?.name ?? "",
+      teamName: team ? teamLabel(team.team_no, team.name) : "",
       membersNote: team?.members_note ?? null,
       views: p.view_count ?? 0,
       likes: likesByProject.get(p.id) ?? 0,
