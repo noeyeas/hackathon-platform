@@ -62,6 +62,8 @@ export type MidRanking = {
   judge_score: number;
   presentation_score: number;
   judge_count: number;
+  // 운영진이 적은 종이 채점 평균(0~90, 0057). null 이면 웹 채점 환산을 쓴다.
+  judge_paper_score: number | null;
 };
 
 // 점수 가중치 (심사 / 팀 상호 / 주민투표). 합이 1 이어야 한다.
@@ -157,6 +159,10 @@ export const MID_CRITERIA = [
 
 // 운영진이 입력하는 발표 점수 상한. DB check 제약(0054)과 같아야 한다.
 export const PRESENTATION_MAX = { final: 5, mid: 10 } as const;
+
+// 심사위원 채점표 4항목 배점 합. 심사위원은 종이로 채점하고 운영진이 팀별
+// 평균을 이 만점 기준으로 적는다(0057). DB check 제약·criteria 배점 합과 같아야 한다.
+export const JUDGE_SHEET_MAX = 90;
 
 // 상위 3팀 시상 이름 (결과 공개 후 갤러리·결과 페이지에서 공통 사용)
 // 시상 순서 = rankings 뷰의 표시 순서(0040).

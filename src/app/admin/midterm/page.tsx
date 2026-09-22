@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { MID_CRITERIA, type MidRanking } from "@/lib/types";
 import { MidControls } from "./MidControls";
 import { PresentationInput } from "../scoring/PresentationInput";
+import { JudgePaperInput } from "../scoring/JudgePaperInput";
 import { completedByVoter } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { fetchAll } from "@/lib/fetchAll";
@@ -83,8 +84,9 @@ export default async function MidtermPage() {
       <div className="card mt-4">
         <h2 className="font-bold">중간발표 심사 기준</h2>
         <p className="mt-1 text-xs text-[var(--muted)]">
-          합계 100점. 발표 10점은 아래 집계표에서 운영진이 적고, 나머지 4항목
-          (90점)은 심사위원이 채점합니다.
+          합계 100점. 심사위원은 종이 채점표로 4항목(90점)을 매기고, 운영진이
+          팀별 평균을 아래 집계표의 <b>심사</b> 칸에 적습니다. 발표 10점도 운영진이
+          적습니다.
         </p>
         <ul className="mt-3 flex flex-wrap gap-2">
           {MID_CRITERIA.map((c) => (
@@ -100,7 +102,8 @@ export default async function MidtermPage() {
         summaryRight={`완료 ${judgeComplete}/${judgeRows.length}명`}
       >
         <p className="mb-3 text-xs text-[var(--muted)]">
-          심사위원별로 전체 {teamCount}팀 중 몇 팀을 채점했는지 표시합니다.
+          웹 채점 화면(/judge/mid)을 쓴 심사위원의 진행 상황입니다. 종이로
+          채점하면 여기는 비어 있어도 됩니다 — 집계는 아래 심사 칸을 봅니다.
         </p>
         {judgeRows.length > 0 ? (
           <ul className="flex flex-col divide-y divide-[var(--line)]">
@@ -123,21 +126,23 @@ export default async function MidtermPage() {
 
       <Section
         title="실시간 집계"
-        summaryRight={`채점된 팀 ${scored.filter((r) => r.judge_count > 0).length}/${teamCount}`}
+        summaryRight={`심사 입력 ${scored.filter((r) => r.judge_paper_score !== null || r.judge_count > 0).length}/${teamCount}`}
       >
         <p className="mb-3 text-xs text-[var(--muted)]">
-          점수 = 심사위원 4항목(90점 환산) + <b>발표</b>(운영진 입력, 0~10점).
+          점수 = <b>심사</b>(종이 채점표 팀별 평균, 0~90, 비우면 웹 채점 환산) +
+          <b>발표</b>(0~10점). 둘 다 운영진이 적습니다 — 숫자를 바꾸고 Enter 또는 저장.
           1위가 매니패스트상 — 동점이면 팀 이름순으로 나오므로 운영진이
           확인해 정하세요.
         </p>
         {scored.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="tbl min-w-[520px]">
+            <table className="tbl min-w-[600px]">
               <thead>
                 <tr>
                   <th>순위 / 팀</th>
-                  <th className="!text-right">발표</th>
-                  <th className="!text-right">심사위원 수</th>
+                  <th className="!text-right">심사 (0~90)</th>
+                  <th className="!text-right">발표 (0~10)</th>
+                  <th className="!text-right">웹 채점</th>
                   <th className="!text-right">점수</th>
                   <th>선정</th>
                 </tr>
@@ -148,6 +153,13 @@ export default async function MidtermPage() {
                     <td>
                       <span className="mr-2 font-bold tabular-nums">{i + 1}</span>
                       {r.team_name}
+                    </td>
+                    <td className="num">
+                      <JudgePaperInput
+                        teamId={r.team_id}
+                        round="mid"
+                        initial={r.judge_paper_score}
+                      />
                     </td>
                     <td className="num">
                       <PresentationInput

@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
-import { PRESENTATION_MAX, type EventPhase } from "@/lib/types";
+import { JUDGE_SHEET_MAX, PRESENTATION_MAX, type EventPhase } from "@/lib/types";
 
 export async function setPhase(phase: EventPhase) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
@@ -115,6 +115,32 @@ export async function setPresentationScore(
     return { error: `0~${max} 사이 정수를 입력하세요` };
   const admin = createAdminClient();
   const column = round === "final" ? "presentation_score" : "mid_presentation_score";
+  const { error } = await admin
+    .from("teams")
+    .update({ [column]: score })
+    .eq("id", teamId);
+  if (error) return { error: adminError(error) };
+  revalidatePath(round === "final" ? "/admin/scoring" : "/admin/midterm");
+  revalidatePath("/results");
+  return { ok: true };
+}
+
+// 심사위원 점수 — 종이 채점표를 모아 운영진이 팀별 평균(0~90, 소수 1자리)을
+// 적는다(0057). null 로 지우면 집계가 웹 채점(judge_scores·mid_scores)으로 돌아간다.
+export async function setJudgePaperScore(
+  teamId: string,
+  round: "final" | "mid",
+  score: number | null
+) {
+  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
+  if (score !== null) {
+    if (!Number.isFinite(score) || score < 0 || score > JUDGE_SHEET_MAX)
+      return { error: `0~${JUDGE_SHEET_MAX} 사이 숫자를 입력하세요` };
+    if (Math.round(score * 10) !== score * 10)
+      return { error: "소수점은 한 자리까지입니다" };
+  }
+  const admin = createAdminClient();
+  const column = round === "final" ? "judge_paper_score" : "mid_judge_paper_score";
   const { error } = await admin
     .from("teams")
     .update({ [column]: score })

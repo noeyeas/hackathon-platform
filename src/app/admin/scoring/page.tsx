@@ -5,6 +5,7 @@ import { VotingControls } from "../voting/VotingControls";
 import { ResultsToggle } from "./ResultsToggle";
 import { AbsentInput } from "./AbsentInput";
 import { PresentationInput } from "./PresentationInput";
+import { JudgePaperInput } from "./JudgePaperInput";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { fetchAll } from "@/lib/fetchAll";
@@ -47,7 +48,7 @@ export default async function ScoringProgressPage() {
     // 발표·불참은 제출 여부와 무관하게 팀마다 적으므로 여기서 같이 읽는다.
     admin
       .from("teams")
-      .select("id, name, presentation_score, absent_count")
+      .select("id, name, presentation_score, absent_count, judge_paper_score")
       .neq("status", "withdrawn") // 기권 팀은 평가 주체도 대상도 아니다(0056)
       .order("name"),
   ]);
@@ -169,21 +170,23 @@ export default async function ScoringProgressPage() {
         )}
       </Section>
 
-      {/* 발표 · 참여도 — 운영진 입력. 제출물이 없는 팀도 적을 수 있어야 하므로
-          집계표(제출작 기준)가 아니라 전체 팀 목록에 둔다. */}
-      <Section title="발표 · 참여도 입력 (운영진)" summaryRight={`${teamRows.length}팀`}>
+      {/* 심사 · 발표 · 참여도 — 운영진 입력. 제출물이 없는 팀도 적을 수 있어야
+          하므로 집계표(제출작 기준)가 아니라 전체 팀 목록에 둔다. */}
+      <Section title="심사 · 발표 · 참여도 입력 (운영진)" summaryRight={`${teamRows.length}팀`}>
         <p className="mb-3 text-xs text-[var(--muted)]">
-          <b>발표</b>는 0~5점. <b>불참</b>은 본선 개회식(10.8 09:00)·최종발표
+          <b>심사</b>는 심사위원 종이 채점표(4항목, 90점 만점)를 모아 팀별
+          평균을 소수 1자리까지 적습니다 — 비워 두면 웹 채점이 있을 때 그 환산값을
+          씁니다. <b>발표</b>는 0~5점. <b>불참</b>은 본선 개회식(10.8 09:00)·최종발표
           (10.9 09:00) 불참 인원을 연인원으로 적으면 참여도 5점에서 인당 1점이
-          빠집니다. 심사 점수 = 심사위원 4항목(90점 환산) + 발표 + 참여도.
-          심사위원 화면에는 보이지 않습니다. 숫자를 바꾸고 Enter 또는 저장.
+          빠집니다. 심사 점수 = 심사 + 발표 + 참여도. 숫자를 바꾸고 Enter 또는 저장.
         </p>
         {(allTeams ?? []).length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="tbl min-w-[360px]">
+            <table className="tbl min-w-[440px]">
               <thead>
                 <tr>
                   <th>팀</th>
+                  <th className="!text-right">심사 (0~90)</th>
                   <th className="!text-right">발표 (0~5)</th>
                   <th className="!text-right">불참 인원</th>
                 </tr>
@@ -192,6 +195,13 @@ export default async function ScoringProgressPage() {
                 {(allTeams ?? []).map((t) => (
                   <tr key={t.id}>
                     <td>{t.name || "이름 없음"}</td>
+                    <td className="num">
+                      <JudgePaperInput
+                        teamId={t.id}
+                        round="final"
+                        initial={t.judge_paper_score}
+                      />
+                    </td>
                     <td className="num">
                       <PresentationInput
                         teamId={t.id}

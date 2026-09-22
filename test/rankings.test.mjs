@@ -21,7 +21,7 @@ const migration = join(
   "..",
   "supabase",
   "migrations",
-  "0056_team_withdrawn.sql"
+  "0057_paper_judge_score.sql"
 );
 
 // 마이그레이션에서 view 정의만 추출(뒤따르는 revoke 는 pglite 에 없는 롤을 참조하므로 제외).
@@ -47,6 +47,7 @@ async function setup({ finalistCount = 4 } = {}) {
       id uuid primary key, name text not null,
       absent_count int not null default 0,
       presentation_score int not null default 0,
+      judge_paper_score numeric(4,1),
       status text not null default 'forming'
     );
     create table projects (
@@ -252,4 +253,27 @@ test("rankings: 기권 팀은 집계에서 빠지고 진출 슬롯을 차지하�
     ["B", "C", "D"],
     "A 가 빠진 자리를 다음 순위가 채운다"
   );
+});
+
+// 0057: 심사위원이 종이로 채점하면 운영진이 팀별 평균(90점 만점)을 적는다.
+// 값이 있으면 웹 채점을 대신하고, 발표·참여도는 그대로 더해진다.
+test("rankings: 종이 심사 점수가 있으면 웹 채점 대신 쓰인다", async () => {
+  const db = await setup();
+  const score = async (name) =>
+    Number(
+      (
+        await db.query(`select judge_score from rankings where team_name = $1`, [name])
+      ).rows[0].judge_score
+    );
+
+  assert.equal(await score("B"), 82, "종이 점수 없음 → 웹 pct80×90 + 10");
+
+  await db.query(`update teams set judge_paper_score = 72.5 where name = 'B'`);
+  assert.equal(await score("B"), 82.5, "종이 72.5 + 발표 5 + 참여도 5");
+
+  await db.query(`update teams set judge_paper_score = 60 where name = 'E'`);
+  assert.equal(await score("E"), 60, "웹 채점이 전혀 없는 팀도 종이 점수로 집계된다 (발표 0·불참 5)");
+
+  await db.query(`update teams set judge_paper_score = null where name = 'B'`);
+  assert.equal(await score("B"), 82, "지우면 다시 웹 채점으로 돌아간다");
 });
