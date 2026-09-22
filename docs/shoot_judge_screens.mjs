@@ -127,7 +127,11 @@ async function main() {
     await firstCard.evaluate((el) => el.scrollIntoView({ block: "start" }));
     await page.evaluate(() => window.scrollBy(0, -64));
     await page.waitForTimeout(200);
+    // 카드 하단 '점수 저장' 버튼까지 한 장에 들어오도록 이 컷만 세로를 늘린다
+    await page.setViewportSize({ width: 430, height: 960 });
+    await page.waitForTimeout(200);
     await page.screenshot({ path: `${OUT}/03_mid_card.png` });
+    await page.setViewportSize({ width: 430, height: 900 });
 
     // 3. 본선 채점 화면 (제출작이 없으면 목록이 비어 있어도 탭·안내는 보인다)
     await page.goto(`${SITE}/judge`, { waitUntil: "networkidle" });
