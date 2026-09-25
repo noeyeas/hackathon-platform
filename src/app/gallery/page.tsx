@@ -1,11 +1,13 @@
 import { cookies } from "next/headers";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { GalleryBrowser, type GalleryItem } from "./GalleryBrowser";
-import { AWARD_LABELS, toProjectTrack, type EventPhase, type Ranking } from "@/lib/types";
+import { getGalleryProjects, getGalleryRankings } from "@/lib/galleryData";
+import { AWARD_LABELS, toProjectTrack } from "@/lib/types";
 import { teamLabel } from "@/lib/format";
 
+// 무작위 정렬 시드를 쿠키에서 읽으므로 렌더 자체는 요청마다 일어난다.
+// 다만 DB 조회는 getGalleryProjects 가 30초 캐싱하므로 왕복은 나가지 않는다.
 export const dynamic = "force-dynamic";
 
 // 문자열 해시 (결정적) — 시드+id 로 안정적인 정렬 키 생성
@@ -19,33 +21,25 @@ function hash(str: string): number {
 }
 
 export default async function GalleryPage() {
-  const supabase = await createClient();
-  // 응원 수는 project_likes 를 직접 세지 않고 집계 뷰에서 읽는다 —
-  // 누가 눌렀는지(liker_key)를 가리느라 테이블 권한을 회수했기 때문(0036·0037).
-  const [{ data }, { data: settings }, { data: likeRows }] = await Promise.all([
-    supabase
-      .from("projects")
-      .select(
-        "id, title, description, track, thumbnail_url, view_count, submitted_at, teams(name, team_no, members_note)"
-      ),
-    supabase.from("event_settings").select("phase").single(),
-    supabase.from("project_like_counts").select("project_id, likes"),
-  ]);
+  const { projects, phase, likes } = await getGalleryProjects();
 
   const likesByProject = new Map<string, number>(
-    (likeRows ?? []).map((r) => [r.project_id as string, r.likes as number])
+    likes.map((r) => [r.project_id, r.likes])
   );
 
-  // 순위(=수상)는 대회가 끝난 뒤에만 공개한다. rankings 뷰는 서비스 롤 전용(0022).
-  const showAwards = ((settings?.phase ?? "signup") as EventPhase) === "closed";
-  const { data: rankings } = showAwards
-    ? await createAdminClient().from("rankings").select("*").returns<Ranking[]>()
-    : { data: null as Ranking[] | null };
+  // 기권 팀은 심사·순위·집계 어디에도 들어가지 않으므로(0056) 갤러리에서도
+  // 뺀다. 심사·상호평가(/vote)·운영 화면은 이미 같은 규칙이었는데
+  // 갤러리만 빠져 있어, 기권한 팀이 카드와 '총 N개 팀' 집계에 남아 있었다.
+  const visible = projects.filter((p) => p.teams?.status !== "withdrawn");
+
+  // 순위(=수상)는 대회가 끝난 뒤에만 공개한다.
+  const showAwards = phase === "closed";
+  const rankings = showAwards ? await getGalleryRankings() : [];
 
   // 수상 배지는 선정된 팀에만 붙인다. 뷰가 시상 순서로 정렬해 주므로
   // (선정팀 먼저, 그 안에서 주민표 순) 걸러낸 뒤의 순번이 곧 상 순서다.
   const awardByProject = new Map<string, number>();
-  (rankings ?? [])
+  rankings
     .filter((r) => r.is_finalist)
     .slice(0, AWARD_LABELS.length)
     .forEach((r, i) => {
@@ -56,12 +50,8 @@ export default async function GalleryPage() {
   // 특정 팀이 항상 위에 오지 않게 하면서 새로고침·뒤로가기엔 순서 유지.
   const seed = (await cookies()).get("gallery_seed")?.value ?? "default";
 
-  const items: GalleryItem[] = (data ?? []).map((p) => {
-    const team = p.teams as unknown as {
-      name: string;
-      team_no: number | null;
-      members_note: string | null;
-    } | null;
+  const items: GalleryItem[] = visible.map((p) => {
+    const team = p.teams;
     const awardRank = awardByProject.get(p.id) ?? null;
     return {
       id: p.id,

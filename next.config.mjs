@@ -1,9 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // 제출 폼이 예시 이미지(최대 5MB, 0041)를 서버 액션으로 올린다.
-  // 기본 바디 한도(1MB)로는 업로드가 막히므로 여유를 둬 올린다.
-  experimental: { serverActions: { bodySizeLimit: "6mb" } },
+  // 제출 폼이 예시 이미지(최대 4MB, lib/upload)를 서버 액션으로 올린다.
+  // 기본 바디 한도는 1MB 라 그대로면 업로드가 막힌다.
+  //
+  // 위로는 6mb 처럼 넉넉히 못 잡는다 — Vercel Functions 의 요청 본문 상한
+  // 4.5MB 가 플랫폼에서 강제되고, 그보다 큰 요청은 여기 값과 무관하게 서버
+  // 액션이 실행되기도 전에 413 으로 끊긴다. 한도를 플랫폼과 같은 4.5mb 로
+  // 맞추고, 파일 자체는 4MB 로 제한해 나머지 폼 필드와 multipart 오버헤드
+  // 몫을 남겨 둔다.
+  experimental: { serverActions: { bodySizeLimit: "4.5mb" } },
 
   // 개발 중 같은 와이파이의 폰으로 확인할 때 쓰는 LAN 주소.
   //

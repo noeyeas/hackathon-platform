@@ -3,7 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { JUDGE_SHEET_MAX, PRESENTATION_MAX, type EventPhase } from "@/lib/types";
 
 export async function setPhase(phase: EventPhase) {
@@ -16,6 +16,7 @@ export async function setPhase(phase: EventPhase) {
   if (error) return { error: adminError(error) };
   revalidatePath("/admin");
   revalidatePath("/");
+  updateTag("gallery"); // 수상 배지 노출이 phase 에 걸려 있다
   return { ok: true };
 }
 
@@ -31,6 +32,7 @@ export async function setResultsPublic(open: boolean) {
   revalidatePath("/results");
   revalidatePath("/admin/scoring");
   revalidatePath("/");
+  updateTag("gallery"); // 결과 공개 = 갤러리 수상 배지 공개
   return { ok: true };
 }
 
@@ -88,20 +90,6 @@ export async function setSubmitOpen(open: boolean) {
   return { ok: true };
 }
 
-// 중간발표(9.28) 채점 열림/닫힘. 본선 스위치(voting_open)와 별개다(0053).
-export async function setMidJudgingOpen(open: boolean) {
-  if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
-  const admin = createAdminClient();
-  const { error } = await admin
-    .from("event_settings")
-    .update({ mid_judging_open: open })
-    .eq("id", 1);
-  if (error) return { error: adminError(error) };
-  revalidatePath("/admin/midterm");
-  revalidatePath("/judge/mid");
-  return { ok: true };
-}
-
 // 발표 점수 — 심사위원이 아니라 운영진이 매긴다(0054). 본선 0~5, 중간 0~10.
 // rankings / mid_rankings 뷰가 심사위원 점수(90점 환산)에 더한다.
 export async function setPresentationScore(
@@ -125,11 +113,13 @@ export async function setPresentationScore(
   return { ok: true };
 }
 
-// 심사위원 점수 — 종이 채점표를 모아 운영진이 팀별 평균(0~90, 소수 1자리)을
-// 적는다(0057). null 로 지우면 집계가 웹 채점(judge_scores·mid_scores)으로 돌아간다.
-export async function setJudgePaperScore(
-  teamId: string,
+// 심사위원 종이 채점표 한 장 = 한 행(0059). 운영진이 회수한 채점표의 항목
+// 합계(0~90)를 심사위원별로 옮겨 적고, 팀 점수는 입력된 장수만큼 평균한다
+// (rankings·mid_rankings 뷰). null 을 주면 그 칸을 지운다 — 평균에서도 빠진다.
+export async function setJudgeSheetScore(
   round: "final" | "mid",
+  teamId: string,
+  judgeEmail: string,
   score: number | null
 ) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
@@ -140,13 +130,25 @@ export async function setJudgePaperScore(
       return { error: "소수점은 한 자리까지입니다" };
   }
   const admin = createAdminClient();
-  const column = round === "final" ? "judge_paper_score" : "mid_judge_paper_score";
-  const { error } = await admin
-    .from("teams")
-    .update({ [column]: score })
-    .eq("id", teamId);
+  const { error } =
+    score === null
+      ? await admin
+          .from("judge_sheets")
+          .delete()
+          .match({ round, team_id: teamId, judge_email: judgeEmail })
+      : await admin.from("judge_sheets").upsert(
+          {
+            round,
+            team_id: teamId,
+            judge_email: judgeEmail,
+            score,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "round,team_id,judge_email" }
+        );
   if (error) return { error: adminError(error) };
   revalidatePath(round === "final" ? "/admin/scoring" : "/admin/midterm");
+  revalidatePath("/admin");
   revalidatePath("/results");
   return { ok: true };
 }
@@ -166,5 +168,6 @@ export async function setAbsentCount(teamId: string, count: number) {
   revalidatePath("/admin/scoring");
   revalidatePath("/results");
   revalidatePath("/gallery");
+  updateTag("gallery"); // 감점이 순위를 바꾸면 수상 배지도 바뀐다
   return { ok: true };
 }

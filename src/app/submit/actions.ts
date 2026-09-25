@@ -1,13 +1,13 @@
 "use server";
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { safeError } from "@/lib/actionError";
 import { toProjectTrack } from "@/lib/types";
 import { canSubmitProject } from "@/lib/submitWindow";
+// 예시 이미지(갤러리 썸네일) 업로드 제한 — 0060 의 버킷 설정과 같은 값.
+import { MAX_IMAGE_BYTES, MAX_IMAGE_LABEL } from "@/lib/upload";
 
-// 예시 이미지(갤러리 썸네일) 업로드 제한 — 0041 의 버킷 설정과 같은 값.
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
 const IMAGE_TYPES: Record<string, string> = {
   "image/png": "png",
   "image/jpeg": "jpg",
@@ -57,7 +57,7 @@ export async function saveProject(formData: FormData) {
     if (!ext)
       return { error: "예시 이미지는 PNG·JPG·WEBP·GIF 만 올릴 수 있습니다" };
     if (imageFile.size > MAX_IMAGE_BYTES)
-      return { error: "예시 이미지는 5MB 이하만 가능합니다" };
+      return { error: `예시 이미지는 ${MAX_IMAGE_LABEL} 이하만 가능합니다` };
 
     const admin = createAdminClient();
     const path = `${membership.team_id}/${crypto.randomUUID()}.${ext}`;
@@ -106,5 +106,8 @@ export async function saveProject(formData: FormData) {
 
   revalidatePath("/submit");
   revalidatePath("/gallery");
+  // 갤러리 목록은 30초 캐싱이라(lib/galleryData) 방금 낸 제출물이 바로 보이지
+  // 않는다. 제출은 기다리게 할 이유가 없으므로 태그를 즉시 무효화한다.
+  updateTag("gallery");
   return { ok: true };
 }

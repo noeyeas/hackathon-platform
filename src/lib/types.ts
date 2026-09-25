@@ -45,10 +45,13 @@ export type Ranking = {
   team_name: string;
   team_no: number | null;
   title: string;
-  // 심사위원 점수(90점 환산) + 발표(운영진, 0~5) + 참여도(5 − 불참 인원)(0054).
+  // 심사위원 종이 채점표 평균(0~90) + 발표(운영진, 0~5) + 참여도(5 − 불참 인원).
   judge_score: number;
   absent_count: number;
   presentation_score: number;
+  // 회수한 채점표 평균과 장수(0059). 평균은 한 장도 없으면 null.
+  judge_paper_avg: number | null;
+  sheet_count: number;
   team_votes: number;
   audience_votes: number;
   // 진출팀은 심사 + 팀 상호평가 + 주민투표 합산 점수, 나머지는 1차 점수(0050).
@@ -57,17 +60,17 @@ export type Ranking = {
   is_finalist: boolean;
 };
 
-// 중간발표(9.28) 채점 집계 — mid_rankings 뷰(0053). 1위가 매니패스트상.
+// 중간발표(9.28) 채점 집계 — mid_rankings 뷰(0053·0059). 1위가 매니패스트상.
 export type MidRanking = {
   team_id: string;
   team_name: string;
   team_no: number | null;
-  // 심사위원 점수(90점 환산) + 발표(운영진, 0~10)(0054).
+  // 종이 채점표 평균(0~90) + 발표(운영진, 0~10).
   judge_score: number;
   presentation_score: number;
-  judge_count: number;
-  // 운영진이 적은 종이 채점 평균(0~90, 0057). null 이면 웹 채점 환산을 쓴다.
-  judge_paper_score: number | null;
+  // 회수한 채점표 평균과 장수. 평균은 한 장도 없으면 null.
+  judge_paper_avg: number | null;
+  sheet_count: number;
 };
 
 // 점수 가중치 (심사 / 팀 상호 / 주민투표). 합이 1 이어야 한다.
@@ -164,8 +167,9 @@ export const MID_CRITERIA = [
 // 운영진이 입력하는 발표 점수 상한. DB check 제약(0054)과 같아야 한다.
 export const PRESENTATION_MAX = { final: 5, mid: 10 } as const;
 
-// 심사위원 채점표 4항목 배점 합. 심사위원은 종이로 채점하고 운영진이 팀별
-// 평균을 이 만점 기준으로 적는다(0057). DB check 제약·criteria 배점 합과 같아야 한다.
+// 심사위원 채점표 4항목 배점 합. 심사위원은 종이로 채점하고 운영진이 심사위원별
+// 합계를 이 만점 기준으로 적는다(0059) — 팀 점수는 그 평균이다.
+// DB check 제약(judge_sheets.score)·criteria 배점 합과 같아야 한다.
 export const JUDGE_SHEET_MAX = 90;
 
 // 상위 3팀 시상 이름 (결과 공개 후 갤러리·결과 페이지에서 공통 사용)

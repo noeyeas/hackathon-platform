@@ -1,6 +1,7 @@
 import { ActionForm } from "@/components/ActionForm";
 import { saveProject } from "./actions";
 import { PROJECT_TRACKS } from "@/lib/types";
+import { MAX_IMAGE_BYTES, MAX_IMAGE_LABEL } from "@/lib/upload";
 
 type Project = {
   title: string | null;
@@ -19,6 +20,7 @@ export function ProjectForm({ project }: { project: Project }) {
     <ActionForm
       action={saveProject}
       submitLabel={project ? "수정 저장" : "제출하기"}
+      maxFileBytes={MAX_IMAGE_BYTES}
     >
       <label className="label">프로젝트 제목 *</label>
       <input
@@ -71,8 +73,8 @@ export function ProjectForm({ project }: { project: Project }) {
         className="input !py-2 file:mr-3 file:rounded-md file:border-0 file:bg-paper file:px-3 file:py-1.5 file:text-sm"
       />
       <p className="mt-1.5 text-xs text-[var(--muted)]">
-        갤러리 카드의 썸네일로 쓰입니다. PNG·JPG·WEBP·GIF, 5MB 이하. 올리지
-        않으면 제목 첫 글자가 대신 표시돼요.
+        갤러리 카드의 썸네일로 쓰입니다. PNG·JPG·WEBP·GIF, {MAX_IMAGE_LABEL}{" "}
+        이하. 올리지 않으면 제목 첫 글자가 대신 표시돼요.
       </p>
       {project?.thumbnail_url && (
         <label className="mt-2 flex items-center gap-2 text-sm text-[var(--muted)]">

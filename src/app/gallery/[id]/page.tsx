@@ -34,7 +34,7 @@ export default async function ProjectDetailPage({
     supabase
       .from("projects")
       .select(
-        "id, title, description, track, repo_url, demo_url, video_url, deck_url, thumbnail_url, view_count, teams(name, team_no, tagline, members_note)"
+        "id, title, description, track, repo_url, demo_url, video_url, deck_url, thumbnail_url, view_count, teams(name, team_no, tagline, members_note, status)"
       )
       .eq("id", id)
       .single(),
@@ -47,15 +47,20 @@ export default async function ProjectDetailPage({
 
   if (!p) notFound();
 
-  // 조회수는 마운트 시 클라이언트에서 1회만 올린다(ViewPing). 여기서는 현재 값만 표시.
-  const views = p.view_count;
-
   const team = p.teams as unknown as {
     name: string;
     team_no: number | null;
     tagline: string | null;
     members_note: string | null;
+    status: string;
   } | null;
+
+  // 기권 팀은 갤러리 목록에서 빠지므로(0056) 상세도 함께 닫는다. 목록에서만
+  // 가려도 링크를 아는 사람에게는 그대로 열려 응원·댓글까지 받을 수 있다.
+  if (team?.status === "withdrawn") notFound();
+
+  // 조회수는 마운트 시 클라이언트에서 1회만 올린다(ViewPing). 여기서는 현재 값만 표시.
+  const views = p.view_count;
   const likeCount = likeRow?.likes ?? 0;
   const track = toProjectTrack(p.track);
 

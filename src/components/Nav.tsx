@@ -60,7 +60,6 @@ export async function Nav() {
     ...LINKS,
     { href: "/results", label: "결과" },
     ...(isLeader ? [{ href: "/vote", label: "평가" }] : []),
-    ...(role === "judge" ? [{ href: "/judge", label: "심사" }] : []),
     ...(isLeader ? [{ href: "/mypage", label: "마이페이지" }] : []),
     ...(role === "admin"
       ? [{ href: "/admin", label: "운영", accent: "admin" as const }]
@@ -92,13 +91,6 @@ export async function Nav() {
             <NavLink
               href="/vote"
               label="평가"
-              className="max-sm:hidden"
-            />
-          )}
-          {role === "judge" && (
-            <NavLink
-              href="/judge"
-              label="심사"
               className="max-sm:hidden"
             />
           )}

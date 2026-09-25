@@ -1,9 +1,10 @@
 # 심사위원 종이 채점표(.docx) 생성 스크립트.
 #   python docs/make_judge_sheets.py  →  docs/심사위원_채점표.docx
 #
-# 심사위원은 웹이 아니라 이 종이로 채점한다(0057). 중간발표(9.28)·본선(10.9)
+# 심사위원은 웹이 아니라 이 종이로만 채점한다(0057·0059). 중간발표(9.28)·본선(10.9)
 # 각각 [심사 기준 안내 1장 + 팀 목록이 미리 채워진 채점표]로 구성되며,
-# 운영진은 회수한 채점표의 팀별 평균(90점 만점)을 /admin/midterm · /admin/scoring 에 적는다.
+# 운영진은 회수한 채점표의 심사위원별 항목 합계(90점 만점)를 /admin/midterm ·
+# /admin/scoring 표의 그 심사위원 칸에 옮겨 적는다 — 팀 평균은 사이트가 계산한다.
 #
 # 팀 목록은 .env.local 의 서비스 키로 DB(teams, 기권 제외, 조 번호순)에서 읽는다.
 # 읽지 못하면(오프라인 등) 팀 이름 빈칸 40개로 만든다. 팀마다 세부 항목 표와
@@ -31,7 +32,7 @@ BLANK_ROWS = 40
 
 # (항목, 배점, 설명, 심사위원 채점 여부, 세부 항목[(이름, 배점)])
 # 세부 항목은 채점표에서 항목을 쪼개 적기 위한 것 — 배점 합이 항목 배점과 같아야 한다.
-# 시스템(criteria)에는 항목 단위 배점만 있으므로 운영진은 항목 합계(90점)만 옮겨 적는다.
+# 운영진은 항목 합계(90점)만 옮겨 적는다 — 세부 항목은 심사위원이 쓰는 칸이다.
 MID = [
     ("논리의 연결성", 30, "문제 정의 → 해결 방안 → 기대 효과가 빈틈없이 이어지는지", True, [
         ("문제 정의가 명확하고 근거가 있는가", 10),
@@ -78,6 +79,20 @@ for _rows in (MID, FINAL):
         assert not _by_judge or sum(p for _, p in _subs) == _pts, f"{_name}: 세부 배점 합 ≠ {_pts}"
 TEAMS_PER_PAGE = 2
 
+# 발표(채점) 순서 — 운영진이 정한 순서대로 채점표를 찍는다. 조 번호(team_no)순이 아니다.
+# 공백을 뺀 이름으로 DB 팀과 맞춘다. 여기 없는 팀은 목록 맨 뒤에 조 번호순으로 붙는다.
+PRESENT_ORDER = [
+    "허강정", "바오밥나무", "NowonLikeUs", "지단", "월계디버깅",
+    "월월계계", "MassCOM", "4 guys", "COMs", "입대 전 발악",
+    "월계원정대", "월계방범대", "우럭아왜우럭", "얼마Geo", "솜사탕과 너구리",
+    "이오", "월계상단", "월계 계섯거라", "떡잎마을방범대", "컴미컴",
+    "CALAR", "라스트팡", "방과 후 지도타임", "로컬호스트", "노놀",
+    "삼삼오오", "강컴퍼니", "월계동행", "월계획", "어쩌다 개발자",
+    "이음(IEUM)", "배고프당", "유구무언", "탄탄대로", "일동차렷",
+    "ESGenius", "복지나침반", "경영과컴퓨터", "ABC", "토큰좀주세요",
+]
+_ORDER_KEY = {n.replace(" ", ""): i for i, n in enumerate(PRESENT_ORDER)}
+
 
 # ---------- 팀 목록 ----------
 def load_env():
@@ -105,10 +120,17 @@ def fetch_teams():
     try:
         with urllib.request.urlopen(req, timeout=15) as res:
             # (조 번호, 이름). 번호가 없는 팀은 목록 뒤에 번호 없이 나온다(0058).
-            return [(t.get("team_no"), t["name"]) for t in json.load(res)]
+            teams = [(t.get("team_no"), t["name"]) for t in json.load(res)]
     except Exception as e:  # noqa: BLE001 — 실패해도 빈 표로 만든다
         print("팀 목록을 읽지 못해 빈 줄로 만듭니다:", e, file=sys.stderr)
         return None
+
+    # 발표 순서로 정렬 — 목록에 없는 팀은 뒤에 (조 번호순으로) 붙이고 알려준다.
+    missing = [n for _, n in teams if n.replace(" ", "") not in _ORDER_KEY]
+    if missing:
+        print("발표 순서 목록에 없어 맨 뒤로 보냅니다:", ", ".join(missing), file=sys.stderr)
+    teams.sort(key=lambda t: _ORDER_KEY.get(t[1].replace(" ", ""), len(_ORDER_KEY)))
+    return teams
 
 
 # ---------- docx 도우미 ----------
@@ -251,8 +273,12 @@ def guide_page(doc, title, when, intro, rows, notes, new_page=False):
 
 
 # ---------- 채점표 ----------
-def team_block(doc, no, name, crits, judge_total):
-    """팀 하나의 채점 블록 — 제목줄 · 세부 항목별 점수 · 합계 · 피드백 칸."""
+def team_block(doc, seq, no, name, crits, judge_total):
+    """팀 하나의 채점 블록 — 제목줄 · 세부 항목별 점수 · 합계 · 피드백 칸.
+
+    제목줄은 발표 순번(seq)을 크게, 조 번호(no)는 작게 — 채점표는 발표 순서로
+    찍지만 운영진은 조 번호로 점수를 옮겨 적기 때문에 둘 다 필요하다.
+    """
     table = doc.add_table(rows=1, cols=4)
     table.style = "Table Grid"
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -263,10 +289,14 @@ def team_block(doc, no, name, crits, judge_total):
     row_height(title, 0.9)
     tc = title.cells
     left = tc[0].merge(tc[1])
-    cell_text(left, f"{no}조  " if no else "", bold=True, size=12)
+    cell_text(left, f"{seq}.  ", bold=True, size=12)
     r = left.paragraphs[0].add_run(name if name else "팀: ______________________")
     r.bold = True
     r.font.size = Pt(12)
+    if no:
+        r2 = left.paragraphs[0].add_run(f"   ({no}조)")
+        r2.font.size = Pt(9)
+        r2.font.color.rgb = MUTED
     right = tc[2].merge(tc[3])
     cell_text(right, f"합계        / {judge_total}", bold=True, size=11, align=WD_ALIGN_PARAGRAPH.RIGHT)
     for cell in (left, right):
@@ -313,7 +343,7 @@ def team_block(doc, no, name, crits, judge_total):
 def score_sheet(doc, title, when, rows, teams):
     crits = [(n, p, subs) for n, p, _, j, subs in rows if j]
     judge_total = sum(p for _, p, _ in crits)
-    names = teams if teams else [(i + 1, "") for i in range(BLANK_ROWS)]
+    names = teams if teams else [(None, "") for _ in range(BLANK_ROWS)]
 
     for i in range(0, len(names), TEAMS_PER_PAGE):
         # 쪽 나눔은 빈 단락이 아니라 제목의 page_break_before 로 — 표 뒤에 Word 가
@@ -334,7 +364,7 @@ def score_sheet(doc, title, when, rows, teams):
             if j > 0:
                 gap = doc.add_paragraph()
                 gap.paragraph_format.space_after = Pt(2)
-            team_block(doc, no, name, crits, judge_total)
+            team_block(doc, i + j + 1, no, name, crits, judge_total)
 
 
 def main():
@@ -354,7 +384,7 @@ def main():
     guide_page(
         doc,
         "중간발표",
-        "9.28(일) 18:30 · 80주년기념관 310호",
+        "9.28(월) 18:30 · 80주년기념관 310호",
         "기획·아이디어 단계 발표입니다. 아래 4개 항목(90점)을 심사위원이 채점하고, "
         "발표 10점은 운영진이 반영해 합계 100점이 됩니다. 합산 1위 팀이 매니패스트상을 받습니다.",
         MID,
@@ -367,7 +397,7 @@ def main():
     guide_page(
         doc,
         "본선 최종발표",
-        "10.9(목) 09:00 · 80주년기념관",
+        "10.9(금) 09:00 · 80주년기념관",
         "무박 2일 개발을 마친 결과물 발표입니다(팀당 5분 + 질의응답). 아래 4개 항목(90점)을 심사위원이 채점하고, "
         "발표 5점·참여도 5점은 운영진이 반영해 합계 100점이 됩니다.",
         FINAL,

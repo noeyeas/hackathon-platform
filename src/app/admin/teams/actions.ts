@@ -3,7 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
 // 선정된 팀을 운영진이 등록. 구글폼에서 받은 팀장 이메일을 함께 등록하면,
 // 그 이메일로 로그인한 사용자가 자동으로 팀장으로 연결된다. (참가 코드 불필요)
@@ -75,13 +75,14 @@ function revalidateTeamScreens() {
     "/admin/scoring",
     "/admin/midterm",
     "/admin/audience",
-    "/judge",
-    "/judge/mid",
     "/vote",
     "/gallery",
     "/results",
   ])
     revalidatePath(p);
+  // 갤러리 목록은 캐시를 타므로 경로 갱신만으로는 바뀌지 않는다.
+  // 조 번호 표기와 기권 제외가 둘 다 이 캐시 안에 들어 있다.
+  updateTag("gallery");
 }
 
 // 기권 처리/취소. 삭제와 달리 팀원 연결·제출물이 남고, 심사·상호평가·집계

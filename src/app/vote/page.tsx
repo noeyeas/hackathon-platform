@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
-import { ScoreCard } from "../judge/ScoreCard";
+import { ScoreCard } from "./ScoreCard";
 import { saveTeamScores } from "./actions";
 import { ScoreProgress } from "@/components/ScoreProgress";
 import { completedCount } from "@/lib/scoring";

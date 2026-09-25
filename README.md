@@ -36,8 +36,8 @@
 
 ### ⚖️ 심사위원
 
-- **종이 채점** — 심사위원은 인쇄한 채점표(`docs/심사위원_채점표.docx`, `python docs/make_judge_sheets.py` 로 생성)로 채점하고, 운영진이 팀별 평균(90점 만점)을 집계표에 입력 (0057)
-- **채점 콘솔** (`/judge`, `/judge/mid`) — 웹 채점 화면도 남아 있음. 운영진이 종이 점수를 적은 팀은 종이 점수가 우선 (0053·0057)
+- **종이 채점만** — 심사위원은 인쇄한 채점표(`docs/심사위원_채점표.docx`, `python docs/make_judge_sheets.py` 로 생성)로만 채점합니다. 웹 로그인·기기 준비가 필요 없고 웹 채점 화면도 없습니다 (0059)
+- **점수 입력** (`/admin/scoring` · `/admin/midterm`) — 운영진이 회수한 채점표의 **심사위원별 4항목 합계(0~90)** 를 표에 옮겨 적으면, 팀 평균·심사 점수·순위가 즉시 다시 계산됩니다. 빈 칸은 0 점이 아니라 미채점이라 평균에서 빠집니다 (0059)
 - 발표·참여도 점수는 심사위원이 아니라 운영진이 집계표에서 입력 (0054)
 - **기권 처리** (`/admin/teams` → 기권) — 삭제하지 않고 `status = 'withdrawn'`. 심사·상호평가 대상, 순위·진출팀, 팀 수 집계에서 제외되며 되돌릴 수 있음 (0056)
 
@@ -88,7 +88,6 @@ src/
 │   ├── (참가자)  page · recruit · team · submit · gallery · vote · mypage · notice · results
 │   ├── login · auth/  매직링크 / Google OAuth 콜백
 │   ├── exhibit/  [code]  전시장 QR 주민투표 (로그인 없음)
-│   ├── judge/    심사위원 채점
 │   ├── admin/    teams · scoring · audience · announcements · schedule · voting
 │   └── api/health  Supabase 자동 일시중단 방지용 크론 엔드포인트
 ├── components/   Nav · Toast · Reveal · HeroTimeline · LikeButton · ViewPing …
@@ -168,7 +167,7 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
 2단계로 나눠 뽑습니다 (0040). 진출팀의 최종 순위는 심사점수에 주민투표를 합산해 정합니다 (0050).
 
 ```
-심사(100점) = 심사위원 4항목(90점 환산) + 발표(운영진 입력 0~5) + 참여도(5 − 불참 인원)   ← 0054
+심사(100점) = 종이 채점표 평균(4항목 합계 0~90, 입력된 장수만큼 평균) + 발표(운영진 입력 0~5) + 참여도(5 − 불참 인원)   ← 0054·0059
 
 1차 (최종발표)  점수 = 심사(100점)·w_judge + 팀 상호 평가(100점 환산)·w_team
                        ─────────────────────────────────────────────────────
@@ -180,7 +179,7 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
                 → 합산 1위 노원구청장상, 2~4위 광운대학교 총장상
 ```
 
-중간발표(9.28)는 이 계산에 들어가지 않습니다 — 별도 심사표(`criteria.round = 'mid'`)와 별도 테이블(`mid_scores`)에 팀 단위로 저장하고, `mid_rankings` 뷰(심사위원 4항목 90점 환산 + 운영진 입력 발표 0~10)의 1위가 매니패스트상입니다 (0053, 0054).
+중간발표(9.28)는 이 계산에 들어가지 않습니다 — 같은 `judge_sheets` 테이블의 `round = 'mid'` 행만 따로 모아, `mid_rankings` 뷰(종이 채점표 평균 0~90 + 운영진 입력 발표 0~10)의 1위가 매니패스트상입니다 (0053, 0059).
 
 가중치(`weights`)와 진출 팀 수(`finalist_count`)는 `/admin` 에서 조정합니다. 기본값 **심사 0.5 / 팀 상호 0.25 / 주민 0.25**, 진출 팀 수 기본 **15** (0049).
 
@@ -190,7 +189,7 @@ test/                 rankings · scoring · submitWindow · viewerHash · forma
 
 **DB 가 막아주는 것**
 
-- **심사 점수** — `judge_scores` 는 `(project_id, judge_id, criteria_id)` 단위로 덮어써지고, RLS 상 본인 것과 운영진만 읽습니다
+- **심사 점수** — `judge_sheets` 는 `(round, team_id, judge_email)` PK 로 채점표 한 장에 한 행만 남고, 정책이 하나도 없어 Service Role(운영 화면)만 읽고 씁니다 (0059)
 - **팀 상호 평가** — `team_scores` 는 `(project_id, voter_team_id, criteria_id)` UNIQUE. 자기 팀 평가·팀장 여부는 서버 액션이 검증합니다
 - **제출·팀 수정 잠금** — `submit_open()` / `team_edit_open()` 조건이 `projects` · `teams` 쓰기 정책에 걸려 있어, 운영진이 닫으면 REST 를 직접 호출해도 수정되지 않습니다 (0033 · 0046)
 - **권한 상승** — `users.role` 등은 컬럼 권한 자체가 회수돼 있습니다 (0024)
@@ -241,8 +240,8 @@ npm test        # RLS·집계 테스트 (PGlite)
 ### 7-4. 운영자 / 심사위원 지정
 
 - **운영자**: 가입 후 Supabase **Table Editor → users** 에서 `role` 을 `admin` 으로 변경
-- **심사위원**: 가입 전에 `judge_emails` 에 이메일을 넣어 두면 첫 로그인 때 자동으로 `judge` 가 됩니다 (0055).
-  이미 가입한 사람은 `users.role` 을 `judge` 로 직접 바꿉니다.
+- **심사위원**: `judge_emails` 가 심사위원 명부입니다 — 여기 넣은 이름이 `/admin/scoring` · `/admin/midterm` 채점표 입력 표의 열이 됩니다 (0055·0059).
+  심사위원은 로그인하지 않으므로 계정을 만들 필요가 없습니다.
 
   ```sql
   insert into judge_emails (email, name) values ('x@y.z', '이름');
@@ -255,7 +254,7 @@ npm test        # RLS·집계 테스트 (PGlite)
 1. `/admin` 에서 단계를 **참가 신청** 으로 시작
 2. `/admin/teams` 에서 선정된 팀과 **팀장 이메일** 등록 → 팀장이 그 이메일로 로그인하면 자동 연결
 3. 단계를 **개발 진행** 으로, 팀장은 `/submit` 에서 프로젝트 제출 (`/admin` 의 **프로젝트 제출** 스위치로 열고 닫습니다)
-3-1. 9.28 중간발표에 `/admin/midterm` 에서 **중간발표 채점 열기** → 심사위원은 `/judge/mid` 에서 채점 → 집계 1위가 매니패스트상 (본선 점수와 무관)
-4. 발표 후 `/admin/scoring` 에서 **온라인 평가 열기** → 심사위원은 `/judge`, 팀장은 `/vote` 에서 채점
+3-1. 9.28 중간발표는 종이 채점표로 진행 → 회수한 채점표를 `/admin/midterm` 표에 심사위원별로 옮겨 적으면 평균·점수·순위가 바로 나옵니다. 1위가 매니패스트상 (본선 점수와 무관)
+4. 발표 후 회수한 본선 채점표를 `/admin/scoring` 표에 옮겨 적고, 같은 화면의 **팀 상호평가 열기** 로 팀장 평가(`/vote`)를 받습니다
 5. 전시 기간에 `/admin/audience` 에서 **QR 투표권을 발급·인쇄**해 배부하고 **주민투표 열기** → 주민은 `/exhibit/<코드>` 에서 진출팀에 투표
 6. 단계를 **종료** 로 → `/results` 에서 최종 순위 확정

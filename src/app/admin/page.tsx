@@ -24,7 +24,7 @@ export default async function AdminPage() {
     { data: projectTeams },
     { data: criteria },
     { data: judges },
-    { data: judgeScores },
+    { data: sheets },
     { data: teamScores },
   ] = await Promise.all([
     admin
@@ -38,14 +38,11 @@ export default async function AdminPage() {
       .order("name"),
     admin.from("projects").select("team_id"),
     admin.from("criteria").select("id").eq("round", "final"),
-    admin
-      .from("users")
-      .select("id, name, email")
-      .eq("role", "judge")
-      .order("name"),
+    // 심사위원 명부 = judge_emails(0055). 웹 로그인이 없으니 users 가 아니다(0059).
+    admin.from("judge_emails").select("email, name").order("created_at"),
     // 채점 행은 1,000행을 넘기므로 끝까지 페이지를 넘겨 읽는다(fetchAll 주석 참고).
     fetchAll(() =>
-      admin.from("judge_scores").select("judge_id, project_id, criteria_id")
+      admin.from("judge_sheets").select("team_id, judge_email").eq("round", "final")
     ),
     fetchAll(() =>
       admin.from("team_scores").select("voter_team_id, project_id, criteria_id")
@@ -71,16 +68,22 @@ export default async function AdminPage() {
   // 아직 제출하지 않은 팀 — 이름까지 보여야 누구를 찾아갈지 바로 안다.
   const notSubmitted = teamList.filter((t) => !submittedTeamIds.has(t.id));
 
-  // 심사위원: 전체 제출작을 모두 채점해야 완료.
-  const judgeDone = completedByVoter(judgeScores, "judge_id", criteriaCount);
+  // 심사위원: 종이 채점표를 운영진이 옮겨 적은 팀 수로 센다(0059).
+  // 진행률의 대상은 제출작이 아니라 팀이다 — 채점표가 팀 단위로 인쇄된다.
+  const sheetsByJudge = new Map<string, Set<string>>();
+  for (const row of sheets ?? []) {
+    const email = row.judge_email as string;
+    if (!sheetsByJudge.has(email)) sheetsByJudge.set(email, new Set());
+    sheetsByJudge.get(email)!.add(row.team_id as string);
+  }
   const judgeRows = (judges ?? []).map((j) => {
-    const done = Math.min(judgeDone.get(j.id)?.size ?? 0, submitted);
+    const done = Math.min(sheetsByJudge.get(j.email)?.size ?? 0, teams);
     return {
-      key: j.id,
-      name: j.name || j.email || "이름 없음",
+      key: j.email,
+      name: j.name || j.email,
       done,
-      total: submitted,
-      complete: submitted > 0 && done >= submitted,
+      total: teams,
+      complete: teams > 0 && done >= teams,
     };
   });
   const judgeComplete = judgeRows.filter((r) => r.complete).length;
@@ -166,12 +169,12 @@ export default async function AdminPage() {
           }
         />
         <Stat
-          label="심사 완료"
+          label="심사표 입력"
           value={judgeComplete}
           unit={`/ ${judgeRows.length}명`}
           done={judgeComplete}
           total={judgeRows.length}
-          sub="전 팀 채점한 심사위원"
+          sub="전 팀 점수를 옮겨 적은 심사위원"
         />
         <Stat
           label="팀 평가 완료"
@@ -201,12 +204,12 @@ export default async function AdminPage() {
             }))}
           />
           <PendingCard
-            title="채점 미완료 심사위원"
+            title="심사표 입력이 남은 심사위원"
             count={judgeRows.length - judgeComplete}
             emptyText={
               judgeRows.length === 0
                 ? "등록된 심사위원이 없습니다."
-                : "모든 심사위원이 채점을 마쳤습니다."
+                : "모든 심사위원의 채점표를 옮겨 적었습니다."
             }
             href="/admin/scoring"
             hrefLabel="심사 현황"

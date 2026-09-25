@@ -3,9 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { AWARD_LABELS, type Ranking } from "@/lib/types";
 import { VotingControls } from "../voting/VotingControls";
 import { ResultsToggle } from "./ResultsToggle";
-import { AbsentInput } from "./AbsentInput";
-import { PresentationInput } from "./PresentationInput";
-import { JudgePaperInput } from "./JudgePaperInput";
+import { JudgeSheetGrid } from "./JudgeSheetGrid";
 import { completedByVoter, teamVoteTarget } from "@/lib/scoring";
 import { requireAdmin } from "@/lib/auth";
 import { fetchAll } from "@/lib/fetchAll";
@@ -25,7 +23,7 @@ export default async function ScoringProgressPage() {
     { data: criteria },
     { data: projects },
     { data: judges },
-    { data: judgeScores },
+    { data: sheets },
     { data: teamScores },
     { data: rankings },
     { data: allTeams },
@@ -36,10 +34,14 @@ export default async function ScoringProgressPage() {
       .from("projects")
       .select("id, team_id, title, teams(name, status)")
       .order("submitted_at"),
-    admin.from("users").select("id, name, email").eq("role", "judge").order("name"),
+    // 심사위원 명부 = judge_emails(0055). 웹 로그인이 없으니 users 가 아니다(0059).
+    admin.from("judge_emails").select("email, name").order("created_at"),
     // 채점 행은 1,000행을 넘기므로 끝까지 페이지를 넘겨 읽는다(fetchAll 주석 참고).
     fetchAll(() =>
-      admin.from("judge_scores").select("judge_id, project_id, criteria_id")
+      admin
+        .from("judge_sheets")
+        .select("team_id, judge_email, score")
+        .eq("round", "final")
     ),
     fetchAll(() =>
       admin.from("team_scores").select("voter_team_id, project_id, criteria_id")
@@ -49,7 +51,7 @@ export default async function ScoringProgressPage() {
     // 발표·불참은 제출 여부와 무관하게 팀마다 적으므로 여기서 같이 읽는다.
     admin
       .from("teams")
-      .select("id, name, team_no, presentation_score, absent_count, judge_paper_score")
+      .select("id, name, team_no, presentation_score, absent_count")
       .neq("status", "withdrawn") // 기권 팀은 평가 주체도 대상도 아니다(0056)
       .order("team_no", { nullsFirst: false })
       .order("name"),
@@ -62,19 +64,19 @@ export default async function ScoringProgressPage() {
   const submittedCount = projectList.length;
   const submittedTeamIds = new Set(projectList.map((p) => p.team_id));
 
-  const judgeDone = completedByVoter(judgeScores, "judge_id", criteriaCount);
   const teamDone = completedByVoter(teamScores, "voter_team_id", criteriaCount);
 
-  const judgeRows = (judges ?? []).map((j) => {
-    const done = judgeDone.get(j.id)?.size ?? 0;
-    return {
-      key: j.id,
-      name: j.name || j.email || "이름 없음",
-      done: Math.min(done, submittedCount),
-      total: submittedCount,
-      complete: submittedCount > 0 && done >= submittedCount,
-    };
-  });
+  // 종이 채점표 입력 행 — 심사위원 명부 × 팀. 입력 진행은 팀 수 기준으로 센다.
+  const judgeList = (judges ?? []).map((j) => ({
+    email: j.email,
+    name: j.name || j.email,
+  }));
+  const sheetRows = (allTeams ?? []).map((t) => ({
+    teamId: t.id,
+    label: teamLabel(t.team_no, t.name || "이름 없음"),
+    presentation: t.presentation_score ?? 0,
+    absent: t.absent_count ?? 0,
+  }));
 
   // 평가 주체는 제출작이 아니라 팀 — 미제출 팀도 다른 팀을 평가하므로 전체 팀으로 행을 만든다.
   // 목표치도 팀마다 다르다(미제출 팀은 뺄 자기 몫이 없어 1개 더).
@@ -90,23 +92,17 @@ export default async function ScoringProgressPage() {
     };
   });
 
-  const judgeComplete = judgeRows.filter((r) => r.complete).length;
   const teamCompleteCount = teamRows.filter((r) => r.complete).length;
 
   return (
     <div className="mx-auto max-w-2xl lg:mx-0">
       <AdminPageHeader
         title="심사 · 평가 · 투표"
-        desc="온라인 투표를 열고 닫고, 진행 현황과 집계를 한곳에서 관리합니다."
+        desc="종이 채점표를 옮겨 적고, 팀 상호평가를 열고 닫고, 집계를 한곳에서 관리합니다."
         aside={
-          <>
-            <Link href="/judge" className="btn-primary">
-              심사위원 채점 화면 →
-            </Link>
-            <Link href="/vote" className="btn-ghost">
-              팀 평가 화면 →
-            </Link>
-          </>
+          <Link href="/vote" className="btn-ghost">
+            팀 평가 화면 →
+          </Link>
         }
       />
 
@@ -117,33 +113,6 @@ export default async function ScoringProgressPage() {
 
       {/* 결과 공개 ON/OFF */}
       <ResultsToggle initialOpen={settings?.phase === "closed"} />
-
-      {/* 심사위원 진행 현황 */}
-      <Section
-        title="심사위원 진행 현황"
-        summaryRight={`완료 ${judgeComplete}/${judgeRows.length}명`}
-      >
-        <p className="mb-3 text-xs text-[var(--muted)]">
-          심사위원별로 전체 {submittedCount}팀 중 몇 팀을 채점했는지 표시합니다.
-        </p>
-        {judgeRows.length > 0 ? (
-          <ul className="flex flex-col divide-y divide-[var(--line)]">
-            {judgeRows.map((r) => (
-              <ProgressRow
-                key={r.key}
-                name={r.name}
-                done={r.done}
-                total={r.total}
-                complete={r.complete}
-              />
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-[var(--muted)]">
-            등록된 심사위원이 없습니다.
-          </p>
-        )}
-      </Section>
 
       {/* 참여 팀 진행 현황 */}
       <Section
@@ -172,61 +141,39 @@ export default async function ScoringProgressPage() {
         )}
       </Section>
 
-      {/* 심사 · 발표 · 참여도 — 운영진 입력. 제출물이 없는 팀도 적을 수 있어야
-          하므로 집계표(제출작 기준)가 아니라 전체 팀 목록에 둔다. */}
-      <Section title="심사 · 발표 · 참여도 입력 (운영진)" summaryRight={`${teamRows.length}팀`}>
+      {/* 종이 채점표 입력 — 제출물이 없는 팀도 적을 수 있어야 하므로
+          집계표(제출작 기준)가 아니라 전체 팀 목록으로 만든다(0059). */}
+      <Section
+        title="종이 채점표 입력 · 심사 점수 (운영진)"
+        summaryRight={`${sheetRows.length}팀 × ${judgeList.length}명`}
+      >
         <p className="mb-3 text-xs text-[var(--muted)]">
-          <b>심사</b>는 심사위원 종이 채점표(4항목, 90점 만점)를 모아 팀별
-          평균을 소수 1자리까지 적습니다 — 비워 두면 웹 채점이 있을 때 그 환산값을
-          씁니다. <b>발표</b>는 0~5점. <b>불참</b>은 본선 개회식(10.8 09:00)·최종발표
-          (10.9 09:00) 불참 인원을 연인원으로 적으면 참여도 5점에서 인당 1점이
-          빠집니다. 심사 점수 = 심사 + 발표 + 참여도. 숫자를 바꾸고 Enter 또는 저장.
+          심사위원 칸에 그 심사위원 채점표의 <b>4항목 합계(0~90)</b>를 적습니다 —
+          채점하지 않은 칸은 비워 두면 평균에서 빠집니다. <b>발표</b>는 0~5점.
+          <b>불참</b>은 본선 개회식(10.8 09:00)·최종발표(10.9 09:00) 불참 인원을
+          연인원으로 적으면 참여도 5점에서 인당 1점이 빠집니다. 심사 점수 =
+          채점표 평균 + 발표 + 참여도로 즉시 계산됩니다.
         </p>
-        {(allTeams ?? []).length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="tbl min-w-[440px]">
-              <thead>
-                <tr>
-                  <th>팀</th>
-                  <th className="!text-right">심사 (0~90)</th>
-                  <th className="!text-right">발표 (0~5)</th>
-                  <th className="!text-right">불참 인원</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(allTeams ?? []).map((t) => (
-                  <tr key={t.id}>
-                    <td>{teamLabel(t.team_no, t.name || "이름 없음")}</td>
-                    <td className="num">
-                      <JudgePaperInput
-                        teamId={t.id}
-                        round="final"
-                        initial={t.judge_paper_score}
-                      />
-                    </td>
-                    <td className="num">
-                      <PresentationInput
-                        teamId={t.id}
-                        round="final"
-                        initial={t.presentation_score}
-                      />
-                    </td>
-                    <td className="num">
-                      <AbsentInput teamId={t.id} initial={t.absent_count} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {sheetRows.length > 0 && judgeList.length > 0 ? (
+          <JudgeSheetGrid
+            round="final"
+            judges={judgeList}
+            rows={sheetRows}
+            cells={sheets ?? []}
+          />
         ) : (
-          <p className="text-sm text-[var(--muted)]">등록된 팀이 없습니다.</p>
+          <p className="text-sm text-[var(--muted)]">
+            {judgeList.length === 0
+              ? "심사위원 명부(judge_emails)가 비어 있습니다."
+              : "등록된 팀이 없습니다."}
+          </p>
         )}
       </Section>
 
       {/* 실시간 집계 */}
       <Section title="실시간 집계">
         <p className="mb-3 text-xs text-[var(--muted)]">
+          <b>심사표</b>는 집계에 들어간 종이 채점표 장수입니다.
           1차 점수 = 심사 · 팀 상호평가(2:1)로 전시 진출팀을 뽑고, 진출팀의
           최종 점수는 여기에 주민표(전시 QR 투표, 최다 득표 = 100점)를 합산합니다
           — 표는 시상 순서대로 정렬됩니다. 제출물이 있는 팀만 나옵니다.
@@ -239,6 +186,7 @@ export default async function ScoringProgressPage() {
                   <th>순위 / 팀</th>
                   <th className="!text-right">발표</th>
                   <th className="!text-right">불참</th>
+                  <th className="!text-right">심사표</th>
                   <th className="!text-right">심사</th>
                   <th className="!text-right">팀 점수</th>
                   <th className="!text-right">주민</th>
@@ -255,6 +203,7 @@ export default async function ScoringProgressPage() {
                     </td>
                     <td className="num">{r.presentation_score}</td>
                     <td className="num">{r.absent_count}</td>
+                    <td className="num">{r.sheet_count}장</td>
                     <td className="num">{r.judge_score}</td>
                     <td className="num">{r.team_votes}</td>
                     <td className="num">{r.audience_votes}</td>

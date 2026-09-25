@@ -16,12 +16,14 @@ export function VotingControls({ votingOpen }: { votingOpen: boolean }) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 심사·팀 상호평가 ON/OFF. 전시 주민투표는 별도 스위치다(/admin/audience). */}
+      {/* 팀 상호평가 ON/OFF. 심사는 종이 채점표라 스위치가 없다(0059).
+          전시 주민투표는 별도 스위치다(/admin/audience). */}
       <div className="card flex items-center justify-between">
         <div>
-          <h2 className="font-bold">온라인 투표</h2>
+          <h2 className="font-bold">팀 상호평가</h2>
           <p className="mt-1 text-sm text-[var(--muted)]">
-            심사위원 채점·팀간 투표를 열고 닫습니다.
+            팀장이 다른 팀을 평가하는 화면(/vote)을 열고 닫습니다. 심사위원 채점은
+            종이 채점표라 이 스위치와 무관합니다.
           </p>
         </div>
         <button
@@ -40,7 +42,7 @@ export function VotingControls({ votingOpen }: { votingOpen: boolean }) {
         </button>
       </div>
       <p className={`text-sm font-semibold ${open ? "text-team" : "text-[var(--muted)]"}`}>
-        현재: 투표 {open ? "열림 🟢" : "닫힘 🔴"}
+        현재: 팀 상호평가 {open ? "열림 🟢" : "닫힘 🔴"}
       </p>
 
       <p className="text-sm text-[var(--muted)]">

@@ -7,6 +7,8 @@
 //   2차 — 그 N팀 안에서만 주민투표로 순서를 가른다(1위 = 노원구청장 표창).
 // 주민표가 1차 선정에 영향을 주지 않는다는 점이 이 테스트의 핵심이다.
 // 0045 부터 주민표는 운영진 수기 입력이 아니라 전시장 QR 투표 기록(audience_votes)이다.
+// 0059 부터 심사위원 점수는 웹 채점이 아니라 회수한 종이 채점표(judge_sheets)이며,
+// 팀 점수는 입력된 채점표 장수만큼의 평균이다.
 // 실행: npm test
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -21,15 +23,15 @@ const migration = join(
   "..",
   "supabase",
   "migrations",
-  "0057_paper_judge_score.sql"
+  "0059_paper_only_judging.sql"
 );
 
 // 마이그레이션에서 view 정의만 추출(뒤따르는 revoke 는 pglite 에 없는 롤을 참조하므로 제외).
 // 뷰 정의 안에는 세미콜론이 없다는 전제를 유지한다.
-function extractViewSql(path) {
+function extractViewSql(path, view = "rankings") {
   const sql = readFileSync(path, "utf8");
-  const start = sql.indexOf("create view rankings");
-  assert.notEqual(start, -1, "마이그레이션에서 rankings 뷰를 찾지 못함");
+  const start = sql.indexOf(`create view ${view} as`);
+  assert.notEqual(start, -1, `마이그레이션에서 ${view} 뷰를 찾지 못함`);
   const end = sql.indexOf(";", start);
   return sql.slice(start, end + 1);
 }
@@ -44,10 +46,10 @@ async function setup({ finalistCount = 4 } = {}) {
   await db.exec(`
     -- 0052·0054: 참여도(불참 인원)·발표 점수는 운영진이 teams 에 적는다.
     create table teams (
-      id uuid primary key, name text not null,
+      id uuid primary key, name text not null, team_no int,
       absent_count int not null default 0,
       presentation_score int not null default 0,
-      judge_paper_score numeric(4,1),
+      mid_presentation_score int not null default 0,
       status text not null default 'forming'
     );
     create table projects (
@@ -61,14 +63,19 @@ async function setup({ finalistCount = 4 } = {}) {
       project_id uuid not null references projects(id),
       primary key (ballot_code, project_id)
     );
-    -- 0053: 심사표는 round 로 나뉜다. 본선 채점표 배점 합은 90(0054).
+    -- 0053: 심사표는 round 로 나뉜다. 지금은 팀 상호평가(team_scores)가 쓴다.
     create table criteria (
       id uuid primary key, max_score int not null default 10,
       round text not null default 'final'
     );
-    create table judge_scores (
-      project_id uuid not null, judge_id uuid not null,
-      criteria_id uuid not null references criteria(id), score int not null
+    -- 0059: 심사위원 명부(로그인과 무관) + 회수한 종이 채점표 한 장 = 한 행.
+    create table judge_emails ( email text primary key, name text );
+    create table judge_sheets (
+      round text not null,
+      team_id uuid not null references teams(id),
+      judge_email text not null references judge_emails(email),
+      score numeric(4,1) not null,
+      primary key (round, team_id, judge_email)
     );
     create table team_scores (
       project_id uuid not null, voter_team_id uuid not null,
@@ -81,14 +88,16 @@ async function setup({ finalistCount = 4 } = {}) {
       values (1, '{"judge":0.5,"team":0.25,"audience":0.25}', ${finalistCount});
   `);
 
-  const C1 = U(101), C2 = U(102), J1 = U(201), J2 = U(202), VT = U(301);
+  const C1 = U(101), C2 = U(102), VT = U(301);
+  const J1 = "judge1@example.com", J2 = "judge2@example.com";
   await db.exec(`
     insert into criteria(id,max_score) values ('${C1}',45),('${C2}',45);
-    -- A~D 는 발표 만점(5)·전원 출석(참여도 5) → 심사 점수 = 심사위원 pct×90 + 10.
-    -- E 는 무점수에 발표 0·불참 5 → 심사 점수 0 (0054 이후에도 0점 팀이 가능함을 본다).
-    insert into teams(id,name,presentation_score,absent_count) values
-      ('${U(1)}','A',5,0),('${U(2)}','B',5,0),('${U(3)}','C',5,0),('${U(4)}','D',5,0),
-      ('${U(5)}','E',0,5);
+    insert into judge_emails(email,name) values ('${J1}','심사1'),('${J2}','심사2');
+    -- A~D 는 발표 만점(5)·전원 출석(참여도 5) → 심사 점수 = 채점표 평균 + 10.
+    -- E 는 채점표가 없고 발표 0·불참 5 → 심사 점수 0 (0점 팀이 가능함을 본다).
+    insert into teams(id,name,team_no,presentation_score,absent_count) values
+      ('${U(1)}','A',1,5,0),('${U(2)}','B',2,5,0),('${U(3)}','C',3,5,0),
+      ('${U(4)}','D',4,5,0),('${U(5)}','E',5,0,5);
     insert into projects(id,team_id,title) values
       ('${U(11)}','${U(1)}','pA'),
       ('${U(12)}','${U(2)}','pB'),
@@ -100,14 +109,18 @@ async function setup({ finalistCount = 4 } = {}) {
   // 주민표 — 투표권(QR) 한 장이 한 팀에 한 표. 예전 수기 입력값과 같은 분포를
   // 실제 표 행으로 깐다: pA 10, pB 90, pC 25, pD 0, pE 200.
   await castAudienceVotes(db, { 11: 10, 12: 90, 13: 25, 14: 0, 15: 200 });
-  const judge = { 11: 45, 12: 36, 13: 20, 14: 27 }; // pE 는 무점수 (pct 100/80/44.4/60)
-  for (const [pid, s] of Object.entries(judge))
-    for (const J of [J1, J2])
-      for (const C of [C1, C2])
-        await db.query(
-          `insert into judge_scores(project_id,judge_id,criteria_id,score) values ($1,$2,$3,$4)`,
-          [U(pid), J, C, s]
-        );
+  // 종이 채점표(90점 만점) 두 장씩 — B 는 두 심사위원 점수가 달라 평균이 필요하다.
+  // 팀 E 는 한 장도 없다. 평균 → A 90, B 72, C 40, D 54
+  const sheets = { 1: [90, 90], 2: [70, 74], 3: [40, 40], 4: [54, 54] };
+  for (const [tid, pair] of Object.entries(sheets))
+    for (const [J, sc] of [
+      [J1, pair[0]],
+      [J2, pair[1]],
+    ])
+      await db.query(
+        `insert into judge_sheets(round,team_id,judge_email,score) values ('final',$1,$2,$3)`,
+        [U(tid), J, sc]
+      );
   const team = { 11: 45, 12: 27, 13: 18, 14: 18 }; // pct 100/60/40/40
   for (const [pid, s] of Object.entries(team))
     for (const C of [C1, C2])
@@ -135,8 +148,8 @@ async function castAudienceVotes(db, votesByProject) {
   }
 }
 
-// 심사(100) = 심사위원 pct×90 + 발표 5 + 참여도 5 (0054)
-//   A pct100 → 100, B pct80 → 82, C pct44.4 → 50, D pct60 → 64, E → 0
+// 심사(100) = 채점표 평균 + 발표 5 + 참여도 5 (0054·0059)
+//   A 90 → 100, B 72 → 82, C 40 → 50, D 54 → 64, E 채점표 없음 → 0
 // 1차 점수 = (심사×0.5 + 팀×0.25) / 0.75
 //   A 심사100 팀100 → 100
 //   B 심사 82 팀 60 → (41+15)/0.75 = 74.67
@@ -230,7 +243,7 @@ test("rankings: 발표 점수와 불참 인원이 심사 점수에 그대로 반
       ).rows[0].judge_score
     );
 
-  assert.equal(await score("A"), 100, "pct100 + 발표 5 + 참여도 5");
+  assert.equal(await score("A"), 100, "채점표 평균 90 + 발표 5 + 참여도 5");
 
   await db.query(`update teams set presentation_score = 2 where name = 'A'`);
   assert.equal(await score("A"), 97, "발표 5 → 2 면 3점 감소");
@@ -255,25 +268,64 @@ test("rankings: 기권 팀은 집계에서 빠지고 진출 슬롯을 차지하�
   );
 });
 
-// 0057: 심사위원이 종이로 채점하면 운영진이 팀별 평균(90점 만점)을 적는다.
-// 값이 있으면 웹 채점을 대신하고, 발표·참여도는 그대로 더해진다.
-test("rankings: 종이 심사 점수가 있으면 웹 채점 대신 쓰인다", async () => {
+// 0059: 심사위원 점수는 회수한 채점표의 평균이다. 빈 칸(미채점)은 0 점이 아니라
+// 평균에서 빠져야 한다 — 심사위원 한 명이 불참한 날에 팀이 억울하게 깎이면 안 된다.
+test("rankings: 심사 점수 = 채점표 평균 (미입력 칸은 평균에서 빠진다)", async () => {
   const db = await setup();
-  const score = async (name) =>
+  const col = async (name, c) =>
     Number(
-      (
-        await db.query(`select judge_score from rankings where team_name = $1`, [name])
-      ).rows[0].judge_score
+      (await db.query(`select ${c} from rankings where team_name = $1`, [name]))
+        .rows[0][c]
     );
 
-  assert.equal(await score("B"), 82, "종이 점수 없음 → 웹 pct80×90 + 10");
+  assert.equal(await col("B", "judge_score"), 82, "70·74 평균 72 + 발표 5 + 참여도 5");
+  assert.equal(await col("B", "sheet_count"), 2, "집계에 들어간 채점표 장수");
 
-  await db.query(`update teams set judge_paper_score = 72.5 where name = 'B'`);
-  assert.equal(await score("B"), 82.5, "종이 72.5 + 발표 5 + 참여도 5");
+  // 한 장을 지워도 남은 한 장이 그대로 평균이다 — 0 점으로 끌어내리지 않는다.
+  await db.query(
+    `delete from judge_sheets where team_id = $1 and judge_email = 'judge2@example.com'`,
+    [U(2)]
+  );
+  assert.equal(await col("B", "judge_score"), 80, "남은 한 장(70) + 발표 5 + 참여도 5");
+  assert.equal(await col("B", "sheet_count"), 1);
 
-  await db.query(`update teams set judge_paper_score = 60 where name = 'E'`);
-  assert.equal(await score("E"), 60, "웹 채점이 전혀 없는 팀도 종이 점수로 집계된다 (발표 0·불참 5)");
+  // 채점표가 하나도 없는 팀은 0 점 — 평균이 null 이어도 집계가 깨지지 않는다.
+  assert.equal(await col("E", "judge_score"), 0);
+  assert.equal(await col("E", "sheet_count"), 0);
 
-  await db.query(`update teams set judge_paper_score = null where name = 'B'`);
-  assert.equal(await score("B"), 82, "지우면 다시 웹 채점으로 돌아간다");
+  await db.query(
+    `insert into judge_sheets(round,team_id,judge_email,score)
+     values ('final',$1,'judge1@example.com',60)`,
+    [U(5)]
+  );
+  assert.equal(await col("E", "judge_score"), 60, "채점표 한 장(60) + 발표 0 + 참여도 0");
+});
+
+// 0059: 중간발표 집계도 같은 규칙 — 채점표 평균 + 발표(0~10). 1위가 매니패스트상.
+test("mid_rankings: 채점표 평균 + 발표 10점으로 순위가 정해진다", async () => {
+  const db = await setup();
+  await db.exec(extractViewSql(migration, "mid_rankings"));
+
+  // 중간발표는 심사위원 2명만 온 날을 가정한다 — A 는 2장, B 는 1장.
+  await db.exec(`
+    insert into judge_sheets(round,team_id,judge_email,score) values
+      ('mid','${U(1)}','judge1@example.com',80),
+      ('mid','${U(1)}','judge2@example.com',90),
+      ('mid','${U(2)}','judge1@example.com',88);
+    update teams set mid_presentation_score = 10 where name = 'B';
+    update teams set mid_presentation_score = 5  where name = 'A';
+  `);
+
+  const { rows } = await db.query(
+    `select team_name, judge_score, judge_paper_avg, sheet_count from mid_rankings`
+  );
+  const byTeam = Object.fromEntries(rows.map((r) => [r.team_name, r]));
+
+  assert.equal(Number(byTeam.A.judge_paper_avg), 85, "80·90 평균");
+  assert.equal(Number(byTeam.A.judge_score), 90, "85 + 발표 5");
+  assert.equal(Number(byTeam.B.sheet_count), 1, "한 장만 들어온 팀");
+  assert.equal(Number(byTeam.B.judge_score), 98, "88 + 발표 10");
+  assert.equal(Number(byTeam.C.judge_score), 0, "중간 채점표가 없는 팀은 0점");
+
+  assert.equal(rows[0].team_name, "B", "1위 = 매니패스트상");
 });
