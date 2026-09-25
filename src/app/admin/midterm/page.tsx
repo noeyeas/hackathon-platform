@@ -25,8 +25,16 @@ export default async function MidtermPage() {
       // 채점표와 같은 순서로 적어야 눈이 덜 흔들린다 — 조 번호순(0058).
       .order("team_no", { nullsFirst: false })
       .order("name"),
-    // 심사위원 명부 = judge_emails(0055). 로그인과 무관한 목록이어야 한다.
-    admin.from("judge_emails").select("email, name").order("created_at"),
+    // 중간발표 심사위원단. 본선과 명단이 달라 라운드로 거른다(0062).
+    // 로그인과 무관한 목록이어야 한다(0055·0059).
+    admin
+      .from("judge_roster")
+      .select("email, name")
+      .eq("round", "mid")
+      .order("created_at")
+      // created_at 이 모두 같아(0055 가 한 문장으로 넣음) 동률 시
+      // 열 순서가 조회마다 바뀐다. 표 열은 고정돼야 한다.
+      .order("email"),
     // 40팀 × 심사위원 수. 1,000행을 넘길 수 있어 끝까지 읽는다.
     fetchAll(() =>
       admin
@@ -90,7 +98,7 @@ export default async function MidtermPage() {
         ) : (
           <p className="text-sm text-[var(--muted)]">
             {judgeList.length === 0
-              ? "심사위원 명부(judge_emails)가 비어 있습니다."
+              ? "이 라운드에 배정된 심사위원이 없습니다(judge_rounds)."
               : "등록된 팀이 없습니다."}
           </p>
         )}

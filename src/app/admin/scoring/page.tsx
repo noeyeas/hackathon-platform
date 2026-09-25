@@ -34,8 +34,16 @@ export default async function ScoringProgressPage() {
       .from("projects")
       .select("id, team_id, title, teams(name, status)")
       .order("submitted_at"),
-    // 심사위원 명부 = judge_emails(0055). 웹 로그인이 없으니 users 가 아니다(0059).
-    admin.from("judge_emails").select("email, name").order("created_at"),
+    // 본선 심사위원단. 중간발표와 명단이 달라 라운드로 거른다(0062).
+    // 웹 로그인이 없으니 users 가 아니라 별도 명부다(0055·0059).
+    admin
+      .from("judge_roster")
+      .select("email, name")
+      .eq("round", "final")
+      .order("created_at")
+      // created_at 이 모두 같아(0055 가 한 문장으로 넣음) 동률 시
+      // 열 순서가 조회마다 바뀐다. 표 열은 고정돼야 한다.
+      .order("email"),
     // 채점 행은 1,000행을 넘기므로 끝까지 페이지를 넘겨 읽는다(fetchAll 주석 참고).
     fetchAll(() =>
       admin
@@ -164,7 +172,7 @@ export default async function ScoringProgressPage() {
         ) : (
           <p className="text-sm text-[var(--muted)]">
             {judgeList.length === 0
-              ? "심사위원 명부(judge_emails)가 비어 있습니다."
+              ? "이 라운드에 배정된 심사위원이 없습니다(judge_rounds)."
               : "등록된 팀이 없습니다."}
           </p>
         )}
@@ -196,20 +204,42 @@ export default async function ScoringProgressPage() {
               </thead>
               <tbody>
                 {rankings.map((r, i) => (
-                  <tr key={r.project_id} className={r.is_finalist ? "bg-gold-soft/40" : ""}>
+                  // 채점표가 0장이면 참여도 5점만 들고 순위에 섞인다(0052).
+                  // 입력이 끝나면 저절로 내려가지만, 입력 도중에는 진출팀이
+                  // 잘못 보이므로 선정 배지 대신 미채점임을 밝힌다.
+                  <tr
+                    key={r.project_id}
+                    className={
+                      r.sheet_count === 0
+                        ? "opacity-60"
+                        : r.is_finalist
+                          ? "bg-gold-soft/40"
+                          : ""
+                    }
+                  >
                     <td>
                       <span className="mr-2 font-bold tabular-nums">{i + 1}</span>
                       {teamLabel(r.team_no, r.team_name)}
                     </td>
                     <td className="num">{r.presentation_score}</td>
                     <td className="num">{r.absent_count}</td>
-                    <td className="num">{r.sheet_count}장</td>
+                    <td className="num">
+                      {r.sheet_count === 0 ? (
+                        <span className="text-alert">0장</span>
+                      ) : (
+                        `${r.sheet_count}장`
+                      )}
+                    </td>
                     <td className="num">{r.judge_score}</td>
                     <td className="num">{r.team_votes}</td>
                     <td className="num">{r.audience_votes}</td>
                     <td className="num font-bold text-navy">{r.final_score}</td>
                     <td>
-                      {r.is_finalist ? (
+                      {r.sheet_count === 0 ? (
+                        <span className="chip border-alert text-alert">
+                          미채점
+                        </span>
+                      ) : r.is_finalist ? (
                         // 진출팀은 최대 15팀이지만 상은 상위 4팀뿐이다.
                         i < AWARD_LABELS.length ? (
                           <span className="badge-gold">{AWARD_LABELS[i]}</span>

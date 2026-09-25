@@ -89,8 +89,16 @@ export function JudgeSheetGrid({
   const byTeam = new Map(calc.map((c) => [c.teamId, c]));
 
   // 순위 — 점수 내림차순. 동점은 표에 나온 순서(조 번호순)를 유지한다.
-  const order = [...calc].sort((a, b) => b.total - a.total);
-  const rankOf = new Map(order.map((c, i) => [c.teamId, i + 1]));
+  //
+  // 채점표가 한 장도 없는 팀은 순위에서 뺀다. 본선 참여도는 5점 만점에서
+  // 불참 인원만큼 깎는 방식이라(0052) 아무것도 입력하지 않은 팀도 5점으로
+  // 잡히는데, 그대로 두면 입력 도중의 순위가 미채점 팀으로 뒤섞인다.
+  const rankOf = new Map(
+    [...calc]
+      .filter((c) => c.sheets > 0)
+      .sort((a, b) => b.total - a.total)
+      .map((c, i) => [c.teamId, i + 1])
+  );
 
   const enteredTeams = calc.filter((c) => c.sheets > 0).length;
 
@@ -126,7 +134,9 @@ export function JudgeSheetGrid({
           <tbody>
             {rows.map((r) => {
               const c = byTeam.get(r.teamId)!;
-              const rank = rankOf.get(r.teamId)!;
+              // 미채점 팀은 순위도 점수도 비워 둔다 — 아직 값이 없는 것과
+              // 0 점인 것은 다르다.
+              const rank = rankOf.get(r.teamId) ?? null;
               return (
                 <tr
                   key={r.teamId}
@@ -201,12 +211,31 @@ export function JudgeSheetGrid({
                       />
                     </td>
                   )}
-                  <td className="num font-bold text-navy">{fmt(c.total)}</td>
+                  <td className="num font-bold text-navy">
+                    {c.sheets === 0 ? (
+                      <span
+                        className="font-normal text-[var(--line-strong)]"
+                        title="채점표가 아직 한 장도 입력되지 않았습니다"
+                      >
+                        —
+                      </span>
+                    ) : (
+                      fmt(c.total)
+                    )}
+                  </td>
                   {showRank && (
                     <td className="whitespace-nowrap">
-                      <span className="mr-2 font-bold tabular-nums">{rank}</span>
-                      {rank === 1 && rankBadge && (
-                        <span className="badge-gold">{rankBadge}</span>
+                      {rank === null ? (
+                        <span className="text-[var(--line-strong)]">—</span>
+                      ) : (
+                        <>
+                          <span className="mr-2 font-bold tabular-nums">
+                            {rank}
+                          </span>
+                          {rank === 1 && rankBadge && (
+                            <span className="badge-gold">{rankBadge}</span>
+                          )}
+                        </>
                       )}
                     </td>
                   )}
