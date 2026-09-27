@@ -43,6 +43,12 @@ export default async function AdminTeamDetailPage({
     }))
     .sort((a, b) => Number(b.isLeader) - Number(a.isLeader));
 
+  // 팀장 이메일을 고쳤는데 연결은 구 계정에 남아 있는 상태. 자동 연결은 팀에
+  // 팀장이 있으면 건너뛰므로 저절로 낫지 않는다 — 팀 등록 화면에서 교체해야 한다.
+  const linkedLeader = members.find((m) => m.isLeader) ?? null;
+  const leaderMismatch =
+    !!team.leader_email && !!linkedLeader && linkedLeader.email !== team.leader_email;
+
   const { data: project } = await admin
     .from("projects")
     .select(
@@ -148,6 +154,15 @@ export default async function AdminTeamDetailPage({
               <p className="mt-3 text-sm text-[var(--muted)]">
                 아직 로그인한 팀원이 없습니다. 팀장이 위 이메일로 로그인하면 자동
                 연결됩니다.
+              </p>
+            )}
+            {leaderMismatch && (
+              <p className="mt-3 text-sm text-alert">
+                연결된 팀장 계정이 팀장 이메일({team.leader_email})과 다릅니다.{" "}
+                <Link href="/admin/teams" className="underline">
+                  팀 등록
+                </Link>{" "}
+                화면에서 &lsquo;이메일에 맞게 교체&rsquo;를 누르세요.
               </p>
             )}
           </section>

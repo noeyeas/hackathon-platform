@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import {
   deleteTeamAsAdmin,
+  relinkTeamLeader,
   setTeamLeaderEmail,
   setTeamNo,
   setTeamWithdrawn,
+  unlinkTeamMember,
 } from "./actions";
 
 type Member = { email: string; name: string | null; isLeader: boolean };
@@ -40,8 +42,27 @@ export function TeamRow({
   const [no, setNo] = useState(teamNo ? String(teamNo) : "");
   const [noError, setNoError] = useState<string | null>(null);
   const [noPending, startNo] = useTransition();
+  // 연결 교체·해제(팀장 이메일만 바꿨을 때 구 계정이 남는 문제)
+  const [linkPending, startLink] = useTransition();
+  const [linkMsg, setLinkMsg] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
-  const linked = members.some((m) => m.isLeader);
+  const linkedLeader = members.find((m) => m.isLeader) ?? null;
+  const linked = linkedLeader !== null;
+  // 연결된 팀장 계정이 팀장 이메일과 다르다 — 이메일만 고치면 자동 연결이
+  // 이어 주지 않으므로(이미 팀장이 있는 팀은 건너뛴다) 운영진이 눈치채야 한다.
+  const mismatch =
+    !!leaderEmail && !!linkedLeader && linkedLeader.email !== leaderEmail;
+
+  function runLink(fn: () => Promise<{ ok?: boolean; error?: string; message?: string } | void>) {
+    startLink(async () => {
+      setLinkMsg(null);
+      setLinkError(null);
+      const r = await fn();
+      if (r?.error) setLinkError(r.error);
+      else if (r?.message) setLinkMsg(r.message);
+    });
+  }
 
   function saveNo() {
     startNo(async () => {
@@ -172,6 +193,29 @@ export function TeamRow({
           )}
         </div>
 
+        {/* 팀장 이메일을 고쳤는데 연결은 구 계정에 남아 있는 상태 */}
+        {mismatch && (
+          <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-alert">
+            연결된 팀장 계정({linkedLeader.email})이 위 이메일과 다릅니다.
+            <button
+              disabled={linkPending}
+              onClick={() => {
+                if (
+                  confirm(
+                    `'${name}' 팀의 팀장 연결을 ${linkedLeader.email} → ${leaderEmail} 로 옮길까요?`
+                  )
+                )
+                  runLink(() => relinkTeamLeader(id));
+              }}
+              className="font-medium text-navy hover:underline"
+            >
+              {linkPending ? "..." : "이메일에 맞게 교체"}
+            </button>
+          </p>
+        )}
+        {linkMsg && <p className="mt-1 text-xs text-team">{linkMsg}</p>}
+        {linkError && <p className="mt-1 text-xs text-alert">{linkError}</p>}
+
         {members.length > 0 && (
           <ul className="mt-2 flex flex-col gap-0.5">
             {members.map((m) => (
@@ -185,6 +229,22 @@ export function TeamRow({
                 {m.name && (
                   <span className="text-[var(--muted)]">({m.name})</span>
                 )}
+                {/* 계정은 지우지 않고 소속만 끊는다. 팀장 이메일이 그대로면
+                    그 사람이 다시 로그인할 때 자동으로 다시 이어진다. */}
+                <button
+                  disabled={linkPending}
+                  onClick={() => {
+                    if (
+                      confirm(
+                        `${m.email} 계정의 '${name}' 팀 연결을 해제할까요? 계정과 제출물은 남습니다.`
+                      )
+                    )
+                      runLink(() => unlinkTeamMember(id, m.email));
+                  }}
+                  className="text-[var(--muted)] hover:text-alert"
+                >
+                  연결 해제
+                </button>
               </li>
             ))}
           </ul>
