@@ -74,7 +74,7 @@ export async function saveProject(formData: FormData) {
     thumbnail_url: thumbnailUrl,
     title: String(formData.get("title") ?? "").trim(),
     description: String(formData.get("description") ?? "").trim() || null,
-    // 주제는 선택 — 알 수 없는 값이 오면 미지정으로 떨어뜨린다.
+    // 주제는 필수(0063). 알 수 없는 값은 null 로 떨어지고 아래에서 걸린다.
     track: toProjectTrack(formData.get("track")),
     repo_url: String(formData.get("repo_url") ?? "").trim(),
     demo_url: String(formData.get("demo_url") ?? "").trim() || null,
@@ -83,6 +83,10 @@ export async function saveProject(formData: FormData) {
     deck_url: String(formData.get("deck_url") ?? "").trim() || null,
   };
   if (!payload.title) return { error: "프로젝트 제목을 입력하세요" };
+  // select required 는 서버 액션 직접 호출로 우회되므로 서버에서 다시 막는다.
+  // DB 도 not null 이지만, 여기서 걸러야 사람이 읽을 수 있는 문구가 나온다.
+  if (!payload.track)
+    return { error: "주제를 선택하세요 (딱 맞는 분야가 없으면 기타)" };
   if (!payload.repo_url) return { error: "GitHub 저장소 링크를 입력하세요" };
 
   // URL 스킴 검증 — javascript:/data: 등 저장형 XSS 차단 (http/https 만 허용).

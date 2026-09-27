@@ -30,13 +30,18 @@ export function ProjectForm({ project }: { project: Project }) {
         className="input"
       />
 
-      <label className="label mt-4">주제</label>
+      <label className="label mt-4">주제 *</label>
+      {/* 필수 — 빈 값을 disabled 로 두면 '선택하세요' 를 다시 고를 수 없어
+          required 가 실제로 걸린다(0063). */}
       <select
         name="track"
+        required
         defaultValue={project?.track ?? ""}
         className="input"
       >
-        <option value="">선택 안 함</option>
+        <option value="" disabled>
+          주제를 선택하세요
+        </option>
         {PROJECT_TRACKS.map((t) => (
           <option key={t.value} value={t.value}>
             {t.label}
@@ -44,7 +49,8 @@ export function ProjectForm({ project }: { project: Project }) {
         ))}
       </select>
       <p className="mt-1.5 text-xs text-[var(--muted)]">
-        갤러리에서 주제별로 묶어 보여줍니다. 나중에 바꿔도 됩니다.
+        갤러리에서 주제별로 묶어 보여줍니다. 딱 맞는 분야가 없으면 기타를
+        고르세요. 나중에 바꿔도 됩니다.
       </p>
 
       <label className="label mt-4">한 줄 ~ 짧은 설명</label>

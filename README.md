@@ -92,7 +92,7 @@ src/
 │   └── api/health  Supabase 자동 일시중단 방지용 크론 엔드포인트
 ├── components/   Nav · Toast · Reveal · HeroTimeline · LikeButton · ViewPing …
 └── lib/          auth · authGate · ballot · scoring · submitWindow · teamEdit · viewerHash · format …
-supabase/migrations/  0001 → 0050 (스키마 = 보안 정책 이력)
+supabase/migrations/  0001 → 0063 (스키마 = 보안 정책 이력)
 test/                 rankings · scoring · submitWindow · viewerHash · format · authGate · ballot
 ```
 
