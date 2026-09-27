@@ -62,7 +62,10 @@ export default async function ResultsPage() {
     : { data: null as Ranking[] | null };
 
   // 1위 팀은 상단에 크게 — 소개·링크가 필요해 제출물을 한 번 더 읽는다.
-  const top = rankings?.[0] ?? null;
+  // 채점표가 0장인 팀은 참여도 5점만 들고 순위에 섞여 있으므로(0059) 대상으로
+  // 세우지 않는다 — 입력이 끝나기 전 운영자 미리보기에서 엉뚱한 팀이 대상으로
+  // 보이는 쪽이, 히어로가 잠시 비는 쪽보다 위험하다.
+  const top = rankings?.[0]?.sheet_count ? rankings[0] : null;
   const { data: topProject } = top
     ? await supabase
         .from("projects")
@@ -195,17 +198,34 @@ export default async function ResultsPage() {
               </thead>
               <tbody>
                 {rankings?.map((r, i) => {
+                  // 채점표가 0장이면 심사 점수가 참여도 5점(5 − 불참)뿐이라
+                  // 확정 점수가 아니다(0059). 합산 점수에도 그 5점이 섞여 있으니
+                  // 심사 칸만 가리지 않고 행 전체를 미채점으로 묶는다.
+                  const unscored = r.sheet_count === 0;
                   // 시상 배지는 순번이 아니라 선정 여부로 결정한다.
                   // 뷰가 이미 시상 순서로 정렬해 주므로(선정팀 먼저, 그 안에서
                   // 합산 점수 순) 선정팀의 i 가 곧 상 순서가 된다.
                   const award =
-                    r.is_finalist && i < AWARD_LABELS.length
+                    !unscored && r.is_finalist && i < AWARD_LABELS.length
                       ? AWARD_LABELS[i]
                       : null;
                   return (
-                    <tr key={r.project_id} className={i === 0 ? "bg-gold-soft/50" : ""}>
+                    <tr
+                      key={r.project_id}
+                      className={
+                        unscored
+                          ? "opacity-60"
+                          : i === 0
+                            ? "bg-gold-soft/50"
+                            : ""
+                      }
+                    >
                       <td>
-                        {award ? (
+                        {unscored ? (
+                          <span className="chip border-alert text-alert">
+                            미채점
+                          </span>
+                        ) : award ? (
                           <span className={i === 0 ? "badge-gold" : i === 1 ? "badge-navy" : "badge-line"}>
                             {award}
                           </span>
@@ -231,11 +251,23 @@ export default async function ResultsPage() {
                           {r.title}
                         </span>
                       </td>
-                      <td className="num">{r.judge_score}</td>
+                      <td className="num">
+                        {unscored ? (
+                          <span className="text-[var(--muted)]">—</span>
+                        ) : (
+                          r.judge_score
+                        )}
+                      </td>
                       <td className="num">{r.team_votes}</td>
                       <td className="num">{r.audience_votes}</td>
-                      <td className="num text-base font-bold text-navy">
-                        {r.final_score}
+                      <td
+                        className={
+                          unscored
+                            ? "num text-[var(--muted)]"
+                            : "num text-base font-bold text-navy"
+                        }
+                      >
+                        {unscored ? "—" : r.final_score}
                       </td>
                     </tr>
                   );
