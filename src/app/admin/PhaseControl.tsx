@@ -55,8 +55,7 @@ export function PhaseControl({
         ))}
       </div>
       <p className="mt-3 text-sm text-[var(--muted)]">
-        투표 진행 · 종료는 <b className="text-ink">심사 · 점수</b> 페이지의 결과
-        공개 토글과 같은 값을 씁니다 — 한쪽에서 바꾸면 다른 쪽도 따라 바뀝니다.
+        <b className="text-ink">종료</b>를 누르면 결과(순위·점수) 공개 상태가 됩니다.
       </p>
       {error && <p className="mt-1 text-sm text-alert">{error}</p>}
     </div>
