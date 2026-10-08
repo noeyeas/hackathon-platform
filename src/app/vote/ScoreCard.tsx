@@ -83,6 +83,7 @@ type Existing = { criteria_id: string; score: number; comment: string | null };
 
 export function ScoreCard({
   projectId,
+  order = null,
   teamName,
   title,
   criteria,
@@ -91,6 +92,9 @@ export function ScoreCard({
   withComment = true,
 }: {
   projectId: string;
+  // 발표 순번(현장 시간표 번호). 팀장이 발표를 들으며 지금 몇 번째 팀인지
+  // 바로 찾도록 카드 왼쪽 위에 배지로 보여준다.
+  order?: number | null;
   teamName: string;
   title: string;
   criteria: Criterion[];
@@ -163,7 +167,14 @@ export function ScoreCard({
         className="flex w-full items-center justify-between gap-3 p-4 text-left"
       >
         <div className="min-w-0">
-          <p className="text-xs text-[var(--muted)]">{teamName}</p>
+          <p className="flex items-center gap-1.5 text-xs text-[var(--muted)]">
+            {order != null && (
+              <span className="flex-none rounded bg-navy px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-white">
+                {order}번
+              </span>
+            )}
+            <span className="min-w-0 truncate">{teamName}</span>
+          </p>
           <p className="font-semibold">{title}</p>
         </div>
         <span className="flex flex-none items-center gap-2">
