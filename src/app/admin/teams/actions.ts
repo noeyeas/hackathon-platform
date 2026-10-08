@@ -3,6 +3,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
+import { finalistsLocked, SCORE_LOCK_MESSAGE } from "@/lib/scoreLock";
 import { teamLabel } from "@/lib/format";
 import { revalidatePath, updateTag } from "next/cache";
 
@@ -194,6 +195,8 @@ function revalidateTeamScreens() {
 // 대상에서만 빠진다(0056). 되돌릴 수 있다.
 export async function setTeamWithdrawn(id: string, withdrawn: boolean) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
+  // 기권은 순위에서 팀을 빼므로 진출팀이 한 칸씩 밀린다(lib/scoreLock).
+  if (await finalistsLocked()) return { error: SCORE_LOCK_MESSAGE };
   const admin = createAdminClient();
   const { error } = await admin
     .from("teams")
@@ -206,6 +209,7 @@ export async function setTeamWithdrawn(id: string, withdrawn: boolean) {
 
 export async function deleteTeamAsAdmin(id: string) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
+  if (await finalistsLocked()) return { error: SCORE_LOCK_MESSAGE };
   const admin = createAdminClient();
   const { error } = await admin.from("teams").delete().eq("id", id);
   if (error) return { error: adminError(error) };
