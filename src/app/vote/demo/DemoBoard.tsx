@@ -8,7 +8,12 @@ import { ScoreProgress } from "@/components/ScoreProgress";
 // 대신 브라우저 저장소에 저장하는 함수를 넘긴다 — 화면·조작은 실제와 같고
 // 저장 위치만 다르다.
 
-export type DemoProject = { id: string; title: string; teamName: string };
+export type DemoProject = {
+  id: string;
+  order: number | null;
+  title: string;
+  teamName: string;
+};
 type Criterion = {
   id: string;
   name: string;
@@ -110,6 +115,7 @@ export function DemoBoard({
             <ScoreCard
               key={`${round}-${p.id}`}
               projectId={p.id}
+              order={p.order}
               teamName={p.teamName}
               title={p.title}
               criteria={criteria}
