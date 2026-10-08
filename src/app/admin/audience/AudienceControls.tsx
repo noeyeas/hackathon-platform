@@ -39,6 +39,29 @@ export function AudienceControls({
 function OpenToggle({ open: initial }: { open: boolean }) {
   const [open, setOpen] = useState(initial);
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function toggle() {
+    const next = !open;
+    // 첫 표가 들어오면 진출팀 점수가 잠긴다(lib/scoreLock) — 여는 쪽만 확인.
+    if (
+      next &&
+      !confirm(
+        "주민투표를 열까요?\n\n열면 진출팀 선정 점수(채점표·발표·불참·가중치·팀 상호평가·기권)가 잠깁니다. 심사 점수 입력이 모두 끝났는지 확인해 주세요."
+      )
+    )
+      return;
+    // 낙관적으로 먼저 뒤집고, 서버가 거절하면 되돌린다(OpenControls 와 같은 규칙).
+    setOpen(next);
+    setError(null);
+    startTransition(async () => {
+      const res = await setAudienceVotingOpen(next);
+      if (res && "error" in res && res.error) {
+        setOpen(!next);
+        setError(res.error);
+      }
+    });
+  }
 
   return (
     <div className="card flex items-center justify-between gap-4">
@@ -55,13 +78,10 @@ function OpenToggle({ open: initial }: { open: boolean }) {
         >
           현재: 투표 {open ? "열림 🟢" : "닫힘 🔴"}
         </p>
+        {error && <p className="mt-1 text-sm text-alert">{error}</p>}
       </div>
       <button
-        onClick={() => {
-          const next = !open;
-          setOpen(next);
-          startTransition(() => void setAudienceVotingOpen(next));
-        }}
+        onClick={toggle}
         disabled={pending}
         aria-pressed={open}
         aria-label="전시 주민투표 열기/닫기"
