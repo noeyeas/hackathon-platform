@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   // 레이아웃의 검사는 이 페이지의 렌더를 막지 못한다(병렬 렌더). 서비스 롤로
-  // 조회하기 전에 여기서 직접 확인한다 — 팀명·심사위원 이름이 걸려 있다.
+  // 조회하기 전에 여기서 직접 확인한다 — 팀명·평가 진행이 걸려 있다.
   if (!(await requireAdmin())) return null;
 
   const admin = createAdminClient();
@@ -23,8 +23,6 @@ export default async function AdminPage() {
     { data: allTeams },
     { data: projectTeams },
     { data: criteria },
-    { data: judges },
-    { data: sheets },
     { data: teamScores },
   ] = await Promise.all([
     admin
@@ -38,14 +36,14 @@ export default async function AdminPage() {
       .order("name"),
     admin.from("projects").select("team_id"),
     admin.from("criteria").select("id").eq("round", "final"),
-    // 심사위원 명부 = judge_emails(0055). 웹 로그인이 없으니 users 가 아니다(0059).
-    admin.from("judge_emails").select("email, name").order("created_at"),
     // 채점 행은 1,000행을 넘기므로 끝까지 페이지를 넘겨 읽는다(fetchAll 주석 참고).
+    // 본선 심사위원 점수는 종이로 사이트 밖에서 집계한다(10/8 운영 결정) —
+    // 대시보드는 팀 상호평가 진행만 본다.
     fetchAll(() =>
-      admin.from("judge_sheets").select("team_id, judge_email").eq("round", "final")
-    ),
-    fetchAll(() =>
-      admin.from("team_scores").select("voter_team_id, project_id, criteria_id")
+      admin
+        .from("team_scores")
+        .select("id, voter_team_id, project_id, criteria_id")
+        .order("id")
     ),
   ]);
 
@@ -67,26 +65,6 @@ export default async function AdminPage() {
 
   // 아직 제출하지 않은 팀 — 이름까지 보여야 누구를 찾아갈지 바로 안다.
   const notSubmitted = teamList.filter((t) => !submittedTeamIds.has(t.id));
-
-  // 심사위원: 종이 채점표를 운영진이 옮겨 적은 팀 수로 센다(0059).
-  // 진행률의 대상은 제출작이 아니라 팀이다 — 채점표가 팀 단위로 인쇄된다.
-  const sheetsByJudge = new Map<string, Set<string>>();
-  for (const row of sheets ?? []) {
-    const email = row.judge_email as string;
-    if (!sheetsByJudge.has(email)) sheetsByJudge.set(email, new Set());
-    sheetsByJudge.get(email)!.add(row.team_id as string);
-  }
-  const judgeRows = (judges ?? []).map((j) => {
-    const done = Math.min(sheetsByJudge.get(j.email)?.size ?? 0, teams);
-    return {
-      key: j.email,
-      name: j.name || j.email,
-      done,
-      total: teams,
-      complete: teams > 0 && done >= teams,
-    };
-  });
-  const judgeComplete = judgeRows.filter((r) => r.complete).length;
 
   // 팀 평가: 자기 팀을 뺀 나머지 제출작이 목표.
   // 목표치는 팀마다 다르다 — 제출하지 않은 팀은 뺄 자기 몫이 없어 1개 더 평가한다.
@@ -122,7 +100,7 @@ export default async function AdminPage() {
         }
         aside={
           <Link href="/admin/scoring" className="btn-ghost">
-            집계 자세히 보기
+            상호평가 결과 보기
           </Link>
         }
       />
@@ -150,7 +128,7 @@ export default async function AdminPage() {
       </section>
 
       {/* 한눈에 보는 진행률 — 숫자보다 "얼마나 남았나"가 먼저 읽히도록 바를 함께 둔다. */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-3">
         <Stat
           label="등록 팀"
           value={teams}
@@ -169,14 +147,6 @@ export default async function AdminPage() {
           }
         />
         <Stat
-          label="심사표 입력"
-          value={judgeComplete}
-          unit={`/ ${judgeRows.length}명`}
-          done={judgeComplete}
-          total={judgeRows.length}
-          sub="전 팀 점수를 옮겨 적은 심사위원"
-        />
-        <Stat
           label="팀 평가 완료"
           value={teamComplete}
           unit={`/ ${teams}팀`}
@@ -191,7 +161,7 @@ export default async function AdminPage() {
         <h2 className="mb-3 font-title text-lg font-bold text-ink">
           지금 챙길 대상
         </h2>
-        <div className="grid gap-3 lg:grid-cols-3">
+        <div className="grid gap-3 lg:grid-cols-2">
           <PendingCard
             title="미제출 팀"
             count={notSubmitted.length}
@@ -202,24 +172,6 @@ export default async function AdminPage() {
               key: t.id,
               name: teamLabel(t.team_no, t.name || "이름 없음"),
             }))}
-          />
-          <PendingCard
-            title="심사표 입력이 남은 심사위원"
-            count={judgeRows.length - judgeComplete}
-            emptyText={
-              judgeRows.length === 0
-                ? "등록된 심사위원이 없습니다."
-                : "모든 심사위원의 채점표를 옮겨 적었습니다."
-            }
-            href="/admin/scoring"
-            hrefLabel="심사 현황"
-            items={judgeRows
-              .filter((r) => !r.complete)
-              .map((r) => ({
-                key: r.key,
-                name: r.name,
-                detail: `${r.done}/${r.total}`,
-              }))}
           />
           <PendingCard
             title="평가 미완료 팀"
@@ -252,8 +204,8 @@ export default async function AdminPage() {
           />
           <AdminLink
             href="/admin/scoring"
-            title="심사 · 평가 · 투표"
-            desc="투표 열기·진행 현황·집계"
+            title="팀 상호평가"
+            desc="평가 열기·진행 현황·결과"
           />
           <AdminLink
             href="/admin/announcements"
