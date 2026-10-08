@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { ensureLeaderMembership } from "@/lib/linkLeader";
 import { ScoreCard } from "./ScoreCard";
 import { saveTeamScores } from "./actions";
@@ -69,6 +69,24 @@ export default async function VotePage() {
     );
   }
 
+  // 기권 팀은 평가 주체도 아니다(0056) — 저장은 서버 액션이 막지만, 화면에서도
+  // 채점 카드를 띄우지 않아야 팀장이 헛수고를 하지 않는다.
+  if (teamId && !isAdmin) {
+    const { data: myTeam } = await supabase
+      .from("teams")
+      .select("status")
+      .eq("id", teamId)
+      .single();
+    if (myTeam?.status === "withdrawn") {
+      return (
+        <Notice
+          title="기권한 팀은 평가할 수 없습니다"
+          body="기권 처리된 팀은 다른 팀 평가에 참여하지 않습니다. 문의는 운영진에게 해 주세요."
+        />
+      );
+    }
+  }
+
   // 팀 평가는 팀장만 (팀원은 안내만) — 운영자 미리보기는 허용
   if (teamId && !isLeader && !isAdmin) {
     return (
@@ -105,8 +123,11 @@ export default async function VotePage() {
     );
 
   // 우리 팀이 이미 매긴 점수 (팀이 있을 때만)
+  // team_scores 는 RLS 상 운영자만 읽을 수 있어(0013) 참가자 세션으로 읽으면
+  // 항상 빈 배열 → 새로고침마다 "미채점"·진행률 0 으로 보였다. teamId 는 위에서
+  // 본인 소속으로 확인한 값이므로 서버에서 Service Role 로 우리 팀 행만 읽는다.
   const { data: myScores } = teamId
-    ? await supabase
+    ? await createAdminClient()
         .from("team_scores")
         .select("project_id, criteria_id, score")
         .eq("voter_team_id", teamId)
