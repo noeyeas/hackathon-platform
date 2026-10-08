@@ -9,6 +9,7 @@ import { requireAdmin } from "@/lib/auth";
 import { fetchAll } from "@/lib/fetchAll";
 import { teamLabel } from "@/lib/format";
 import { AdminPageHeader } from "../AdminPageHeader";
+import { finalistsLocked } from "@/lib/scoreLock";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +67,9 @@ export default async function ScoringProgressPage() {
   ]);
 
   const criteriaCount = criteria?.length ?? 0;
+  // 주민투표가 시작되면 진출팀 점수 입력이 잠긴다(lib/scoreLock). 입력하다
+  // 칸마다 오류를 맞기 전에 화면 위에서 먼저 알린다.
+  const locked = await finalistsLocked();
   const projectList = (projects ?? []).filter(
     (p) => (p.teams as unknown as { status: string } | null)?.status !== "withdrawn"
   );
@@ -121,6 +125,14 @@ export default async function ScoringProgressPage() {
 
       {/* 결과 공개 ON/OFF */}
       <ResultsToggle initialOpen={settings?.phase === "closed"} />
+
+      {locked && (
+        <div className="mt-4 rounded-md border border-alert/30 bg-alert/[0.06] px-4 py-3 text-sm text-alert">
+          🔒 전시 주민투표가 시작돼 진출팀 선정 점수(채점표·발표·불참·가중치·팀
+          상호평가·기권)가 잠겨 있습니다. 전시 도중에 진출팀이 바뀌지 않게 하기
+          위해서입니다.
+        </div>
+      )}
 
       {/* 참여 팀 진행 현황 */}
       <Section
