@@ -63,7 +63,9 @@ export default async function GalleryPage() {
       membersNote: team?.members_note ?? null,
       views: p.view_count ?? 0,
       likes: likesByProject.get(p.id) ?? 0,
-      submittedAt: p.submitted_at,
+      // '최신순'은 마지막 수정 시각 기준 — 제출물을 고치거나 이미지를 다시
+      // 올린 팀이 위로 올라온다(0064). 컬럼이 없던 시절 행은 첫 제출 시각.
+      submittedAt: p.updated_at ?? p.submitted_at,
       shuffle: hash(seed + p.id),
       awardRank,
       awardLabel: awardRank === null ? null : AWARD_LABELS[awardRank],
