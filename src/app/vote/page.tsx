@@ -105,7 +105,7 @@ export default async function VotePage() {
 
   let projectsQuery = supabase
     .from("projects")
-    .select("id, title, team_id, teams(name, team_no, status)")
+    .select("id, title, team_id, present_order, teams(name, team_no, status)")
     .order("submitted_at");
   if (teamId) projectsQuery = projectsQuery.neq("team_id", teamId); // 자기 팀 제외
   const { data: allProjects } = await projectsQuery;
@@ -114,13 +114,19 @@ export default async function VotePage() {
     .filter(
       (p) => (p.teams as unknown as { status: string } | null)?.status !== "withdrawn"
     )
-    // 조 번호순(0058) — 발표 순서와 같아야 찾기 쉽다.
-    .sort((a, b) =>
-      byTeamNo(
+    // 발표 순서(projects.present_order)대로 — 팀장이 발표를 들으며 바로 다음
+    // 카드를 채점할 수 있게 한다. 최종발표 순서는 조 번호순과 다르다(10.9 확정
+    // 순서를 운영진이 DB 에 넣는다). 순번이 비어 있는 제출물은 뒤로 보내고,
+    // 그 안에서는 조 번호순(0058).
+    .sort((a, b) => {
+      const ao = (a.present_order as number | null) ?? Number.MAX_SAFE_INTEGER;
+      const bo = (b.present_order as number | null) ?? Number.MAX_SAFE_INTEGER;
+      if (ao !== bo) return ao - bo;
+      return byTeamNo(
         (a.teams as unknown as { team_no: number | null; name: string }) ?? {},
         (b.teams as unknown as { team_no: number | null; name: string }) ?? {}
-      )
-    );
+      );
+    });
 
   // 우리 팀이 이미 매긴 점수 (팀이 있을 때만)
   // team_scores 는 RLS 상 운영자만 읽을 수 있어(0013) 참가자 세션으로 읽으면
