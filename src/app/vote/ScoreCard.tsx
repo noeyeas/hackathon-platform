@@ -9,6 +9,11 @@ import { useRef, useState, useTransition } from "react";
 // "미채점"과 "0점"을 구분해야 하므로 값은 number | "" 로 들고,
 // 폼에는 hidden input 으로 넘긴다(미채점이면 빈 문자열 → 제출 시 검증에 걸림).
 // 손잡이 위치만으로는 둘이 같아 보이므로 오른쪽 숫자를 "—" 로 구분해 보여준다.
+//
+// 오른쪽 숫자를 누르면 입력칸으로 바뀌어 점수를 직접 칠 수 있다(휴대폰은 숫자
+// 키패드). 슬라이더로 정확한 값을 맞추기 어렵다는 현장 요청. 입력칸을 벗어나거나
+// Enter 를 누르면 0~만점 정수로 다듬어 반영하고, 비우거나 Esc 를 누르면 원래
+// 값을 유지한다. Enter 가 폼 제출(점수 저장)로 새지 않게 막는다.
 function ScoreSlider({
   name,
   max,
@@ -24,7 +29,22 @@ function ScoreSlider({
   // 세로로 튕기면 브라우저가 스크롤을 가져가며 pointercancel 을 쏘므로,
   // 그때는 아래 pointerup 확정을 건너뛴다(미채점이 0 점으로 굳는 것 방지).
   const pressing = useRef(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
   const scored = value !== "";
+
+  function startEdit() {
+    setDraft(scored ? String(value) : "");
+    setEditing(true);
+  }
+  function commitEdit() {
+    setEditing(false);
+    const t = draft.trim();
+    if (t === "") return; // 비우면 원래 값 유지
+    const n = Number(t);
+    if (!Number.isFinite(n)) return;
+    onChange(Math.max(0, Math.min(max, Math.round(n))));
+  }
   const pct = scored ? (value / max) * 100 : 0;
 
   return (
@@ -61,13 +81,43 @@ function ScoreSlider({
           <span>{max}</span>
         </div>
       </div>
-      <span
-        className={`w-9 flex-none text-right text-lg font-bold tabular-nums ${
-          scored ? "text-ink" : "text-[var(--line)]"
-        }`}
-      >
-        {scored ? value : "—"}
-      </span>
+      {editing ? (
+        <input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={max}
+          step={1}
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onFocus={(e) => e.currentTarget.select()}
+          onBlur={commitEdit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault(); // 폼 제출(점수 저장)로 새지 않게
+              commitEdit();
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              setEditing(false);
+            }
+          }}
+          aria-label={`점수 직접 입력 (0~${max}점)`}
+          className="input !h-9 !w-14 flex-none !px-1 text-center text-lg font-bold tabular-nums"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={startEdit}
+          title="눌러서 점수 직접 입력"
+          aria-label={`${scored ? `${value}점` : "미채점"}, 눌러서 직접 입력`}
+          className={`h-9 w-14 flex-none rounded-md border border-dashed border-[var(--line-strong)] text-center text-lg font-bold tabular-nums transition hover:border-navy hover:bg-paper ${
+            scored ? "text-ink" : "text-[var(--line)]"
+          }`}
+        >
+          {scored ? value : "—"}
+        </button>
+      )}
     </div>
   );
 }
@@ -200,6 +250,9 @@ export function ScoreCard({
 
       {open && (
         <form onSubmit={onSubmit} className="border-t border-[var(--line)] p-4">
+          <p className="mb-2 text-[11px] text-[var(--muted)]">
+            슬라이더를 움직이거나, 오른쪽 숫자 칸을 눌러 점수를 직접 입력하세요.
+          </p>
           <div className="flex flex-col gap-3">
             {criteria.map((c) => (
               <div
