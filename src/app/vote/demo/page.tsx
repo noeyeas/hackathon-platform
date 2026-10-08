@@ -52,6 +52,7 @@ export default async function VoteDemoPage() {
       const t = p.teams as unknown as TeamInfo | null;
       return {
         id: p.id as string,
+        order: (p.present_order as number | null) ?? null,
         title: p.title as string,
         teamName: t ? teamLabel(t.team_no, t.name) : "",
       };
