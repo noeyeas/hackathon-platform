@@ -18,6 +18,15 @@ export function PhaseControl({
   const [pending, startTransition] = useTransition();
 
   function pick(next: EventPhase) {
+    // '종료' = 결과 공개(심사·점수 화면의 결과 공개 토글과 같은 값). 되돌릴 수
+    // 없는 공개이므로 한 번 더 묻는다.
+    if (
+      next === "closed" &&
+      !confirm(
+        "'종료'로 바꾸면 결과(순위·점수)가 모든 사람에게 즉시 공개됩니다. 계속할까요?"
+      )
+    )
+      return;
     const prev = phase;
     setLocal(next);
     setError(null);
