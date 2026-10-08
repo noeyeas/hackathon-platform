@@ -8,6 +8,7 @@ import { teamLabel } from "@/lib/format";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { AdminPageHeader } from "../AdminPageHeader";
 import { finalistsLocked } from "@/lib/scoreLock";
+import { fetchAttendanceScores, ATTENDANCE_SHEET_URL } from "@/lib/attendanceSheet";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export const dynamic = "force-dynamic";
 // 운영 결정(10/8): 본선 심사위원 점수는 종이 채점표로 사이트 밖에서 집계한다.
 // 이 화면은 심사 입력(종이 채점표 옮겨 적기)과 심사가 섞인 집계표를 걷어내고,
 // 팀 상호평가를 열고 닫는 스위치 · 상호평가 결과 · 팀별 진행 현황만 둔다.
+// 결과표에는 「입장·참석 체크」 시트의 발표(5)·참여도(5) 점수도 함께 보여준다.
 // 결과는 팀장이 저장하는 즉시 반영되고(30초마다 자동 갱신), CSV 로 받아
 // 종이 심사 점수와 합산할 수 있다.
 //
@@ -65,7 +67,11 @@ export default async function ScoringProgressPage() {
   const criteriaList = criteria ?? [];
   const criteriaCount = criteriaList.length;
   // 주민투표가 시작되면 상호평가 저장·재오픈이 잠긴다(lib/scoreLock).
-  const locked = await finalistsLocked();
+  // 발표·참여도 점수는 「입장·참석 체크」 시트에서 매번 새로 읽는다(lib/attendanceSheet).
+  const [locked, attendance] = await Promise.all([
+    finalistsLocked(),
+    fetchAttendanceScores(),
+  ]);
 
   type TeamInfo = { name: string; team_no: number | null; status: string };
   const projectList = (projects ?? []).filter(
@@ -136,6 +142,8 @@ export default async function ScoringProgressPage() {
       const t = p.teams as unknown as TeamInfo | null;
       const a = agg.get(p.id as string);
       const voters = a?.voters.size ?? 0;
+      const att =
+        t?.team_no != null ? attendance.byTeamNo.get(t.team_no) : undefined;
       return {
         projectId: p.id as string,
         teamNo: t?.team_no ?? null,
@@ -149,6 +157,9 @@ export default async function ScoringProgressPage() {
         }),
         avg90: a && a.maxSum > 0 ? (a.sum / a.maxSum) * totalMax : null,
         score100: a && a.maxSum > 0 ? (a.sum / a.maxSum) * 100 : null,
+        presentation: att?.presentation ?? null,
+        participation: att?.participation ?? null,
+        absent: att?.absent ?? null,
       };
     })
     .sort((x, y) => {
@@ -193,6 +204,9 @@ export default async function ScoringProgressPage() {
     ...criteriaList.map((c) => `${c.name} 평균(${c.max_score}점)`),
     `평균(${totalMax}점 만점)`,
     "상호평가 점수(100점 환산)",
+    "발표 점수(5점)",
+    "참여도 점수(5점)",
+    "참여도 감점(불참 횟수)",
   ];
   const csvRows = ranked.map((r) => [
     r.rank ?? "",
@@ -203,6 +217,9 @@ export default async function ScoringProgressPage() {
     ...r.critAvg.map((v) => f2(v)),
     f2(r.avg90),
     f2(r.score100),
+    r.presentation ?? "",
+    r.participation ?? "",
+    r.absent ?? "",
   ]);
   const csv = [csvHeader, ...csvRows]
     .map((row) => row.map(csvEsc).join(","))
@@ -249,7 +266,16 @@ export default async function ScoringProgressPage() {
           <p className="max-w-xl text-xs text-[var(--muted)]">
             팀장이 저장하는 즉시 반영됩니다. <b>점수(100)</b> = 받은 점수 합 ÷
             만점 합 × 100 (평가한 팀들의 평균을 100점으로 환산). 기권 팀이 준
-            점수·받은 점수는 빠집니다.
+            점수·받은 점수는 빠집니다. <b>발표·참여도</b>는{" "}
+            <a
+              href={ATTENDANCE_SHEET_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-navy underline"
+            >
+              입장·참석 체크 시트
+            </a>
+            에서 그대로 가져옵니다(발표 시간 미입력 팀은 —).
           </p>
           <a
             href={csvHref}
@@ -259,9 +285,14 @@ export default async function ScoringProgressPage() {
             CSV 다운로드
           </a>
         </div>
+        {attendance.error && (
+          <p className="mb-3 rounded-md border border-alert/30 bg-alert/[0.06] px-3 py-2 text-xs text-alert">
+            발표·참여도 점수: {attendance.error}
+          </p>
+        )}
         {ranked.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="tbl min-w-[720px]">
+            <table className="tbl min-w-[860px]">
               <thead>
                 <tr>
                   <th>순위 / 팀</th>
@@ -276,6 +307,8 @@ export default async function ScoringProgressPage() {
                   ))}
                   <th className="!text-right">평균({totalMax})</th>
                   <th className="!text-right">점수(100)</th>
+                  <th className="!text-right">발표(5)</th>
+                  <th className="!text-right">참여도(5)</th>
                 </tr>
               </thead>
               <tbody>
@@ -297,6 +330,10 @@ export default async function ScoringProgressPage() {
                     <td className="num">{r.avg90 === null ? "—" : f1(r.avg90)}</td>
                     <td className="num font-bold text-navy">
                       {r.score100 === null ? "—" : f2(r.score100)}
+                    </td>
+                    <td className="num">{r.presentation ?? "—"}</td>
+                    <td className="num" title={r.absent !== null ? `불참 ${r.absent}회` : undefined}>
+                      {r.participation ?? "—"}
                     </td>
                   </tr>
                 ))}
