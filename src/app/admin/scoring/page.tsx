@@ -230,7 +230,7 @@ export default async function ScoringProgressPage() {
   const evaluatedCount = ranked.filter((r) => r.voters > 0).length;
 
   return (
-    <div className="mx-auto max-w-3xl lg:mx-0">
+    <div className="mx-auto max-w-5xl lg:mx-0">
       {/* 평가가 진행되는 동안 화면을 띄워 두고 보므로 스스로 갱신한다. */}
       <AutoRefresh intervalMs={30000} />
 
@@ -264,7 +264,7 @@ export default async function ScoringProgressPage() {
       >
         <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
           <p className="max-w-xl text-xs text-[var(--muted)]">
-            팀장이 저장하는 즉시 반영됩니다. <b>점수(100)</b> = 받은 점수 합 ÷
+            팀장이 저장하는 즉시 반영됩니다. <b>상호평가(100)</b> = 받은 점수 합 ÷
             만점 합 × 100 (평가한 팀들의 평균을 100점으로 환산). 기권 팀이 준
             점수·받은 점수는 빠집니다. <b>발표·참여도</b>는{" "}
             <a
@@ -296,7 +296,10 @@ export default async function ScoringProgressPage() {
               <thead>
                 <tr>
                   <th>순위 / 팀</th>
-                  <th className="!text-right">평가 수</th>
+                  <th className="whitespace-nowrap !text-right">평가 수</th>
+                  <th className="whitespace-nowrap !text-right">상호평가(100)</th>
+                  <th className="whitespace-nowrap !text-right">발표(5)</th>
+                  <th className="whitespace-nowrap !text-right">참여도(5)</th>
                   {criteriaList.map((c) => (
                     <th key={c.id as string} className="whitespace-nowrap !text-right">
                       {(c.name as string).split(" & ")[0]}
@@ -305,10 +308,7 @@ export default async function ScoringProgressPage() {
                       </span>
                     </th>
                   ))}
-                  <th className="!text-right">평균({totalMax})</th>
-                  <th className="!text-right">점수(100)</th>
-                  <th className="!text-right">발표(5)</th>
-                  <th className="!text-right">참여도(5)</th>
+                  <th className="whitespace-nowrap !text-right">평균({totalMax})</th>
                 </tr>
               </thead>
               <tbody>
@@ -322,12 +322,6 @@ export default async function ScoringProgressPage() {
                       <span className="ml-2 text-xs text-[var(--muted)]">{r.title}</span>
                     </td>
                     <td className="num">{r.voters}</td>
-                    {r.critAvg.map((v, i) => (
-                      <td key={i} className="num">
-                        {v === null ? "—" : f1(v)}
-                      </td>
-                    ))}
-                    <td className="num">{r.avg90 === null ? "—" : f1(r.avg90)}</td>
                     <td className="num font-bold text-navy">
                       {r.score100 === null ? "—" : f2(r.score100)}
                     </td>
@@ -335,6 +329,12 @@ export default async function ScoringProgressPage() {
                     <td className="num" title={r.absent !== null ? `불참 ${r.absent}회` : undefined}>
                       {r.participation ?? "—"}
                     </td>
+                    {r.critAvg.map((v, i) => (
+                      <td key={i} className="num">
+                        {v === null ? "—" : f1(v)}
+                      </td>
+                    ))}
+                    <td className="num">{r.avg90 === null ? "—" : f1(r.avg90)}</td>
                   </tr>
                 ))}
               </tbody>
