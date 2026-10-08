@@ -4,6 +4,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { safeError } from "@/lib/actionError";
 import { clampScore } from "@/lib/scoring";
+import { finalistsLocked } from "@/lib/scoreLock";
 
 // 팀이 다른 팀(project)을 기준별로 채점 (심사와 동일 방식)
 export async function saveTeamScores(projectId: string, formData: FormData) {
@@ -19,6 +20,9 @@ export async function saveTeamScores(projectId: string, formData: FormData) {
     .select("voting_open")
     .single();
   if (!settings?.voting_open) return { error: "지금은 투표 기간이 아닙니다" };
+  // 주민투표가 시작된 뒤에는 진출팀이 바뀌지 않도록 잠근다(lib/scoreLock).
+  if (await finalistsLocked())
+    return { error: "전시 주민투표가 시작돼 팀 평가를 더 이상 저장할 수 없습니다" };
 
   // 내 팀
   const { data: membership } = await supabase
