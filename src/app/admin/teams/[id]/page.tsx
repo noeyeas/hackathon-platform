@@ -52,7 +52,7 @@ export default async function AdminTeamDetailPage({
   const { data: project } = await admin
     .from("projects")
     .select(
-      "id, title, description, track, repo_url, demo_url, video_url, deck_url, thumbnail_url, view_count, submitted_at"
+      "id, title, description, track, repo_url, demo_url, video_url, deck_url, thumbnail_url, view_count, submitted_at, updated_at"
     )
     .eq("team_id", id)
     .maybeSingle();
@@ -246,7 +246,10 @@ export default async function AdminTeamDetailPage({
                   <Empty />
                 )}
               </Row>
-              <Row label="최근 제출">{formatDateTime(project.submitted_at)}</Row>
+              <Row label="첫 제출">{formatDateTime(project.submitted_at)}</Row>
+              <Row label="최근 수정">
+                {formatDateTime(project.updated_at ?? project.submitted_at)}
+              </Row>
 
               <div className="mt-1 grid grid-cols-3 gap-3 border-t border-[var(--line)] pt-3">
                 <Stat icon="👁" label="조회" value={project.view_count ?? 0} />
