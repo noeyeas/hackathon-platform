@@ -7,11 +7,22 @@ import { setVotingOpen } from "./actions";
 export function VotingControls({ votingOpen }: { votingOpen: boolean }) {
   const [open, setOpen] = useState(votingOpen);
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   function toggle() {
     const next = !open;
+    // 낙관적으로 먼저 뒤집고, 서버가 거절하면 되돌린다(OpenControls 와 같은
+    // 규칙) — 실패했는데 "열림"으로 보이면 팀장들은 저장을 못 하는데 운영진은
+    // 열린 줄 안다.
     setOpen(next);
-    startTransition(() => void setVotingOpen(next));
+    setError(null);
+    startTransition(async () => {
+      const res = await setVotingOpen(next);
+      if (res && "error" in res && res.error) {
+        setOpen(!next);
+        setError(res.error);
+      }
+    });
   }
 
   return (
@@ -44,6 +55,7 @@ export function VotingControls({ votingOpen }: { votingOpen: boolean }) {
       <p className={`text-sm font-semibold ${open ? "text-team" : "text-[var(--muted)]"}`}>
         현재: 팀 상호평가 {open ? "열림 🟢" : "닫힘 🔴"}
       </p>
+      {error && <p className="-mt-2 text-sm text-alert">{error}</p>}
 
       <p className="text-sm text-[var(--muted)]">
         전시 기간 주민투표(QR 투표권 발급·실시간 득표)는{" "}
