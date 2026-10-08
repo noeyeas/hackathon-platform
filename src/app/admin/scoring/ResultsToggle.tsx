@@ -7,11 +7,30 @@ import { setResultsPublic } from "../actions";
 export function ResultsToggle({ initialOpen }: { initialOpen: boolean }) {
   const [open, setOpen] = useState(initialOpen);
   const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   function toggle() {
     const next = !open;
+    // 공개는 되돌릴 수 없다 — 한 번 본 순위는 다시 숨길 수 없다. 채점표를
+    // 입력하는 같은 화면에 있어 잘못 누르기 쉬우므로 반드시 한 번 더 묻는다.
+    if (
+      next &&
+      !confirm(
+        "결과를 공개할까요?\n\n순위와 점수가 참가자·관객 등 모든 사람에게 즉시 공개됩니다. 공개한 뒤에는 이미 본 사람을 되돌릴 수 없습니다."
+      )
+    )
+      return;
+    // 낙관적으로 먼저 뒤집고, 서버가 거절하면 되돌린다(OpenControls 와 같은
+    // 규칙) — 실패했는데 공개/비공개로 보이면 운영진이 상태를 잘못 안다.
     setOpen(next);
-    startTransition(() => void setResultsPublic(next));
+    setError(null);
+    startTransition(async () => {
+      const res = await setResultsPublic(next);
+      if (res && "error" in res && res.error) {
+        setOpen(!next);
+        setError(res.error);
+      }
+    });
   }
 
   return (
@@ -46,6 +65,7 @@ export function ResultsToggle({ initialOpen }: { initialOpen: boolean }) {
       >
         현재: 결과 {open ? "공개됨 🟢" : "비공개 🔒"}
       </p>
+      {error && <p className="mt-1 text-sm text-alert">{error}</p>}
     </div>
   );
 }
