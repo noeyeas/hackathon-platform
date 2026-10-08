@@ -31,6 +31,8 @@ export type GalleryProjectRow = {
   thumbnail_url: string | null;
   view_count: number | null;
   submitted_at: string;
+  // 제출물 내용이 마지막으로 바뀐 시각(0064). 갤러리 '최신순' 기준.
+  updated_at: string | null;
   teams: GalleryTeam | null;
 };
 
@@ -45,7 +47,7 @@ export const getGalleryProjects = unstable_cache(
         supabase
           .from("projects")
           .select(
-            "id, title, description, track, thumbnail_url, view_count, submitted_at, teams(name, team_no, members_note, status)"
+            "id, title, description, track, thumbnail_url, view_count, submitted_at, updated_at, teams(name, team_no, members_note, status)"
           ),
         supabase.from("event_settings").select("phase").single(),
         supabase.from("project_like_counts").select("project_id, likes"),
