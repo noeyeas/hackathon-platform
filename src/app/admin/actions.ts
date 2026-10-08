@@ -5,6 +5,7 @@ import { adminError } from "@/lib/actionError";
 import { requireAdmin } from "@/lib/auth";
 import { revalidatePath, updateTag } from "next/cache";
 import { JUDGE_SHEET_MAX, PRESENTATION_MAX, type EventPhase } from "@/lib/types";
+import { finalistsLocked, SCORE_LOCK_MESSAGE } from "@/lib/scoreLock";
 
 export async function setPhase(phase: EventPhase) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
@@ -48,6 +49,8 @@ export async function setWeights(formData: FormData) {
   const sum = judge + team + audience;
   if (Math.abs(sum - 1) > 0.01)
     return { error: `비율 합이 100%가 되어야 합니다 (현재 ${Math.round(sum * 100)}%)` };
+  // 심사:상호평가 비율이 바뀌면 1차 점수가 바뀌어 진출팀이 달라진다.
+  if (await finalistsLocked()) return { error: SCORE_LOCK_MESSAGE };
 
   const admin = createAdminClient();
   const { error } = await admin
@@ -101,6 +104,8 @@ export async function setPresentationScore(
   const max = PRESENTATION_MAX[round];
   if (!Number.isInteger(score) || score < 0 || score > max)
     return { error: `0~${max} 사이 정수를 입력하세요` };
+  if (round === "final" && (await finalistsLocked()))
+    return { error: SCORE_LOCK_MESSAGE };
   const admin = createAdminClient();
   const column = round === "final" ? "presentation_score" : "mid_presentation_score";
   const { error } = await admin
@@ -129,6 +134,8 @@ export async function setJudgeSheetScore(
     if (Math.round(score * 10) !== score * 10)
       return { error: "소수점은 한 자리까지입니다" };
   }
+  if (round === "final" && (await finalistsLocked()))
+    return { error: SCORE_LOCK_MESSAGE };
   const admin = createAdminClient();
   const { error } =
     score === null
@@ -159,6 +166,7 @@ export async function setAbsentCount(teamId: string, count: number) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   if (!Number.isInteger(count) || count < 0 || count > 99)
     return { error: "0 이상의 정수를 입력하세요" };
+  if (await finalistsLocked()) return { error: SCORE_LOCK_MESSAGE };
   const admin = createAdminClient();
   const { error } = await admin
     .from("teams")
