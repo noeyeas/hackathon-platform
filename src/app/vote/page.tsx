@@ -180,6 +180,7 @@ export default async function VotePage() {
             <ScoreCard
               key={p.id}
               projectId={p.id}
+              order={(p.present_order as number | null) ?? null}
               teamName={team ?? ""}
               title={p.title}
               criteria={criteria ?? []}
