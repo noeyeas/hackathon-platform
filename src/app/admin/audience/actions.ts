@@ -11,6 +11,17 @@ import { revalidatePath } from "next/cache";
 export async function setAudienceVotingOpen(open: boolean) {
   if (!(await requireAdmin())) return { error: "운영진만 가능합니다" };
   const admin = createAdminClient();
+  // 상호평가가 열린 채로 주민투표를 열면, 진출팀이 정해진 뒤에도 팀장 평가가
+  // 계속 들어와 1차 점수(=진출팀)가 바뀔 수 있다. 상호평가를 먼저 닫게 한다.
+  if (open) {
+    const { data: s } = await admin
+      .from("event_settings")
+      .select("voting_open")
+      .eq("id", 1)
+      .single();
+    if (s?.voting_open)
+      return { error: "팀 상호평가를 먼저 닫아 주세요. 열린 채로는 진출팀이 바뀔 수 있습니다." };
+  }
   const { error } = await admin
     .from("event_settings")
     .update({ audience_voting_open: open })
