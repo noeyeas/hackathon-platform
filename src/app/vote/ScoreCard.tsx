@@ -135,11 +135,22 @@ export function ScoreCard({
       return;
     }
     startTransition(async () => {
-      const res = await action(projectId, fd);
-      if (res?.error) setError(res.error);
-      else {
-        setSaved(true);
-        setOpen(false);
+      // 서버 액션이 "응답"이 아니라 "예외"로 실패하는 경우가 있다 — 와이파이가
+      // 끊기거나, 화면을 열어 둔 사이 새 버전이 배포돼 이 화면의 액션을 서버가
+      // 못 찾을 때. 잡지 않으면 트랜지션 밖으로 던져져 error.tsx 로 화면이
+      // 통째로 넘어가고, 팀장이 슬라이더로 매긴 점수가 전부 사라진다.
+      // 여기서 잡아 카드와 입력값을 그대로 두고 다시 누르게 한다.
+      try {
+        const res = await action(projectId, fd);
+        if (res?.error) setError(res.error);
+        else {
+          setSaved(true);
+          setOpen(false);
+        }
+      } catch {
+        setError(
+          "저장하지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요. 계속 안 되면 새로고침한 뒤 다시 입력해 주세요."
+        );
       }
     });
   }
