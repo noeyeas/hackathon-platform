@@ -30,6 +30,16 @@ export async function saveTeamScores(projectId: string, formData: FormData) {
   if (!membership.is_leader)
     return { error: "팀 평가는 팀장만 할 수 있습니다" };
 
+  // 기권 팀은 평가 주체가 아니다(0056). rankings 의 team_norm 은 평가하는
+  // 팀의 기권 여부를 거르지 않으므로 저장 단계에서 막아야 집계에 섞이지 않는다.
+  const { data: myTeam } = await supabase
+    .from("teams")
+    .select("status")
+    .eq("id", membership.team_id)
+    .single();
+  if (myTeam?.status === "withdrawn")
+    return { error: "기권한 팀은 평가할 수 없습니다" };
+
   // 자기 팀 작품은 채점 불가
   const { data: target } = await supabase
     .from("projects")
