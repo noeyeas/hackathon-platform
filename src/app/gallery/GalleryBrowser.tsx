@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TeamName } from "@/components/TeamName";
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -30,9 +30,27 @@ export type GalleryItem = {
   awardLabel: string | null;
 };
 
-type SortKey = "award" | "popular" | "views" | "recent" | "shuffle";
+// 2026 전시 진출 확정 명단. 점수로 자동 선정하지 않으며, 갤러리 표시에만 사용한다.
+// 솜사탕과 너구리, 얼마Geo, 라스트팡, 월계동행, 컴미컴, 우럭아왜우럭,
+// NowonLikeUs, 복지나침반, 월계상단, 경영과컴퓨터, 삼삼오오, 지단,
+// 월계디버깅, 허강정, 월계획.
+const EXHIBITION_TEAM_NUMBERS = new Set([
+  2, 4, 5, 9, 10, 12, 13, 15, 19, 23, 24, 29, 32, 34, 40,
+]);
+
+function teamNumber(p: GalleryItem): number {
+  const match = /^(\d+)조(?:\s|$)/.exec(p.teamName);
+  return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
+}
+
+function isExhibitionFinalist(p: GalleryItem): boolean {
+  return EXHIBITION_TEAM_NUMBERS.has(teamNumber(p));
+}
+
+type SortKey = "exhibit" | "award" | "popular" | "views" | "recent" | "shuffle";
 
 const SORTS: { value: SortKey; label: string }[] = [
+  { value: "exhibit", label: "전시 진출 우선" },
   { value: "award", label: "수상작 먼저" },
   { value: "shuffle", label: "무작위" },
   { value: "popular", label: "좋아요순" },
@@ -51,10 +69,17 @@ export function GalleryBrowser({
   items: GalleryItem[];
   hasAwards: boolean;
 }) {
-  const [track, setTrack] = useState<ProjectTrack | "all">("all");
+  const [track, setTrack] = useState<ProjectTrack | "all" | "exhibit">("all");
   const [query, setQuery] = useState("");
-  // 결과가 공개되기 전에는 수상 정보가 없으므로 무작위가 기본이다.
-  const [sort, setSort] = useState<SortKey>(hasAwards ? "award" : "shuffle");
+  // 진출팀을 먼저 보여 주되 점수나 최종 순위는 드러내지 않는다.
+  const [sort, setSort] = useState<SortKey>("exhibit");
+  const finalistCount = items.filter(isExhibitionFinalist).length;
+
+  // 전시장 QR은 /gallery?filter=exhibit 로 진출팀만 바로 볼 수 있다.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("filter") === "exhibit")
+      setTrack("exhibit");
+  }, []);
 
   const tabs = useMemo(() => {
     const counts = new Map<ProjectTrack, number>();
@@ -69,7 +94,8 @@ export function GalleryBrowser({
   const shown = useMemo(() => {
     const q = normalize(query);
     const filtered = items.filter((p) => {
-      if (track !== "all" && p.track !== track) return false;
+      if (track === "exhibit" && !isExhibitionFinalist(p)) return false;
+      if (track !== "all" && track !== "exhibit" && p.track !== track) return false;
       if (!q) return true;
       return (
         normalize(p.title).includes(q) ||
@@ -79,6 +105,13 @@ export function GalleryBrowser({
     });
 
     const by: Record<SortKey, (a: GalleryItem, b: GalleryItem) => number> = {
+      // 진출팀은 조 번호순, 나머지는 기존 세션 무작위 순서를 유지한다.
+      exhibit: (a, b) => {
+        const af = isExhibitionFinalist(a);
+        const bf = isExhibitionFinalist(b);
+        if (af !== bf) return af ? -1 : 1;
+        return af ? teamNumber(a) - teamNumber(b) : a.shuffle - b.shuffle;
+      },
       // 수상작을 앞으로, 나머지는 세션 무작위 순서를 유지한다.
       award: (a, b) =>
         (a.awardRank ?? Number.MAX_SAFE_INTEGER) -
@@ -135,9 +168,21 @@ export function GalleryBrowser({
         </label>
       </div>
 
-      {/* ── 주제 필터 ── */}
-      {tabs.length > 1 && (
+      {/* ── 전시 진출 / 주제 필터 ── */}
+      {(finalistCount > 0 || tabs.length > 1) && (
         <div className="flex flex-wrap gap-2">
+          {finalistCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setTrack("exhibit")}
+              aria-pressed={track === "exhibit"}
+              className={`filter-chip !border-[#C9A227] ${track === "exhibit" ? "filter-chip-on" : ""}`}
+            >
+              <span aria-hidden="true" className="text-[#C9A227]">★</span>
+              전시 진출
+              <span className="text-xs opacity-70">{finalistCount}</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setTrack("all")}
@@ -177,7 +222,7 @@ export function GalleryBrowser({
             <Link
               key={p.id}
               href={`/gallery/${p.id}`}
-              className="group flex flex-col rounded-lg border border-[var(--line)] bg-white transition hover:border-navy/40 hover:shadow-sm"
+              className={`group flex flex-col rounded-lg border bg-white transition hover:shadow-sm ${isExhibitionFinalist(p) ? "border-[#C9A227] ring-1 ring-[#C9A227]" : "border-[var(--line)] hover:border-navy/40"}`}
             >
               {/* 썸네일 — 팀이 올린 예시 이미지, 없으면 제목 첫 글자 */}
               <div className="tile-pattern relative flex aspect-[16/10] items-center justify-center overflow-hidden rounded-t-lg border-b border-[var(--line)] bg-paper">
@@ -194,9 +239,15 @@ export function GalleryBrowser({
                     {p.title.trim().charAt(0) || "?"}
                   </span>
                 )}
+                {isExhibitionFinalist(p) && (
+                  <span className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-navy px-3 py-1.5 text-[13px] font-bold text-white shadow-md">
+                    <span aria-hidden="true" className="text-[#C9A227]">★</span>
+                    전시 진출
+                  </span>
+                )}
                 {p.awardLabel && (
                   <span
-                    className={`absolute left-3 top-3 ${
+                    className={`absolute left-3 ${isExhibitionFinalist(p) ? "top-14" : "top-3"} ${
                       p.awardRank === 0 ? "badge-gold" : "badge-navy"
                     }`}
                   >
