@@ -225,7 +225,7 @@ export function GalleryBrowser({
               className={`group flex flex-col rounded-lg border bg-white transition hover:shadow-sm ${isExhibitionFinalist(p) ? "border-[#C9A227] ring-1 ring-[#C9A227]" : "border-[var(--line)] hover:border-navy/40"}`}
             >
               {/* 썸네일 — 팀이 올린 예시 이미지, 없으면 제목 첫 글자 */}
-              <div className="tile-pattern relative flex aspect-[16/10] items-center justify-center overflow-hidden rounded-t-lg border-b border-[var(--line)] bg-paper">
+              <div className="tile-pattern relative isolate flex aspect-[16/10] items-center justify-center overflow-hidden rounded-t-lg border-b border-[var(--line)] bg-paper">
                 {p.thumbnailUrl ? (
                   <Image
                     src={p.thumbnailUrl}
