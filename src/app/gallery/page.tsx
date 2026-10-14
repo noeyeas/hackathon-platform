@@ -2,7 +2,8 @@ import { cookies } from "next/headers";
 import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import { GalleryBrowser, type GalleryItem } from "./GalleryBrowser";
-import { getGalleryProjects, getGalleryRankings } from "@/lib/galleryData";
+import { getGalleryProjects } from "@/lib/galleryData";
+import { FINAL_AWARD_TEAM_NUMBERS } from "@/lib/awards";
 import { AWARD_LABELS, toProjectTrack } from "@/lib/types";
 import { teamLabel } from "@/lib/format";
 
@@ -32,19 +33,16 @@ export default async function GalleryPage() {
   // 갤러리만 빠져 있어, 기권한 팀이 카드와 '총 N개 팀' 집계에 남아 있었다.
   const visible = projects.filter((p) => p.teams?.status !== "withdrawn");
 
-  // 순위(=수상)는 대회가 끝난 뒤에만 공개한다.
+  // 수상은 대회가 끝난 뒤에만 공개한다. 수상팀은 사이트 밖에서 확정한
+  // 고정 명단(lib/awards)을 따른다 — rankings 뷰에는 심사·코인 투표가 없다.
   const showAwards = phase === "closed";
-  const rankings = showAwards ? await getGalleryRankings() : [];
-
-  // 수상 배지는 선정된 팀에만 붙인다. 뷰가 시상 순서로 정렬해 주므로
-  // (선정팀 먼저, 그 안에서 주민표 순) 걸러낸 뒤의 순번이 곧 상 순서다.
   const awardByProject = new Map<string, number>();
-  rankings
-    .filter((r) => r.is_finalist)
-    .slice(0, AWARD_LABELS.length)
-    .forEach((r, i) => {
-      awardByProject.set(r.project_id, i);
-    });
+  if (showAwards) {
+    for (const p of visible) {
+      const i = FINAL_AWARD_TEAM_NUMBERS.indexOf(p.teams?.team_no ?? -1);
+      if (i >= 0) awardByProject.set(p.id, i);
+    }
+  }
 
   // 방문(세션)당 고정된 무작위 순서 — 시드는 쿠키, 같은 시드면 항상 같은 순서.
   // 특정 팀이 항상 위에 오지 않게 하면서 새로고침·뒤로가기엔 순서 유지.
