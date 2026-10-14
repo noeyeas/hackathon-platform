@@ -1,49 +1,30 @@
 import Link from "next/link";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { safeUrl, teamLabel } from "@/lib/format";
+import { createClient } from "@/lib/supabase/server";
+import { teamLabel } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
+import { getGalleryProjects, type GalleryProjectRow } from "@/lib/galleryData";
+import { AWARD_LABELS } from "@/lib/types";
 import {
-  AWARD_LABELS,
-  FINAL_CRITERIA,
-  FINALIST_COUNT,
-  SCORE_WEIGHTS,
-  type Ranking,
-  type EventPhase,
-} from "@/lib/types";
+  FINAL_AWARD_TEAM_NUMBERS,
+  MANYFAST_AWARD_TEAM_NUMBER,
+} from "@/lib/awards";
 
 export const dynamic = "force-dynamic";
 
+// 결과 페이지는 수상팀만 보여 준다. 점수·순위·산정 방식은 공개하지 않는다.
+// 수상팀은 대회 종료(phase 'closed') 뒤에만 공개하고, 운영진은 미리 볼 수 있다.
 export default async function ResultsPage() {
   const supabase = await createClient();
 
-  // 서로 무관한 조회는 한 번에 — 직렬 왕복을 줄여 페이지 전환을 빠르게 한다.
   const [
-    { data: settings },
+    { projects, phase },
     {
       data: { user },
     },
-    { data: teamNotes },
-  ] = await Promise.all([
-    supabase
-      .from("event_settings")
-      .select("phase, weights, finalist_count")
-      .single(),
-    supabase.auth.getUser(),
-    // 팀별 팀원 구성 (팀 이름 hover 툴팁용)
-    supabase.from("teams").select("id, members_note"),
-  ]);
-
-  const phase = (settings?.phase ?? "signup") as EventPhase;
-  // 집계 뷰(rankings)와 동일하게 event_settings 값을 사용 — 표시/계산 일치.
-  // 선정 팀 수도 DB 를 따른다. 코드 상수를 그대로 쓰면 운영진이 DB 값을
-  // 바꿨을 때 화면 문구만 4팀으로 남아 실제 선정 결과와 어긋난다.
-  const weights =
-    (settings?.weights as typeof SCORE_WEIGHTS | null) ?? SCORE_WEIGHTS;
-  const finalistCount = settings?.finalist_count ?? FINALIST_COUNT;
+  ] = await Promise.all([getGalleryProjects(), supabase.auth.getUser()]);
 
   const showFinal = phase === "closed";
 
-  // 실시간 순위는 종료 전 비공개. 운영진은 종료 전에도 미리보기 허용.
   let isAdmin = false;
   if (user) {
     const { data: me } = await supabase
@@ -53,252 +34,109 @@ export default async function ResultsPage() {
       .single();
     isAdmin = me?.role === "admin";
   }
-  const canSeeRankings = showFinal || isAdmin;
+  const canSeeWinners = showFinal || isAdmin;
 
-  // rankings 뷰는 anon/authenticated 접근이 막혀 있으므로(0022) 공개 조건일 때만
-  // Service Role 로 읽는다. 종료 전 일반 사용자에게는 순위/점수를 노출하지 않는다.
-  const { data: rankings } = canSeeRankings
-    ? await createAdminClient().from("rankings").select("*").returns<Ranking[]>()
-    : { data: null as Ranking[] | null };
+  const byTeamNo = new Map<number, GalleryProjectRow>();
+  for (const p of projects) {
+    const no = p.teams?.team_no;
+    if (no != null && p.teams?.status !== "withdrawn") byTeamNo.set(no, p);
+  }
 
-  // 1위 팀은 상단에 크게 — 소개·링크가 필요해 제출물을 한 번 더 읽는다.
-  // 채점표가 0장인 팀은 참여도 5점만 들고 순위에 섞여 있으므로(0059) 대상으로
-  // 세우지 않는다 — 입력이 끝나기 전 운영자 미리보기에서 엉뚱한 팀이 대상으로
-  // 보이는 쪽이, 히어로가 잠시 비는 쪽보다 위험하다.
-  const top = rankings?.[0]?.sheet_count ? rankings[0] : null;
-  const { data: topProject } = top
-    ? await supabase
-        .from("projects")
-        .select("description, repo_url, demo_url, video_url")
-        .eq("id", top.project_id)
-        .maybeSingle()
-    : { data: null };
+  const winners = FINAL_AWARD_TEAM_NUMBERS.map((no, i) => ({
+    no,
+    label: AWARD_LABELS[i] as string,
+    project: byTeamNo.get(no) ?? null,
+  }));
+  const [grand, ...others] = winners;
+  const manyfast = byTeamNo.get(MANYFAST_AWARD_TEAM_NUMBER) ?? null;
 
-  const noteByTeam = new Map(
-    (teamNotes ?? []).map((t) => [t.id as string, t.members_note as string | null])
-  );
+  const nameOf = (no: number, p: GalleryProjectRow | null) =>
+    teamLabel(no, p?.teams?.name ?? "");
 
   return (
     <div className="mx-auto max-w-3xl">
       <PageHeader
-        eyebrow={showFinal ? "Final Result" : "Progress"}
-        title={showFinal ? "최종 결과" : "집계 현황"}
+        eyebrow={showFinal ? "Final Result" : "Result"}
+        title={showFinal ? "최종 결과" : "결과 발표"}
         desc={
-          <>
-            1차 심사 {pct(weights.judge / (weights.judge + weights.team))} 심사위원
-            {" / "}
-            {pct(weights.team / (weights.judge + weights.team))} 팀 상호평가 →
-            상위 {finalistCount}팀 → 심사점수에 주민투표를 합산해 수상팀 선정
-            {!showFinal && " · 투표 종료 후 최종 순위가 공개됩니다."}
-          </>
+          showFinal
+            ? "2026 광운대학교 KW 해커톤 수상팀을 소개합니다. 함께해 주신 모든 분께 감사드립니다."
+            : "수상팀은 대회가 모두 끝난 뒤 이곳에 공개됩니다."
         }
       />
 
       {isAdmin && !showFinal && (
         <p className="mt-5 rounded-md border border-admin/20 bg-admin/[0.06] px-4 py-3 text-sm text-admin">
-          운영자 미리보기입니다. 참가자·관객에게는 종료 전까지 순위가 보이지
-          않습니다.
+          운영자 미리보기입니다. 참가자·관객에게는 결과 공개 전까지 수상팀이
+          보이지 않습니다.
         </p>
       )}
 
-      {/* ── 대상 팀 히어로 ── */}
-      {canSeeRankings && top && (
-        <section className="mt-8 overflow-hidden rounded-lg bg-navy px-6 py-8 text-white sm:px-8 sm:py-10">
-          <p className="eyebrow !text-gold-bright">Grand Prize · 대상</p>
-          <h2 className="mt-3 font-title text-3xl font-bold leading-tight sm:text-4xl">
-            {top.title}
-          </h2>
-          <p className="mt-1 font-title text-xl font-medium text-white/60">
-            {teamLabel(top.team_no, top.team_name)}
-          </p>
-
-          {topProject?.description && (
-            <p className="mt-5 max-w-xl whitespace-pre-wrap text-sm leading-relaxed text-white/75">
-              {topProject.description}
+      {canSeeWinners ? (
+        <>
+          {/* ── 노원구청장상 ── */}
+          <section className="mt-8 overflow-hidden rounded-lg bg-navy px-6 py-8 text-white sm:px-8 sm:py-10">
+            <p className="eyebrow !text-gold-bright">🥇 {grand.label}</p>
+            <h2 className="mt-3 font-title text-3xl font-bold leading-tight sm:text-4xl">
+              {grand.project?.title ?? nameOf(grand.no, grand.project)}
+            </h2>
+            <p className="mt-1 font-title text-xl font-medium text-white/60">
+              {nameOf(grand.no, grand.project)}
             </p>
-          )}
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href={`/gallery/${top.project_id}`} className="btn-gold">
-              제출작 보기
-            </Link>
-            {topProject?.video_url && (
-              <a
-                href={safeUrl(topProject.video_url)}
-                target="_blank"
-                rel="noreferrer"
-                className="btn border border-white/25 bg-white/10 text-white hover:bg-white/20"
-              >
-                데모 영상 ↗
-              </a>
+            {grand.project?.description && (
+              <p className="mt-5 max-w-xl whitespace-pre-wrap text-sm leading-relaxed text-white/75">
+                {grand.project.description}
+              </p>
             )}
-            {topProject?.repo_url && (
-              <a
-                href={safeUrl(topProject.repo_url)}
-                target="_blank"
-                rel="noreferrer"
-                className="btn border border-white/25 bg-white/10 text-white hover:bg-white/20"
-              >
-                GitHub ↗
-              </a>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* ── 심사 기준 ── */}
-      {/* DB criteria 는 심사위원 채점표(90점)라 공지의 100점 기준과 다르다.
-          참가자에게는 홈과 같은 공지 기준을 그대로 보여 준다. */}
-      <details className="group mt-6 rounded-lg border border-[var(--line)] bg-white">
-        <summary className="flex cursor-pointer items-center justify-between px-4 py-3 text-sm font-semibold">
-          <span>본선 심사기준 {FINAL_CRITERIA.length}가지 보기 · 합계 100점</span>
-          <span className="text-[var(--muted)] transition group-open:rotate-180">
-            ⌄
-          </span>
-        </summary>
-        <ol className="flex flex-col border-t border-[var(--line)]">
-          {FINAL_CRITERIA.map((c, i) => (
-            <li
-              key={c.t}
-              className={`flex gap-3 px-4 py-3 ${
-                i !== FINAL_CRITERIA.length - 1 ? "border-b border-[var(--line)]" : ""
-              }`}
-            >
-              <span className="mt-0.5 w-8 flex-none text-right text-xs font-bold tabular-nums text-gold-ink">
-                {c.p}점
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">{c.t}</p>
-                <p className="mt-0.5 text-xs text-[var(--muted)]">{c.d}</p>
+            {grand.project && (
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link href={`/gallery/${grand.project.id}`} className="btn-gold">
+                  제출작 보기
+                </Link>
               </div>
-            </li>
-          ))}
-        </ol>
-      </details>
+            )}
+          </section>
 
-      {/* ── 최종 순위 ── */}
-      {canSeeRankings ? (
-        <section className="mt-8">
-          <div className="mb-3 flex items-baseline gap-3">
-            <span className="eyebrow">Final Score</span>
-            <h2 className="display text-xl">최종 순위</h2>
-          </div>
-
-          <div className="panel overflow-x-auto">
-            <table className="tbl min-w-[560px]">
-              <thead>
-                <tr>
-                  <th className="w-16">순위</th>
-                  <th>팀 · 작품</th>
-                  <th className="!text-right">심사</th>
-                  <th className="!text-right">팀 점수</th>
-                  <th className="!text-right">주민표</th>
-                  <th className="!text-right">점수</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rankings?.map((r, i) => {
-                  // 채점표가 0장이면 심사 점수가 참여도 5점(5 − 불참)뿐이라
-                  // 확정 점수가 아니다(0059). 합산 점수에도 그 5점이 섞여 있으니
-                  // 심사 칸만 가리지 않고 행 전체를 미채점으로 묶는다.
-                  const unscored = r.sheet_count === 0;
-                  // 시상 배지는 순번이 아니라 선정 여부로 결정한다.
-                  // 뷰가 이미 시상 순서로 정렬해 주므로(선정팀 먼저, 그 안에서
-                  // 합산 점수 순) 선정팀의 i 가 곧 상 순서가 된다.
-                  const award =
-                    !unscored && r.is_finalist && i < AWARD_LABELS.length
-                      ? AWARD_LABELS[i]
-                      : null;
-                  return (
-                    <tr
-                      key={r.project_id}
-                      className={
-                        unscored
-                          ? "opacity-60"
-                          : i === 0
-                            ? "bg-gold-soft/50"
-                            : ""
-                      }
-                    >
-                      <td>
-                        {unscored ? (
-                          <span className="chip border-alert text-alert">
-                            미채점
-                          </span>
-                        ) : award ? (
-                          <span className={i === 0 ? "badge-gold" : i === 1 ? "badge-navy" : "badge-line"}>
-                            {award}
-                          </span>
-                        ) : (
-                          <span className="tabular-nums text-[var(--muted)]">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                        )}
-                      </td>
-                      <td>
-                        <Link
-                          href={`/gallery/${r.project_id}`}
-                          className="font-semibold hover:text-navy hover:underline"
-                          title={
-                            noteByTeam.get(r.team_id)
-                              ? `팀원 구성\n${noteByTeam.get(r.team_id)}`
-                              : undefined
-                          }
-                        >
-                          {teamLabel(r.team_no, r.team_name)}
-                        </Link>
-                        <span className="ml-2 text-xs text-[var(--muted)]">
-                          {r.title}
-                        </span>
-                      </td>
-                      <td className="num">
-                        {unscored ? (
-                          <span className="text-[var(--muted)]">—</span>
-                        ) : (
-                          r.judge_score
-                        )}
-                      </td>
-                      <td className="num">{r.team_votes}</td>
-                      <td className="num">{r.audience_votes}</td>
-                      <td
-                        className={
-                          unscored
-                            ? "num text-[var(--muted)]"
-                            : "num text-base font-bold text-navy"
-                        }
-                      >
-                        {unscored ? "—" : r.final_score}
-                      </td>
-                    </tr>
-                  );
-                })}
-                {!rankings?.length && (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="!py-10 text-center text-[var(--muted)]"
-                    >
-                      아직 집계할 데이터가 없습니다.
-                    </td>
-                  </tr>
+          {/* ── 광운대학교 총장상 ── */}
+          <section className="mt-6 grid gap-4 sm:grid-cols-3">
+            {others.map((w) => (
+              <div key={w.no} className="card flex h-full flex-col gap-1">
+                <span className="badge-navy self-start">🥈 {w.label}</span>
+                <h3 className="mt-2 font-bold leading-snug">
+                  {w.project?.title ?? nameOf(w.no, w.project)}
+                </h3>
+                <p className="text-sm text-[var(--muted)]">
+                  {nameOf(w.no, w.project)}
+                </p>
+                {w.project && (
+                  <Link
+                    href={`/gallery/${w.project.id}`}
+                    className="mt-auto pt-3 text-sm font-semibold text-navy hover:underline"
+                  >
+                    제출작 보기 →
+                  </Link>
                 )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+              </div>
+            ))}
+          </section>
+
+          {/* ── 매니패스트상 (중간발표) ── */}
+          <section className="card mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
+            <b className="font-semibold">🎁 매니패스트상 · 중간발표</b>
+            <span className="text-[var(--muted)]">
+              {nameOf(MANYFAST_AWARD_TEAM_NUMBER, manyfast)}
+              {manyfast?.title ? ` — ${manyfast.title}` : ""}
+            </span>
+          </section>
+        </>
       ) : (
         <div className="card mt-8 py-12 text-center">
-          <p className="display text-lg">투표 종료 후 순위가 공개됩니다</p>
+          <p className="display text-lg">결과 발표 준비 중입니다</p>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            공정성을 위해 대회가 종료되기 전까지 실시간 순위와 점수는
-            비공개입니다.
+            수상팀은 대회가 끝난 뒤 이 페이지에서 확인하실 수 있습니다.
           </p>
         </div>
       )}
     </div>
   );
-}
-
-function pct(n: number) {
-  return `${Math.round(n * 100)}%`;
 }
