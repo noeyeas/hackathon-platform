@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 // 결과 페이지 — 수상팀과 전시 진출 15팀의 최종 점수·순위를 보여 준다.
 // 대회 종료(phase 'closed') 뒤에만 공개하고, 운영진은 미리 볼 수 있다.
 // 점수는 사이트 밖 집계 시트로 확정한 값(lib/finalScores)을 따른다.
+// 상단 수상 카드에는 점수를 넣지 않고 소개만, 점수는 아래 순위표에서 보여 준다.
 const fmt = (n: number) => n.toFixed(2);
 
 export default async function ResultsPage() {
