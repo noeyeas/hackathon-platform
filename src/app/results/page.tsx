@@ -153,7 +153,7 @@ export default async function ResultsPage() {
                   {fmt(r.final)}
                   <span className="ml-1 text-sm font-medium text-[var(--muted)]">점</span>
                 </p>
-                <p className="text-xs text-[var(--muted)]">
+                <p className="break-keep text-xs text-[var(--muted)]">
                   심사 {fmt(r.judge)} · 상호평가 {fmt(r.peer)} · 주민투표{" "}
                   {fmt(r.voteScore)}
                 </p>
