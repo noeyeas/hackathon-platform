@@ -166,10 +166,18 @@ export default async function ResultsPage() {
                   <tr className="border-y border-[var(--line)] bg-paper text-left text-xs text-[var(--muted)]">
                     <th className="px-5 py-2 font-medium">순위</th>
                     <th className="px-2 py-2 font-medium">팀</th>
-                    <th className="px-2 py-2 text-right font-medium">심사</th>
-                    <th className="px-2 py-2 text-right font-medium">상호평가</th>
-                    <th className="px-2 py-2 text-right font-medium">주민투표</th>
-                    <th className="px-5 py-2 text-right font-medium">최종</th>
+                    <th className="px-2 py-2 text-right font-medium">
+                      심사<span className="ml-0.5 font-normal opacity-70">(100점)</span>
+                    </th>
+                    <th className="px-2 py-2 text-right font-medium">
+                      상호평가<span className="ml-0.5 font-normal opacity-70">(100점)</span>
+                    </th>
+                    <th className="px-2 py-2 text-right font-medium">
+                      주민투표<span className="ml-0.5 font-normal opacity-70">(100점)</span>
+                    </th>
+                    <th className="px-5 py-2 text-right font-medium">
+                      최종<span className="ml-0.5 font-normal opacity-70">(100점)</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -208,7 +216,7 @@ export default async function ResultsPage() {
               </table>
             </div>
             <p className="border-t border-[var(--line)] px-5 py-3 text-xs leading-relaxed text-[var(--muted)]">
-              심사 = 심사위원 평가(90점, 최고·최저점 제외 평균) + 발표·참여도(10점) ·
+              모든 점수는 100점 만점입니다 · 심사 = 심사위원 평가(90점, 최고·최저점 제외 평균) + 발표·참여도(10점) ·
               상호평가 = 팀 상호평가를 100점으로 환산 · 주민투표 = 최다 득표 팀(
               {`${topVotes}표`})을 100점으로 두고 득표 비율로 환산(3일간 총{" "}
               {`${TOTAL_VOTES.toLocaleString()}표`}) · 점수는 소수 셋째 자리에서
