@@ -5,15 +5,16 @@ import { teamLabel } from "@/lib/format";
 import { PageHeader } from "@/components/PageHeader";
 import { getGalleryProjects, type GalleryProjectRow } from "@/lib/galleryData";
 import { AWARD_LABELS } from "@/lib/types";
-import {
-  FINAL_AWARD_TEAM_NUMBERS,
-  MANYFAST_AWARD_TEAM_NUMBER,
-} from "@/lib/awards";
+import { MANYFAST_AWARD_TEAM_NUMBER } from "@/lib/awards";
+import { FINAL_SCORES, TOTAL_VOTES } from "@/lib/finalScores";
 
 export const dynamic = "force-dynamic";
 
-// 결과 페이지는 수상팀만 보여 준다. 점수·순위·산정 방식은 공개하지 않는다.
-// 수상팀은 대회 종료(phase 'closed') 뒤에만 공개하고, 운영진은 미리 볼 수 있다.
+// 결과 페이지 — 수상팀과 전시 진출 15팀의 최종 점수·순위를 보여 준다.
+// 대회 종료(phase 'closed') 뒤에만 공개하고, 운영진은 미리 볼 수 있다.
+// 점수는 사이트 밖 집계 시트로 확정한 값(lib/finalScores)을 따른다.
+const fmt = (n: number) => n.toFixed(2);
+
 export default async function ResultsPage() {
   const supabase = await createClient();
 
@@ -43,16 +44,19 @@ export default async function ResultsPage() {
     if (no != null && p.teams?.status !== "withdrawn") byTeamNo.set(no, p);
   }
 
-  const winners = FINAL_AWARD_TEAM_NUMBERS.map((no, i) => ({
-    no,
-    label: AWARD_LABELS[i] as string,
-    project: byTeamNo.get(no) ?? null,
-  }));
-  const [grand, ...others] = winners;
+  const rows = [...FINAL_SCORES]
+    .sort((a, b) => b.final - a.final)
+    .map((r, i) => ({
+      ...r,
+      rank: i + 1,
+      project: byTeamNo.get(r.no) ?? null,
+      award: i < AWARD_LABELS.length ? (AWARD_LABELS[i] as string) : null,
+    }));
+  type Row = (typeof rows)[number];
+  const nameOf = (r: Row) => teamLabel(r.no, r.project?.teams?.name ?? r.name);
+  const [grand, ...others] = rows.slice(0, AWARD_LABELS.length);
   const manyfast = byTeamNo.get(MANYFAST_AWARD_TEAM_NUMBER) ?? null;
-
-  const nameOf = (no: number, p: GalleryProjectRow | null) =>
-    teamLabel(no, p?.teams?.name ?? "");
+  const topVotes = Math.max(...rows.map((r) => r.votes));
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -61,7 +65,7 @@ export default async function ResultsPage() {
         title={showFinal ? "최종 결과" : "결과 발표"}
         desc={
           showFinal
-            ? "2026 광운대학교 KW 해커톤 수상팀을 소개합니다. 함께해 주신 모든 분께 감사드립니다."
+            ? "2026 광운대학교 KW 해커톤 수상팀과 최종 순위를 소개합니다. 함께해 주신 모든 분께 감사드립니다."
             : "수상팀은 대회가 모두 끝난 뒤 이곳에 공개됩니다."
         }
       />
@@ -95,18 +99,35 @@ export default async function ResultsPage() {
               </div>
             )}
             <div className={grand.project?.thumbnail_url ? "sm:max-w-[50%]" : ""}>
-              <p className="eyebrow !text-gold-bright">🥇 {grand.label}</p>
+              <p className="eyebrow !text-gold-bright">🥇 1위 · {grand.award}</p>
               <h2 className="mt-3 font-title text-3xl font-bold leading-tight sm:text-4xl">
-                {grand.project?.title ?? nameOf(grand.no, grand.project)}
+                {grand.project?.title ?? nameOf(grand)}
               </h2>
               <p className="mt-1 font-title text-xl font-medium text-white/60">
-                {nameOf(grand.no, grand.project)}
+                {nameOf(grand)}
               </p>
-              {grand.project?.description && (
-                <p className="mt-5 max-w-xl whitespace-pre-wrap text-sm leading-relaxed text-white/75">
-                  {grand.project.description}
-                </p>
-              )}
+              <div className="mt-5 flex flex-wrap items-end gap-x-6 gap-y-3">
+                <div>
+                  <p className="text-xs text-white/50">최종 점수</p>
+                  <p className="font-title text-4xl font-bold text-gold-bright">
+                    {fmt(grand.final)}
+                  </p>
+                </div>
+                <dl className="grid grid-cols-3 gap-x-5 pb-1 text-sm">
+                  <div>
+                    <dt className="text-xs text-white/50">심사</dt>
+                    <dd className="font-semibold tabular-nums">{fmt(grand.judge)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-white/50">상호평가</dt>
+                    <dd className="font-semibold tabular-nums">{fmt(grand.peer)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-white/50">주민투표</dt>
+                    <dd className="font-semibold tabular-nums">{fmt(grand.voteScore)}</dd>
+                  </div>
+                </dl>
+              </div>
               {grand.project && (
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link href={`/gallery/${grand.project.id}`} className="btn-gold">
@@ -119,18 +140,26 @@ export default async function ResultsPage() {
 
           {/* ── 광운대학교 총장상 ── */}
           <section className="mt-6 grid gap-4 sm:grid-cols-3">
-            {others.map((w) => (
-              <div key={w.no} className="card flex h-full flex-col gap-1">
-                <span className="badge-navy self-start">🥈 {w.label}</span>
+            {others.map((r) => (
+              <div key={r.no} className="card flex h-full flex-col gap-1">
+                <span className="badge-navy self-start">
+                  🥈 {r.rank}위 · {r.award}
+                </span>
                 <h3 className="mt-2 font-bold leading-snug">
-                  {w.project?.title ?? nameOf(w.no, w.project)}
+                  {r.project?.title ?? nameOf(r)}
                 </h3>
-                <p className="text-sm text-[var(--muted)]">
-                  {nameOf(w.no, w.project)}
+                <p className="text-sm text-[var(--muted)]">{nameOf(r)}</p>
+                <p className="mt-3 font-title text-2xl font-bold text-navy">
+                  {fmt(r.final)}
+                  <span className="ml-1 text-sm font-medium text-[var(--muted)]">점</span>
                 </p>
-                {w.project && (
+                <p className="text-xs text-[var(--muted)]">
+                  심사 {fmt(r.judge)} · 상호평가 {fmt(r.peer)} · 주민투표{" "}
+                  {fmt(r.voteScore)}
+                </p>
+                {r.project && (
                   <Link
-                    href={`/gallery/${w.project.id}`}
+                    href={`/gallery/${r.project.id}`}
                     className="mt-auto pt-3 text-sm font-semibold text-navy hover:underline"
                   >
                     제출작 보기 →
@@ -144,9 +173,73 @@ export default async function ResultsPage() {
           <section className="card mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
             <b className="font-semibold">🎁 매니패스트상 · 중간발표</b>
             <span className="text-[var(--muted)]">
-              {nameOf(MANYFAST_AWARD_TEAM_NUMBER, manyfast)}
+              {teamLabel(MANYFAST_AWARD_TEAM_NUMBER, manyfast?.teams?.name ?? "")}
               {manyfast?.title ? ` — ${manyfast.title}` : ""}
             </span>
+          </section>
+
+          {/* ── 전시 진출 15팀 최종 순위 ── */}
+          <section className="card mt-6 overflow-hidden !p-0">
+            <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pt-5">
+              <h3 className="font-bold">전시 진출 15팀 최종 순위</h3>
+              <p className="text-xs text-[var(--muted)]">
+                심사 50% + 상호평가 25% + 주민투표 25%
+              </p>
+            </div>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full min-w-[560px] text-sm">
+                <thead>
+                  <tr className="border-y border-[var(--line)] bg-paper text-left text-xs text-[var(--muted)]">
+                    <th className="px-5 py-2 font-medium">순위</th>
+                    <th className="px-2 py-2 font-medium">팀</th>
+                    <th className="px-2 py-2 text-right font-medium">심사</th>
+                    <th className="px-2 py-2 text-right font-medium">상호평가</th>
+                    <th className="px-2 py-2 text-right font-medium">주민투표</th>
+                    <th className="px-5 py-2 text-right font-medium">최종</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr
+                      key={r.no}
+                      className={`border-b border-[var(--line)] last:border-0 ${r.award ? "bg-gold-bright/10" : ""}`}
+                    >
+                      <td className="px-5 py-2.5 font-bold tabular-nums">{r.rank}</td>
+                      <td className="px-2 py-2.5">
+                        {r.project ? (
+                          <Link href={`/gallery/${r.project.id}`} className="hover:underline">
+                            {nameOf(r)}
+                          </Link>
+                        ) : (
+                          nameOf(r)
+                        )}
+                        {r.award && (
+                          <span className="ml-2 text-xs font-semibold text-gold-ink">
+                            {r.award}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2 py-2.5 text-right tabular-nums">{fmt(r.judge)}</td>
+                      <td className="px-2 py-2.5 text-right tabular-nums">{fmt(r.peer)}</td>
+                      <td className="px-2 py-2.5 text-right tabular-nums">
+                        {fmt(r.voteScore)}
+                        <span className="ml-1 text-xs text-[var(--muted)]">({r.votes}표)</span>
+                      </td>
+                      <td className="px-5 py-2.5 text-right font-bold tabular-nums">
+                        {fmt(r.final)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="border-t border-[var(--line)] px-5 py-3 text-xs leading-relaxed text-[var(--muted)]">
+              심사 = 심사위원 평가(90점, 최고·최저점 제외 평균) + 발표·참여도(10점) ·
+              상호평가 = 팀 상호평가를 100점으로 환산 · 주민투표 = 최다 득표 팀(
+              {`${topVotes}표`})을 100점으로 두고 득표 비율로 환산(3일간 총{" "}
+              {`${TOTAL_VOTES.toLocaleString()}표`}) · 점수는 소수 셋째 자리에서
+              반올림했습니다.
+            </p>
           </section>
         </>
       ) : (
