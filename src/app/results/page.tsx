@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { teamLabel } from "@/lib/format";
@@ -75,26 +76,45 @@ export default async function ResultsPage() {
       {canSeeWinners ? (
         <>
           {/* ── 노원구청장상 ── */}
-          <section className="mt-8 overflow-hidden rounded-lg bg-navy px-6 py-8 text-white sm:px-8 sm:py-10">
-            <p className="eyebrow !text-gold-bright">🥇 {grand.label}</p>
-            <h2 className="mt-3 font-title text-3xl font-bold leading-tight sm:text-4xl">
-              {grand.project?.title ?? nameOf(grand.no, grand.project)}
-            </h2>
-            <p className="mt-1 font-title text-xl font-medium text-white/60">
-              {nameOf(grand.no, grand.project)}
-            </p>
-            {grand.project?.description && (
-              <p className="mt-5 max-w-xl whitespace-pre-wrap text-sm leading-relaxed text-white/75">
-                {grand.project.description}
-              </p>
-            )}
-            {grand.project && (
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={`/gallery/${grand.project.id}`} className="btn-gold">
-                  제출작 보기
-                </Link>
+          <section className="relative isolate mt-8 overflow-hidden rounded-lg bg-navy px-6 py-8 text-white sm:px-8 sm:py-10">
+            {/* 오른쪽에 팀 갤러리 이미지 — 왼쪽 글자 쪽으로 남색 그라데이션이 번지게 */}
+            {grand.project?.thumbnail_url && (
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 -z-10 sm:left-auto sm:w-[55%]"
+              >
+                <Image
+                  src={grand.project.thumbnail_url}
+                  alt=""
+                  fill
+                  priority
+                  sizes="(min-width: 640px) 480px, 100vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-navy/85 sm:bg-transparent sm:bg-gradient-to-r sm:from-navy sm:via-navy/60 sm:via-40% sm:to-transparent" />
               </div>
             )}
+            <div className={grand.project?.thumbnail_url ? "sm:max-w-[50%]" : ""}>
+              <p className="eyebrow !text-gold-bright">🥇 {grand.label}</p>
+              <h2 className="mt-3 font-title text-3xl font-bold leading-tight sm:text-4xl">
+                {grand.project?.title ?? nameOf(grand.no, grand.project)}
+              </h2>
+              <p className="mt-1 font-title text-xl font-medium text-white/60">
+                {nameOf(grand.no, grand.project)}
+              </p>
+              {grand.project?.description && (
+                <p className="mt-5 max-w-xl whitespace-pre-wrap text-sm leading-relaxed text-white/75">
+                  {grand.project.description}
+                </p>
+              )}
+              {grand.project && (
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <Link href={`/gallery/${grand.project.id}`} className="btn-gold">
+                    제출작 보기
+                  </Link>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* ── 광운대학교 총장상 ── */}
