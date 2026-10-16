@@ -99,35 +99,18 @@ export default async function ResultsPage() {
               </div>
             )}
             <div className={grand.project?.thumbnail_url ? "sm:max-w-[50%]" : ""}>
-              <p className="eyebrow !text-gold-bright">🥇 1위 · {grand.award}</p>
+              <p className="eyebrow !text-gold-bright">🥇 {grand.award}</p>
               <h2 className="mt-3 font-title text-3xl font-bold leading-tight sm:text-4xl">
                 {grand.project?.title ?? nameOf(grand)}
               </h2>
               <p className="mt-1 font-title text-xl font-medium text-white/60">
                 {nameOf(grand)}
               </p>
-              <div className="mt-5 flex flex-wrap items-end gap-x-6 gap-y-3">
-                <div>
-                  <p className="text-xs text-white/50">최종 점수</p>
-                  <p className="font-title text-4xl font-bold text-gold-bright">
-                    {fmt(grand.final)}
-                  </p>
-                </div>
-                <dl className="grid grid-cols-3 gap-x-5 pb-1 text-sm">
-                  <div>
-                    <dt className="text-xs text-white/50">심사</dt>
-                    <dd className="font-semibold tabular-nums">{fmt(grand.judge)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-white/50">상호평가</dt>
-                    <dd className="font-semibold tabular-nums">{fmt(grand.peer)}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-white/50">주민투표</dt>
-                    <dd className="font-semibold tabular-nums">{fmt(grand.voteScore)}</dd>
-                  </div>
-                </dl>
-              </div>
+              {grand.project?.description && (
+                <p className="mt-5 max-w-xl whitespace-pre-wrap text-sm leading-relaxed text-white/75">
+                  {grand.project.description}
+                </p>
+              )}
               {grand.project && (
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Link href={`/gallery/${grand.project.id}`} className="btn-gold">
@@ -142,21 +125,11 @@ export default async function ResultsPage() {
           <section className="mt-6 grid gap-4 sm:grid-cols-3">
             {others.map((r) => (
               <div key={r.no} className="card flex h-full flex-col gap-1">
-                <span className="badge-navy self-start">
-                  🥈 {r.rank}위 · {r.award}
-                </span>
+                <span className="badge-navy self-start">🥈 {r.award}</span>
                 <h3 className="mt-2 font-bold leading-snug">
                   {r.project?.title ?? nameOf(r)}
                 </h3>
                 <p className="text-sm text-[var(--muted)]">{nameOf(r)}</p>
-                <p className="mt-3 font-title text-2xl font-bold text-navy">
-                  {fmt(r.final)}
-                  <span className="ml-1 text-sm font-medium text-[var(--muted)]">점</span>
-                </p>
-                <p className="break-keep text-xs text-[var(--muted)]">
-                  심사 {fmt(r.judge)} · 상호평가 {fmt(r.peer)} · 주민투표{" "}
-                  {fmt(r.voteScore)}
-                </p>
                 {r.project && (
                   <Link
                     href={`/gallery/${r.project.id}`}
