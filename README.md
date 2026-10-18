@@ -3,8 +3,8 @@
 > **직접 주최한 해커톤을, 직접 만든 플랫폼으로 운영했습니다.**
 > 참가 신청부터 팀 편성 · 제출 · 심사 · 결과 공개까지, 40팀 145명이 참가한 오프라인 해커톤의 전 과정을 하나의 웹 서비스로 통합해 1인 개발했습니다.
 
-[![Live](https://img.shields.io/badge/Live-hackathon--platform--sy04.vercel.app-1f2544?style=flat-square)](https://hackathon-platform-sy04.vercel.app)
-[![Result](https://img.shields.io/badge/최종_결과-/results-d4b65a?style=flat-square)](https://hackathon-platform-sy04.vercel.app/results)
+[![Live](https://img.shields.io/badge/Live-kw--hackathon.co.kr-1f2544?style=flat-square)](https://www.kw-hackathon.co.kr)
+[![Result](https://img.shields.io/badge/최종_결과-/results-d4b65a?style=flat-square)](https://www.kw-hackathon.co.kr/results)
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?style=flat-square&logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
@@ -30,6 +30,7 @@
 - **시상**: 노원구청장상 · 광운대학교 총장상 ×3 · 매니패스트상
 - **대회 기간**: 2026.09.09 모집 → 10.14 전시 · 주민투표 (약 5주)
 - **개발 기간**: 2026.07 ~ 2026.10 · 1인 개발 · 커밋 331개 · DB 마이그레이션 64개
+- **서비스 주소**: [kw-hackathon.co.kr](https://www.kw-hackathon.co.kr) — 도메인 구매부터 DNS 연결 · 배포까지 직접 진행
 
 ---
 
@@ -39,6 +40,7 @@
 
 - **기획** — 구글 폼 · 스프레드시트 · 단톡방에 흩어져 있던 운영 업무를 분석해 *참가자 · 운영진 · 전시장 주민* 세 역할의 화면으로 재설계
 - **개발** — Next.js + Supabase 풀스택 구현, RLS 기반 권한 설계, PGlite로 DB 정책 자동 테스트
+- **배포** — 대회 전용 도메인 `kw-hackathon.co.kr` 을 구매해 DNS를 연결하고, Vercel(서울 리전)에 배포해 실서비스로 공개
 - **운영** — 대회 기간 동안 공지 · 팀 관리 · 제출 마감 · 점수 입력 · 결과 공개를 직접 운영하며 실시간으로 수정 배포
 
 ---
@@ -92,7 +94,7 @@ RLS와 집계 로직은 목으로는 검증할 수 없어, **PGlite(인메모리
 | Backend | Next.js Server Actions · Route Handlers |
 | Database | Supabase (PostgreSQL · Auth · RLS · 컬럼 GRANT · View) |
 | Test | `node --test` + PGlite |
-| Infra | Vercel (서울 리전, Cron), Supabase |
+| Infra | Vercel (서울 리전, Cron), Supabase, 커스텀 도메인 (kw-hackathon.co.kr) |
 
 ---
 
@@ -107,4 +109,5 @@ RLS와 집계 로직은 목으로는 검증할 수 없어, **PGlite(인메모리
 ## 📚 더 보기
 
 - 📐 [개발 · 운영 문서](docs/DEVELOPMENT.md) — 아키텍처, 점수 산정 공식, 트러블슈팅 9건 상세, 실행 방법, 운영 매뉴얼
-- 🏅 [최종 결과 페이지](https://hackathon-platform-sy04.vercel.app/results)
+- 🌐 [kw-hackathon.co.kr](https://www.kw-hackathon.co.kr)
+- 🏅 [최종 결과 페이지](https://www.kw-hackathon.co.kr/results)
